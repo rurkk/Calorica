@@ -1,0 +1,13 @@
+#:schema https://learn.chatgpt.com/docs/config-schema.json
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 4
+
+[[skills.config]]
+path = "skills/calorica-android-feature-implementation"
+enabled = true
+
+[[skills.config]]
+path = "skills/calorica-product-discovery"
+enabled = true

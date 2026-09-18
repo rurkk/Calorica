@@ -1,0 +1,7 @@
+interface:
+  display_name: "Calorica Product Discovery"
+  short_description: "Исследование и согласование фич питания"
+  default_prompt: "Use $calorica-product-discovery to research this Calorica feature idea, compare alternatives, and finalize an agreed product brief."
+
+policy:
+  allow_implicit_invocation: true
