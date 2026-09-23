@@ -1,7 +1,0 @@
-interface:
-  display_name: "Calorica Android Delivery"
-  short_description: "Безопасная реализация фич учёта питания"
-  default_prompt: "Use $calorica-android-feature-implementation to implement this Calorica Android feature through research, planning, implementation, testing, and review."
-
-policy:
-  allow_implicit_invocation: true

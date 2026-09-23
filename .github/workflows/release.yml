@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Тег выпуска, например v0.1.0"
+        description: "Тег выпуска, например v0.1.1"
         required: true
         type: string
 
@@ -28,4 +28,4 @@ jobs:
         run: >-
           gh release create "${{ inputs.tag }}" app/build/outputs/apk/debug/app-debug.apk
           --title "Calorica ${{ inputs.tag }}" --prerelease
-          --notes "Первый MVP: локальный дневник питания, цели и журнал веса. APK собран как debug и не предназначен для Google Play."
+          --notes "Технический Android-каркас Calorica. Продуктовые функции ещё не реализованы. APK собран как debug и не предназначен для Google Play."
