@@ -1,5 +1,14 @@
 # Calorica
 
+## Материалы первого этапа
+
+- [Согласованные требования](docs/requirements/README.md).
+- [Презентация первого этапа, 8 слайдов](docs/presentation/Calorica-stage-1-final.pptx).
+
+> Ниже описан ранний локальный Android-прототип. Согласованные требования к целевому
+> серверному MVP находятся в [docs/requirements/README.md](docs/requirements/README.md)
+> и имеют приоритет при дальнейшей работе.
+
 Локальное Android-приложение для учёта еды, калорий и БЖУ.
 
 ## MVP

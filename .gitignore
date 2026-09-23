@@ -5,3 +5,7 @@ local.properties
 *.iml
 .idea/
 *.hprof
+.DS_Store
+.codex-presentation-build-stage1/
+docs/presentation/Calorica-stage-1.pptx
+docs/presentation/Calorica-stage-1-v*.pptx
