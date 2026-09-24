@@ -3,7 +3,7 @@
 ## Материалы первого этапа
 
 - [Согласованные требования](docs/requirements/README.md).
-- [Презентация первого этапа, 8 слайдов](docs/presentation/Calorica-stage-1-team-updated.pptx).
+- [Презентация первого этапа, 8 слайдов](docs/presentation/Calorica-stage-1-graph.pptx).
 
 ## Текущее состояние
 
