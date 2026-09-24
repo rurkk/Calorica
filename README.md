@@ -4,6 +4,7 @@
 
 - [Согласованные требования](docs/requirements/README.md).
 - [Презентация первого этапа, 8 слайдов](docs/presentation/Calorica-stage-1-graph.pptx).
+- [Доклад к каждому слайду](docs/presentation/Calorica-stage-1-talk.md).
 
 ## Текущее состояние
 
