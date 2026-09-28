@@ -2,9 +2,22 @@
 
 ## Материалы первого этапа
 
-- [Согласованные требования](docs/requirements/README.md).
+- [Требования проекта, развиваемые после первого этапа](docs/requirements/README.md).
 - [Презентация первого этапа, 8 слайдов](docs/presentation/Calorica-stage-1-user-terms.pptx).
 - [Доклад к каждому слайду](docs/presentation/Calorica-stage-1-talk.md).
+
+## Материалы второго этапа
+
+- [Комплект для сдачи — ТЗ DOCX/PDF, доклад и чек-лист](docs/stage-2/README.md).
+- [Техническое задание — Markdown-проект](docs/requirements/technical-specification.md).
+- [Нефункциональные требования](docs/requirements/nonfunctional/README.md).
+- [Критерии приёмки](docs/requirements/acceptance/README.md).
+- [Бизнес-процессы As is / To be](docs/requirements/processes/as-is-to-be.md).
+- [Объём и план на семестр](docs/requirements/planning/semester-plan.md).
+
+Числовые показатели — цели будущей реализации, а не измеренные характеристики.
+Оформленные DOCX/PDF подготовлены; титульник содержит известные имена и роли.
+Полные учебные реквизиты уточняются отдельно. Защита и отправка материалов ещё не выполнены.
 
 ## Текущее состояние
 
@@ -12,7 +25,7 @@
 они не означают, что сервер или автоматический деплой уже настроены.
 
 Calorica — мобильное приложение для учёта питания, калорий и БЖУ с серверной частью.
-Продуктовое поведение определяют [согласованные требования](docs/requirements/README.md).
+Продуктовое поведение определяют [требования](docs/requirements/README.md).
 
 В репозитории оставлен собираемый Android-каркас:
 
