@@ -1,0 +1,75 @@
+name: Backend CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.paths.outputs.backend }}
+      automation: ${{ steps.paths.outputs.automation }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: paths
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            BASE=$(git merge-base "$BASE" "$HEAD")
+          fi
+          if [[ "$BASE" =~ ^0+$ ]]; then
+            BASE=$(git hash-object -t tree /dev/null)
+          fi
+          python3 scripts/ci/component_changes.py "$BASE" "$HEAD"
+  automation:
+    needs: changes
+    if: needs.changes.outputs.automation == 'true' || needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 -m unittest discover -s scripts/ci -p 'test_*.py'
+      - name: Validate workflows and shell
+        run: |
+          shopt -s nullglob
+          workflows=(.github/workflows/*.yml .github/workflows/*.yaml)
+          docker run --rm --network none --read-only --cap-drop ALL \
+            -v "$PWD/.github/workflows:/workflows:ro" -w /workflows \
+            rhysd/actionlint:1.7.7 -color "${workflows[@]##*/}"
+          shellcheck deploy/backend/deploy.sh scripts/ci/test_deploy.sh
+          bash scripts/ci/test_deploy.sh
+          POSTGRES_PASSWORD=validation-only docker compose -f backend/compose.yml config --quiet
+          BACKEND_IMAGE=ghcr.io/rurkk/calorica-backend@sha256:$(printf 'a%.0s' {1..64}) \
+            docker compose --env-file deploy/backend/backend.env.example -f deploy/backend/compose.yml config --quiet
+  verify:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    uses: ./.github/workflows/backend-checks.yml
+  required:
+    if: always()
+    needs: [changes, automation, verify]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Required backend status (also succeeds for documentation)
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          AUTOMATION: ${{ needs.automation.result }}
+          VERIFY: ${{ needs.verify.result }}
+        run: |
+          test "$CHANGES" = success
+          [[ "$AUTOMATION" = success || "$AUTOMATION" = skipped ]]
+          [[ "$VERIFY" = success || "$VERIFY" = skipped ]]
+  release:
+    needs: [changes, required]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.backend == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/backend-release.yml
+    secrets: inherit

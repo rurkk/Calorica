@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: calorica-backend
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      schema: public
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      connection-timeout: 3000
+      validation-timeout: 2000
+  jdbc:
+    template:
+      query-timeout: 10s
+  liquibase:
+    default-schema: public
+    liquibase-schema: public
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  jackson:
+    time-zone: UTC
+    deserialization:
+      fail-on-unknown-properties: true
+  servlet:
+    multipart:
+      enabled: false
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+server:
+  port: 8080
+  shutdown: graceful
+  forward-headers-strategy: none
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  tomcat:
+    connection-timeout: 10s
+    max-http-form-post-size: 1MB
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db,schema

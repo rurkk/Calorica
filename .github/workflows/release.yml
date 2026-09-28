@@ -1,10 +1,10 @@
-name: GitHub release
+name: Android manual prerelease
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Тег выпуска, например v0.1.1"
+        description: "Тег выпуска, например android-v0.1.1"
         required: true
         type: string
 
@@ -21,11 +21,16 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v6
+      - name: Validate Android release tag
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: '[[ "$RELEASE_TAG" =~ ^android-v[0-9]+\.[0-9]+\.[0-9]+$ ]]'
       - run: ./gradlew :app:assembleDebug
       - name: Create prerelease with APK
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
         run: >-
-          gh release create "${{ inputs.tag }}" app/build/outputs/apk/debug/app-debug.apk
-          --title "Calorica ${{ inputs.tag }}" --prerelease
+          gh release create "$RELEASE_TAG" app/build/outputs/apk/debug/app-debug.apk
+          --title "Calorica $RELEASE_TAG" --prerelease
           --notes "Технический Android-каркас Calorica. Продуктовые функции ещё не реализованы. APK собран как debug и не предназначен для Google Play."

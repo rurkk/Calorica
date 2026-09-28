@@ -1,0 +1,4 @@
+# Production has no embedded credentials or alternate public endpoints.
+spring:
+  main:
+    banner-mode: off

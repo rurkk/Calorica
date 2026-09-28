@@ -1,0 +1,123 @@
+name: Backend container release and deploy
+on:
+  workflow_call:
+permissions:
+  contents: read
+concurrency:
+  group: calorica-backend-release
+  cancel-in-progress: false
+jobs:
+  current:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.source.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: source
+        name: Skip a superseded backend revision
+        run: |
+          git fetch origin main
+          current=$(git log -1 --format=%H "$GITHUB_SHA" -- backend deploy/backend ':(exclude)**/*.md')
+          latest=$(git log -1 --format=%H origin/main -- backend deploy/backend ':(exclude)**/*.md')
+          if [ "$current" = "$latest" ]; then
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+            echo 'Skipped superseded backend revision; rerun the newest successful main workflow if needed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+  publish:
+    needs: current
+    if: needs.current.outputs.publish == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Reuse an existing commit image on rerun
+        id: existing
+        run: |
+          tag="ghcr.io/${GITHUB_REPOSITORY,,}-backend:sha-$GITHUB_SHA"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          error=$(mktemp)
+          if docker buildx imagetools inspect "$tag" > /dev/null 2> "$error"; then
+            digest=$(docker buildx imagetools inspect "$tag" --format '{{json .Manifest}}' | jq -r .digest)
+            echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          elif ! grep -Eq '(: not found|manifest unknown|MANIFEST_UNKNOWN)' "$error"; then
+            cat "$error" >&2
+            echo 'Registry lookup failed; refusing to overwrite an unknown existing release.' >&2
+            exit 1
+          fi
+          rm -f "$error"
+      - uses: docker/build-push-action@v6
+        id: build
+        if: steps.existing.outputs.digest == ''
+        with:
+          context: backend
+          push: true
+          platforms: linux/amd64
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.title=Calorica backend
+          tags: ${{ steps.existing.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - id: image
+        env:
+          TAG: ${{ steps.existing.outputs.tag }}
+          DIGEST: ${{ steps.existing.outputs.digest || steps.build.outputs.digest }}
+        run: |
+          [[ "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]
+          echo "image=${TAG%:*}@$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "Published backend: ${TAG%:*}@$DIGEST" >> "$GITHUB_STEP_SUMMARY"
+  deploy:
+    needs: publish
+    if: vars.BACKEND_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: backend-production
+    env:
+      DEPLOY_HOST: ${{ vars.BACKEND_DEPLOY_HOST }}
+      DEPLOY_USER: ${{ vars.BACKEND_DEPLOY_USER }}
+      DEPLOY_PORT: ${{ vars.BACKEND_DEPLOY_PORT || '22' }}
+      DEPLOY_ROOT: ${{ vars.BACKEND_DEPLOY_ROOT }}
+      IMAGE: ${{ needs.publish.outputs.image }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Prepare pinned SSH connection
+        env:
+          SSH_KEY: ${{ secrets.BACKEND_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.BACKEND_SSH_KNOWN_HOSTS }}
+        run: |
+          [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]+$ ]]
+          [[ "$DEPLOY_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          [[ "$DEPLOY_PORT" =~ ^[0-9]+$ ]]
+          [[ "$DEPLOY_ROOT" =~ ^/[a-zA-Z0-9_/-]+$ && "$DEPLOY_ROOT" != / ]]
+          test -n "$SSH_KEY" && test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+      - name: Deploy the verified digest to the isolated Compose project
+        run: |
+          release="$DEPLOY_ROOT/releases/$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          ssh -p "$DEPLOY_PORT" -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$release'"
+          scp -P "$DEPLOY_PORT" -o StrictHostKeyChecking=yes \
+            deploy/backend/compose.yml deploy/backend/deploy.sh "$DEPLOY_USER@$DEPLOY_HOST:$release/"
+          ssh -p "$DEPLOY_PORT" -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" \
+            "bash '$release/deploy.sh' '$IMAGE' '$DEPLOY_ROOT'"
+      - name: Remove temporary SSH files
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519 ~/.ssh/known_hosts
