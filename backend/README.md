@@ -36,7 +36,9 @@ API доступен только на loopback; PostgreSQL не публику�
 Пароли передавайте средствами окружения/секретов, не аргументами командной строки.
 Затем `./gradlew bootRun`. Для production: `SPRING_PROFILES_ACTIVE=prod`.
 Обязательные значения БД не имеют встроенных defaults. Дополнительно доступен
-`DB_POOL_SIZE` (по умолчанию 5). JSON настроен на UTC; контейнер запускает JVM в UTC.
+`DB_POOL_SIZE` (по умолчанию 5 локально, 2 в профиле prod). JSON настроен на UTC;
+контейнер запускает JVM в UTC. Экономный профиль VPS описан в
+[deploy/backend/README.md](../deploy/backend/README.md#экономный-профиль-учебного-стенда).
 Для такого же часового пояса JVM вне Docker задайте `JAVA_TOOL_OPTIONS=-Duser.timezone=UTC`.
 Доменные моменты будут Instant, числа — BigDecimal.
 

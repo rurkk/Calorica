@@ -3,6 +3,33 @@ services:
   db:
     image: postgres:17.11-bookworm
     restart: unless-stopped
+    # Small teaching stand: keep the database's buffers and workers bounded.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=16MB
+      - -c
+      - effective_cache_size=32MB
+      - -c
+      - work_mem=1MB
+      - -c
+      - maintenance_work_mem=16MB
+      - -c
+      - autovacuum_work_mem=8MB
+      - -c
+      - autovacuum_max_workers=1
+      - -c
+      - max_connections=10
+      - -c
+      - max_worker_processes=0
+      - -c
+      - max_parallel_workers=0
+      - -c
+      - wal_buffers=1MB
+      - -c
+      - max_wal_size=256MB
+      - -c
+      - min_wal_size=80MB
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?Required}
       POSTGRES_USER: ${POSTGRES_USER:?Required}
@@ -11,11 +38,13 @@ services:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
-      interval: 5s
+      interval: 30s
       timeout: 3s
-      retries: 20
-    mem_limit: 512m
-    cpus: 0.5
+      start_period: 30s
+      retries: 3
+    mem_limit: 96m
+    memswap_limit: 96m
+    cpus: 0.15
     logging: &logging
       driver: local
       options:
@@ -29,18 +58,29 @@ services:
       DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_POOL_SIZE: ${DB_POOL_SIZE:-5}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-2}
+      JAVA_TOOL_OPTIONS: >-
+        -Xms16m -Xmx96m -Xss512k -XX:+UseSerialGC -XX:ActiveProcessorCount=1
+        -XX:ReservedCodeCacheSize=32m -XX:MaxDirectMemorySize=16m
+        -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20
+        -XX:+ExitOnOutOfMemoryError -Duser.timezone=UTC
     ports:
       - "127.0.0.1:${API_PORT:?Choose a free loopback port}:8080"
     depends_on:
       db:
         condition: service_healthy
     read_only: true
-    tmpfs: [/tmp]
+    tmpfs: ["/tmp:size=16m,mode=1777"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    mem_limit: 768m
-    cpus: 1.0
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 0.35
+    healthcheck:
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
     stop_grace_period: 30s
     logging: *logging
 volumes:

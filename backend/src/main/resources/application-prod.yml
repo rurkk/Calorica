@@ -2,3 +2,15 @@
 spring:
   main:
     banner-mode: off
+  datasource:
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:2}
+      minimum-idle: 0
+      idle-timeout: 60000
+server:
+  tomcat:
+    threads:
+      max: 8
+      min-spare: 1
+    max-connections: 32
+    accept-count: 8

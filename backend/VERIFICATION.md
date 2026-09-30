@@ -58,3 +58,35 @@ production rollback, нагрузка VPS, совместное размещен
 workflow; локальная машина — ARM64. Старой серверной версии пока нет, поэтому
 проверка upgrade/совместимости со старым приложением появится со следующей миграцией.
 Бизнес-API, сессии и критерии приёмки полного MVP не реализованы этой задачей.
+
+## Экономный стенд — 30 сентября 2026
+
+Отдельный worktree от `6fdb78e`, JDK 21, локальный Docker/Colima ARM64.
+Android и соседние контейнеры не изменялись.
+
+- `./gradlew --no-daemon check bootJar`: успешно, интеграционные тесты с отдельной
+  PostgreSQL 17.11 под лимитом 96 MiB / 0.15 CPU. Итоговый Dockerfile собран.
+- Deployment Compose: backend 256 MiB / 0.35 CPU, PostgreSQL 96 MiB / 0.15 CPU;
+  `docker inspect` подтверждает лимиты. Heap 96 MiB, Serial GC, prod-профиль с
+  двумя соединениями БД и максимум восемью HTTP workers.
+- После удаления только собственного тестового тома выполнен холодный запуск
+  обоих контейнеров и первой миграции через `up --wait --wait-timeout 150`.
+- 100 readiness-запросов с параллелизмом 4: все 200. Закрытый `/api/products`: 401.
+  Перезапуск backend: readiness 200. Остановка тестовой БД: readiness 503,
+  liveness 200; возврат БД: readiness 200.
+- `pg_dump -Fc` и `pg_restore --exit-on-error` в отдельную чистую БД проходят
+  при том же лимите контейнера PostgreSQL. В обеих БД одна запись Liquibase.
+- После этих проверок Docker stats: backend 189.7 MiB, PostgreSQL 28.4 MiB.
+  Ранее после холодного запуска: 214.2 и 19.07 MiB. Снимок cgroup после перезапуска:
+  backend current/peak с cache 190.2/199.9 MiB; PostgreSQL 35.3/41.1 MiB.
+  `memory.events`: `oom_kill 0`, автоматических рестартов нет.
+- Actionlint 1.7.7 принимает workflows; path-тесты и Linux mock-проверка deploy.sh
+  проходят. Smoke CI теперь использует ограниченный deployment Compose вместо
+  контейнера без ресурсных лимитов.
+- GitHub Actions первоначального выпуска main прошёл, GHCR образ доступен
+  анонимно. SSH, ОС Ubuntu 24.04/x86_64, Docker и свободный loopback-порт 18090
+  проверены на Yarumo; приложение Calorica на VPS ещё не запускалось.
+
+Не подтверждены этой проверкой: amd64-выпуск нового профиля, потребление под
+нагрузкой на VPS и будущими бизнес-API. HTTP readiness может вернуться раньше
+следующей Docker health-проверки; итоговые метрики собраны после `up --wait`.

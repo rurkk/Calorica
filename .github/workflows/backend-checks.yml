@@ -22,6 +22,12 @@ jobs:
       DB_URL: jdbc:postgresql://localhost:5432/calorica_test
       DB_USERNAME: calorica
       DB_PASSWORD: ci-test-only
+      POSTGRES_DB: calorica_stand_check
+      POSTGRES_USER: calorica
+      POSTGRES_PASSWORD: ci-test-only
+      API_PORT: '18090'
+      DB_POOL_SIZE: '2'
+      BACKEND_IMAGE: calorica-backend:check
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
@@ -31,25 +37,48 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew --no-daemon check bootJar
         working-directory: backend
-      - name: Build and smoke test runtime container
+      - name: Build and smoke test the constrained stand
         run: |
           docker build -t calorica-backend:check backend
-          docker run -d --name calorica-backend-check --network host \
-            -e DB_URL -e DB_USERNAME -e DB_PASSWORD calorica-backend:check
+          compose() { docker compose -p calorica-stand-check -f deploy/backend/compose.yml "$@"; }
+          compose up -d --wait --wait-timeout 150
           wait_for_backend() {
             for attempt in {1..90}; do
-              if curl -fsS --max-time 10 http://localhost:8080/actuator/health/readiness; then return; fi
+              if curl -fsS --max-time 10 "http://localhost:$API_PORT/actuator/health/readiness"; then return; fi
               if [ "$attempt" = 90 ]; then return 1; fi
               sleep 2
             done
           }
           wait_for_backend
-          docker restart calorica-backend-check
+          python3 - <<'PY'
+          import concurrent.futures
+          import os
+          import urllib.request
+
+          url = f"http://localhost:{os.environ['API_PORT']}/actuator/health/readiness"
+          def check(_):
+              with urllib.request.urlopen(url, timeout=10) as response:
+                  assert response.status == 200
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+              list(executor.map(check, range(100)))
+          PY
+          compose restart backend
           wait_for_backend
-          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/products)" = 401
-          docker stop '${{ job.services.postgres.id }}'
-          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/actuator/health/readiness)" = 503
-          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/actuator/health/liveness)" = 200
+          test "$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$API_PORT/api/products")" = 401
+          compose stop db
+          test "$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$API_PORT/actuator/health/readiness")" = 503
+          test "$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$API_PORT/actuator/health/liveness")" = 200
+          compose start db
+          wait_for_backend
+          docker inspect "$(compose ps -q backend)" "$(compose ps -q db)" | python3 -c '
+          import json, sys
+          for container in json.load(sys.stdin):
+              assert not container["State"]["OOMKilled"], container["Name"]
+              assert container["RestartCount"] == 0, container["Name"]
+          '
+      - name: Remove the disposable stand
+        if: always()
+        run: docker compose -p calorica-stand-check -f deploy/backend/compose.yml down --volumes
       - uses: actions/upload-artifact@v7
         if: always()
         with:

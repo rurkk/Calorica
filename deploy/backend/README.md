@@ -34,23 +34,26 @@ release в обход `Backend CI`. Изменения только CI не вы
 
 ## Настройки перед первым реальным деплоем
 
-В этой задаче ничего не публиковалось на GitHub/VPS. Для включения автоматического
-деплоя нужны отдельное разрешение владельца и следующие настройки:
+Образ backend уже опубликован в GHCR; автоматический деплой пока выключен.
+Для включения подготовьте сервер и следующие настройки:
 
-- Repository variable `BACKEND_DEPLOY_ENABLED=true` (по умолчанию deploy пропускается).
-- Environment `backend-production`; variables `BACKEND_DEPLOY_HOST`,
+- Repository variables: `BACKEND_DEPLOY_ENABLED=true` (по умолчанию deploy пропускается),
+  `BACKEND_DEPLOY_HOST`,
   `BACKEND_DEPLOY_USER`, `BACKEND_DEPLOY_PORT` (22 по умолчанию),
   `BACKEND_DEPLOY_ROOT` (например `/opt/calorica`).
-- Environment secrets `BACKEND_SSH_KEY`, `BACKEND_SSH_KNOWN_HOSTS`.
+- Environment `backend-production`, разрешённая ветка `main`;
+  environment secrets `BACKEND_SSH_KEY`, `BACKEND_SSH_KNOWN_HOSTS`.
   Fingerprint хоста проверяется вне CI; `ssh-keyscan` во время деплоя не используется.
+  Параметры подключения задаются на уровне repository: environment variables
+  появляются только после старта job и не заменяют заранее вычисленный job `env`.
 - На хосте Linux: Bash, Docker/Compose, `flock`, GNU coreutils; выделенный deploy user
   с доступом к Docker и только подготовленному каталогу Calorica. Docker-доступ
   практически эквивалентен root; используйте отдельный ключ и ограничения доступа.
 - `shared/backend.env` по образцу `backend.env.example`, режим 600, каталог 700.
   Для закрытого GHCR-пакета на хосте заранее нужен read-only registry login.
   Production DB-пароль хранится на хосте, не пересылается workflow.
-- Подтверждённые свободный loopback-порт, API-поддомен и TLS, ресурсы VPS (начальные
-  лимиты backend 768 MiB/1 CPU, PostgreSQL 512 MiB/0.5 CPU требуют проверки нагрузкой).
+- Подтверждённые свободный loopback-порт, API-поддомен и TLS, ресурсы VPS.
+  Порт в примере env — `18090`; на общем хосте сначала проверьте, что он свободен.
   На ARM-хосте сначала согласуйте изменение платформы выпуска и протестируйте образ.
 
 Compose-проект всегда `calorica-backend`; отдельные сеть, том, контейнеры и порт БД
@@ -59,6 +62,44 @@ Nginx/Yarumo не меняется скриптом. Отдельную TLS-ко
 по разрешению администратора; reverse proxy должен ограничивать тело запроса
 (например 1 MiB) и таймауты. Приложение пока не доверяет X-Forwarded-*.
 Доменные лимиты запросов и NUMERIC фиксируются вместе с будущим API.
+
+## Экономный профиль учебного стенда
+
+`deploy/backend/compose.yml` рассчитан на несколько пользователей учебного стенда:
+
+| Сервис | Потолок памяти | Потолок CPU |
+| --- | --- | --- |
+| Backend | 256 MiB | 0.35 ядра |
+| PostgreSQL | 96 MiB | 0.15 ядра |
+| Всего | 352 MiB | 0.5 ядра |
+
+Это жёсткие лимиты контейнеров, а не зарезервированная или постоянно занятая память.
+Swap для них отключён через равные `mem_limit` и `memswap_limit`.
+Сборка выполняется в GitHub Actions, на VPS загружается готовый образ.
+
+JVM: heap 16–96 MiB, Serial GC, один доступный JVM процессор, stack 512 KiB,
+code cache до 32 MiB и direct buffers до 16 MiB. Heap не включает metaspace,
+стеки и остальную память JVM; потолок всего контейнера остаётся 256 MiB.
+В профиле `prod` Tomcat использует до 8 рабочих потоков (один запасной),
+до 32 HTTP-соединений и очередь на 8 запросов. Hikari держит до двух соединений,
+не создаёт минимальный запас и удаляет простаивающие соединения через минуту.
+
+PostgreSQL: `shared_buffers=16MB`, `work_mem=1MB`, `maintenance_work_mem=16MB`,
+`autovacuum_work_mem=8MB`, до 10 соединений, один autovacuum worker и без
+параллельных workers. Autovacuum, WAL и гарантии записи остаются включены.
+Healthchecks выполняются раз в 30 секунд; стартовые интервалы позволяют проверить
+готовность раньше. Docker logs по-прежнему ограничены размером.
+
+Локальная проверка 30 сентября 2026: холодный запуск и миграция, 100 health-запросов
+с параллелизмом 4, перезапуск, отказ/возврат БД и dump/restore прошли без OOM
+и автоматических перезапусков. Снимки суммарного потребления Docker — около
+218–233 MiB. CI проверяет именно этот Compose-профиль, включая короткую нагрузку
+и отсутствие OOM/автоматических перезапусков. Это проверка каркаса на ARM64;
+расход памяти будущих бизнес-API и под нагрузкой VPS потребуется измерить отдельно.
+
+Смысл лимитов: [Docker Compose](https://docs.docker.com/reference/compose-file/services/#mem_limit),
+[параметры JVM 21](https://docs.oracle.com/en/java/javase/21/docs/specs/man/java.html),
+[память PostgreSQL 17](https://www.postgresql.org/docs/17/runtime-config-resource.html).
 
 ## Деплой и откат
 
@@ -108,6 +149,8 @@ Liquibase и контрольные данные. Замерьте возрас�
 
 ## Известные непроверенные пункты
 
-Фактические GitHub Actions, GHCR push/pull, SSH/VPS, TLS, совместное размещение с Yarumo,
-production-секреты, внешние backups/мониторинг и production rollback требуют стенда
-и разрешения. Эта конфигурация не означает, что production-деплой выполнен.
+Первый GitHub Actions выпуск и анонимное чтение образа GHCR проверены; SSH-доступ
+к Yarumo и Docker/Compose на хосте проверены. Новый экономный профиль проверен
+локально. Его размещение на VPS, TLS, совместная нагрузка с Yarumo, production-секреты,
+внешние backups/мониторинг и production rollback ещё требуют проверки.
+Эта конфигурация не означает, что production-деплой выполнен.
