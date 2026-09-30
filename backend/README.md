@@ -84,3 +84,11 @@ HTTP-метод, статус и длительность, без URL/query, т�
 Согласованные документы требований и архитектуры этой задачей не изменяются.
 
 CI/CD и эксплуатация: [deploy/backend/README.md](../deploy/backend/README.md).
+
+## Учебный стенд
+
+API: `https://caloricaitmo.duckdns.org`.
+Проверка: `GET /actuator/health/readiness` → `200 {"status":"UP"}`.
+Контейнеры обновляются из main через GitHub Actions, суммарные ограничения —
+352 MiB ОЗУ и 0.5 CPU. HTTPS и продление сертификата описаны в
+[deploy/nginx/README.md](../deploy/nginx/README.md).

@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+# Certbot deploy hook: validate shared Nginx configuration before a graceful reload.
+/usr/sbin/nginx -t
+/bin/systemctl reload nginx

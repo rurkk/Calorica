@@ -90,3 +90,27 @@ Android и соседние контейнеры не изменялись.
 Не подтверждены этой проверкой: amd64-выпуск нового профиля, потребление под
 нагрузкой на VPS и будущими бизнес-API. HTTP readiness может вернуться раньше
 следующей Docker health-проверки; итоговые метрики собраны после `up --wait`.
+
+## Реальный VPS и HTTPS — 30 сентября 2026
+
+- [Backend CI / deploy](https://github.com/rurkk/Calorica/actions/runs/36771012536)
+  выпустил и разместил `955123d2e3a5cae3a4e41afa925551ac4497315e` на Ubuntu 24.04
+  x86_64 через отдельного пользователя calorica-deploy. Оба контейнера healthy,
+  backend привязан к 127.0.0.1:18090, БД не публикует порт.
+- VPS hard limits: backend 256 MiB / 0.35 CPU, PostgreSQL 96 MiB / 0.15 CPU.
+  Снимок Docker stats: 212.9 и 54.32 MiB; OOM=false, автоматических рестартов 0.
+- DuckDNS A caloricaitmo.duckdns.org → 62.84.122.55 подтверждён двумя резолверами.
+  Отдельный vhost Nginx проходит nginx -t; установлен через graceful reload.
+- Let's Encrypt ECDSA сертификат выпущен через существующий Certbot/webroot,
+  действует до 29 декабря 2026. Приватный ключ хранится только на сервере.
+- Внешняя проверка с доверенными CA: TLSv1.2, правильный SAN; readiness/liveness
+  200 UP, HTTP 308 на тот же HTTPS URI, /api/products 401 application/problem+json,
+  тело больше 1 MiB → 413, X-Content-Type-Options: nosniff.
+- certbot renew --cert-name caloricaitmo.duckdns.org --dry-run --run-deploy-hooks:
+  успешно; hook проверяет Nginx и выполняет reload. Используется certbot.timer.
+- Контрольные суммы существующих vhost Yarumo/default сохранены; локальный
+  HTTPS /health Yarumo возвращает UP после установки отдельного сайта Calorica.
+
+Менялись конфигурация reverse proxy, hook и документация. Повторная JVM/Android
+сборка не требуется; бизнес-API и сессии не добавлялись. Внешние backup/monitoring,
+совместная нагрузка и полноценный rollback production ещё не подтверждены.
