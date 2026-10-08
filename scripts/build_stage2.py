@@ -182,7 +182,7 @@ class Builder:
         p = self.doc.add_paragraph("Мобильное приложение для учёта питания,\nкалорий и БЖУ с серверной частью")
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.space_after = Pt(24)
-        p = self.doc.add_paragraph("Второй этап учебного проекта\nВерсия 0.2 · 28 сентября 2026 года")
+        p = self.doc.add_paragraph("Второй этап учебного проекта\nВерсия 0.3 · 8 октября 2026 года")
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.space_after = Pt(30)
         self.doc.add_paragraph("Команда проекта").runs[0].bold = True
@@ -253,7 +253,7 @@ class Builder:
         t = self.doc.add_table(rows=0, cols=len(rows[0]))
         t.alignment = WD_TABLE_ALIGNMENT.CENTER
         t.autofit = False
-        if rows[0][0] == "Недели": widths = [18, 75, 72]
+        if rows[0][0] == "Направление": widths = [30, 67, 68]
         elif len(rows[0]) == 3: widths = [43, 68, 54]
         elif rows[0][0] == "Группа": widths = [57, 108]
         else: widths = [64, 101]
@@ -337,7 +337,7 @@ class Builder:
             if path.endswith("requirements/README.md") or path.endswith("nonfunctional/README.md"):
                 text = text.split("\n", 1)[1]
         if path.endswith("semester-plan.md"):
-            text = "План рассчитан на 12 относительных недель от старта реализации. Календарные даты уточняются по расписанию курса и доступности команды.\n\n" + raw[raw.index("## Обязательный результат"):]
+            text = "План задаёт последовательность работ, зависимости и проверяемые результаты.\n\n" + raw[raw.index("## Обязательный результат"):]
         if path.endswith("reliability.md"):
             text = text.replace("Документ не подтверждает наличие мониторинга или резервных копий сейчас.", "")
             text = text.replace("документ не разрешает покупать сервис или менять существующий сервер автоматически.", "изменения инфраструктуры согласуются отдельно.")

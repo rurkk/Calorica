@@ -20,15 +20,13 @@ OUTPUT = HERE / "Calorica-semester-MVP-TZ.docx"
 class SemesterBuilder(Builder):
     def table(self, rows, source):
         super().table(rows, source)
-        if rows[0] == ["Работа", "Человеко-дни"]:
+        if rows[0] == ["Шаг", "Результат"]:
             table = self.doc.tables[-1]
-            for column, width in zip(table.columns, (137, 28)):
+            for column, width in zip(table.columns, (35, 130)):
                 column.width = Mm(width)
             for row in table.rows:
-                for cell, width in zip(row.cells, (137, 28)):
+                for cell, width in zip(row.cells, (35, 130)):
                     cell.width = Mm(width)
-                for paragraph in row.cells[1].paragraphs:
-                    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
 def blocks():
@@ -50,7 +48,7 @@ def build():
     p = d.add_paragraph("Мобильное приложение для учёта питания\nс серверной частью")
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.paragraph_format.space_after = Pt(25)
-    p = d.add_paragraph("Семестровый MVP\nВторой этап учебного проекта\nВерсия 1.0 · 28 сентября 2026 года")
+    p = d.add_paragraph("Семестровый MVP\nВторой этап учебного проекта\nВерсия 1.1 · 8 октября 2026 года")
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.paragraph_format.space_after = Pt(28)
     d.add_paragraph("Команда проекта и формальные роли").runs[0].bold = True
