@@ -5,7 +5,8 @@
 - [ТЗ PDF](Calorica-semester-MVP-TZ.pdf) — основной экземпляр для чтения.
 - [ТЗ DOCX](Calorica-semester-MVP-TZ.docx) — редактируемый экземпляр.
 - [Исходник краткого ТЗ](technical-specification.md).
-- [Презентация второго этапа](Calorica-stage-2.pptx) — 8 слайдов в стиле первого этапа.
+- [Презентация PPTX](Calorica-stage-2.pptx) — 8 слайдов в стиле первого этапа.
+- [Презентация PDF](Calorica-stage-2.pdf) — та же презентация с фиксированным оформлением.
 - [Доклад по слайдам на 3–4 минуты](defense-notes.md).
 - [Черновик письма после защиты](submission-email.md).
 
