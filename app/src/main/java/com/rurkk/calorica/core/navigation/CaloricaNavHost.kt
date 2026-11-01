@@ -1,0 +1,123 @@
+package com.rurkk.calorica.core.navigation
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.*
+import com.rurkk.calorica.core.ui.ConnectionViewModel
+import com.rurkk.calorica.core.ui.ReadState
+
+/** Feature owners implement slots; only agent 4 edits root routes/DI. */
+interface FeatureScreens {
+  @Composable fun Auth(onAuthenticated: () -> Unit)
+  @Composable fun Products(picker: ProductPickerHost)
+  @Composable fun Diary(picker: ProductPickerHost)
+  @Composable fun ProductPicker(request: ProductSelectionRequest, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit)
+}
+
+object FoundationScreens : FeatureScreens {
+  @Composable override fun Auth(onAuthenticated: () -> Unit) {
+    FoundationSection("Вход в аккаунт", "Экран входа готовится.")
+  }
+  @Composable override fun Products(picker: ProductPickerHost) {
+    FoundationSection("Продукты", "Каталог продуктов готовится.")
+  }
+  @Composable override fun Diary(picker: ProductPickerHost) {
+    FoundationSection("Дневник", "Дневник питания готовится.") {
+      OutlinedButton(onClick = { picker.launch(ProductSelectionRequest.create(ProductSelectionPurpose.DIARY)) }) {
+        Text("Выбрать продукт")
+      }
+    }
+  }
+  @Composable override fun ProductPicker(request: ProductSelectionRequest, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit) {
+    FoundationSection("Выбор продукта", "Выбор продуктов готовится.") {
+      OutlinedButton(onClick = onCancel) { Text("Отмена") }
+    }
+  }
+}
+
+@Composable
+private fun FoundationSection(title: String, description: String, content: @Composable () -> Unit = {}) {
+  Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Text(title, style = MaterialTheme.typography.headlineSmall)
+    Text(description)
+    content()
+  }
+}
+
+fun NavHostController.openProductPicker(request: ProductSelectionRequest) { navigate(request.route) }
+
+@Composable
+fun CaloricaNavHost(connection: ConnectionViewModel, screens: FeatureScreens = FoundationScreens) {
+  val nav = rememberNavController()
+  val backStack by nav.currentBackStackEntryAsState()
+  val current = backStack?.destination?.route
+  Surface(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+      Text("Calorica", style = MaterialTheme.typography.headlineLarge)
+      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(onClick = { nav.navigate(Routes.DIARY) { launchSingleTop = true } }) { Text("Дневник") }
+        OutlinedButton(onClick = { nav.navigate(Routes.PRODUCTS) { launchSingleTop = true } }) { Text("Продукты") }
+      }
+      if (current != Routes.CONNECTION) {
+        TextButton(onClick = { nav.navigate(Routes.CONNECTION) { launchSingleTop = true } }) { Text("Связь с сервером") }
+      }
+      if (current != Routes.AUTH) {
+        TextButton(onClick = { nav.popBackStack() }) { Text("Назад") }
+      }
+      NavHost(navController = nav, startDestination = Routes.AUTH, modifier = Modifier.weight(1f)) {
+        composable(Routes.AUTH) { screens.Auth { nav.navigate(Routes.DIARY) { popUpTo(Routes.AUTH) { inclusive = true } } } }
+        composable(Routes.PRODUCTS) { entry -> screens.Products(rememberProductPickerHost(nav, entry)) }
+        composable(Routes.DIARY) { entry -> screens.Diary(rememberProductPickerHost(nav, entry)) }
+        composable(Routes.PRODUCT_PICKER) { entry ->
+          val request = ProductSelectionRequest(
+              requireNotNull(entry.arguments?.getString("requestId")),
+              ProductSelectionPurpose.valueOf(requireNotNull(entry.arguments?.getString("purpose"))),
+          )
+          screens.ProductPicker(request, onSelected = { result ->
+            nav.previousBackStackEntry?.savedStateHandle?.set(ProductSelectionResult.STATE_KEY, ProductSelectionResult(request, result).encode())
+            nav.popBackStack()
+          }, onCancel = { nav.popBackStack() })
+        }
+        composable(Routes.CONNECTION) { ConnectionScreen(connection) }
+      }
+    }
+  }
+}
+
+@Composable
+private fun ConnectionScreen(viewModel: ConnectionViewModel) {
+  val state by viewModel.state.collectAsStateWithLifecycle()
+  DisposableEffect(viewModel) { onDispose { viewModel.close() } }
+  Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Text("Связь с сервером", style = MaterialTheme.typography.headlineSmall)
+    when (val value = state) {
+      ReadState.Idle -> Text("Проверьте доступность сервера.")
+      ReadState.Loading -> { CircularProgressIndicator(); Text("Проверяем соединение…") }
+      is ReadState.Data -> Text(if (value.value.status == "UP") "Сервер доступен" else "Сервер временно недоступен")
+      is ReadState.Empty -> Text("Ответ сервера пуст.")
+      is ReadState.Error -> {
+        Text(value.error.message())
+        value.error.correlationId?.let { Text("Код обращения: $it") }
+      }
+    }
+    Button(onClick = viewModel::load, enabled = state != ReadState.Loading) {
+      Text(if (state == ReadState.Idle) "Проверить соединение" else "Повторить загрузку")
+    }
+  }
+}
+
+@Composable
+private fun rememberProductPickerHost(nav: NavHostController, entry: NavBackStackEntry): ProductPickerHost {
+  val encoded by entry.savedStateHandle.getStateFlow<String?>(ProductSelectionResult.STATE_KEY, null).collectAsStateWithLifecycle()
+  return ProductPickerHost(
+      result = encoded?.let(ProductSelectionResult::decode),
+      launch = nav::openProductPicker,
+      consume = { entry.savedStateHandle[ProductSelectionResult.STATE_KEY] = null },
+  )
+}
