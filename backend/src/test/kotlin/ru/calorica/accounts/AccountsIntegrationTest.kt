@@ -32,6 +32,8 @@ class AccountsIntegrationTest @Autowired constructor(
     private val http: TestRestTemplate, private val mapper: ObjectMapper, private val jdbc: JdbcClient,
     private val accounts: AccountsService, private val repository: AccountRepository,
     private val manager: PlatformTransactionManager,
+    private val initialization: ru.calorica.accounts.application.AuthInitialization,
+    private val context: org.springframework.context.ConfigurableApplicationContext,
 ) {
     private fun register() = accounts.register(Credentials("t03-${UUID.randomUUID()}@example.org", "test password 8"))
     private fun request(method: HttpMethod, path: String, body: String? = null, token: String? = null,
@@ -51,6 +53,26 @@ class AccountsIntegrationTest @Autowired constructor(
         assertThat(json(response)["code"].asText()).isEqualTo(code)
         assertThat(json(response)["correlationId"].asText()).isEqualTo(response.headers.getFirst("X-Request-Id"))
         assertThat(response.body).doesNotContain("password_hash", "stackTrace", "test password 8")
+    }
+    @Test @Order(0) fun `auth is refused without writes until initialization has completed`() {
+        fun counts() = listOf("accounts", "profiles", "sessions", "refresh_tokens").map { table ->
+            jdbc.sql("SELECT count(*) FROM calorica.$table").query(Long::class.java).single()
+        }
+        val before = counts()
+        org.springframework.boot.availability.AvailabilityChangeEvent.publish(context,
+            org.springframework.boot.availability.ReadinessState.REFUSING_TRAFFIC)
+        try {
+            code(request(HttpMethod.POST,"/accounts/register",
+                """{"email":"startup@example.org","password":"test password 8"}"""),503,"SERVICE_UNAVAILABLE")
+            assertThat(http.getForEntity("/actuator/health/liveness",String::class.java).statusCode.value()).isEqualTo(200)
+            assertThat(http.getForEntity("/actuator/health/readiness",String::class.java).statusCode.value()).isEqualTo(503)
+            initialization.run(org.springframework.boot.DefaultApplicationArguments())
+            assertThat(counts()).isEqualTo(before)
+        } finally {
+            org.springframework.boot.availability.AvailabilityChangeEvent.publish(context,
+                org.springframework.boot.availability.ReadinessState.ACCEPTING_TRAFFIC)
+        }
+        // The next ordered test makes the first accepted registration and requires 201.
     }
     @Test @Order(1) fun `registration creates normalized USER empty profile and only hashes at rest`() {
         val email = "Case-${UUID.randomUUID()}@Example.org"
@@ -170,6 +192,29 @@ class AccountsIntegrationTest @Autowired constructor(
             .param("id",sample.account.id).update()
         assertThatThrownBy { accounts.refresh(sample.refreshToken) }.isInstanceOf(ApiFailure::class.java)
         code(me(sample.accessToken),401,"UNAUTHORIZED")
+    }
+    @Test @Order(8) fun `auth initialization leaves accounts profiles sessions and refresh rows unchanged`() {
+        fun counts() = listOf("accounts", "profiles", "sessions", "refresh_tokens").map { table ->
+            jdbc.sql("SELECT count(*) FROM calorica.$table").query(Long::class.java).single()
+        }
+        val before = counts()
+        initialization.run(org.springframework.boot.DefaultApplicationArguments())
+        assertThat(counts()).isEqualTo(before)
+    }
+    @Test @Order(8) fun `existing lowercase SHA256 refresh hashes remain usable after codec initialization`() {
+        val first = register()
+        // Fixture in the exact persisted format used before HexFormat replaced per-byte Formatter.
+        val legacy = "legacy-refresh-token-${UUID.randomUUID()}"
+        val legacyHash = java.security.MessageDigest.getInstance("SHA-256").digest(legacy.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+        jdbc.sql("UPDATE calorica.refresh_tokens SET token_hash=:hash WHERE session_id IN " +
+            "(SELECT id FROM calorica.sessions WHERE account_id=:account)")
+            .param("hash", legacyHash).param("account", first.account.id).update()
+        val next = accounts.refresh(legacy)
+        assertThat(next.account.id).isEqualTo(first.account.id)
+        assertThat(me(next.accessToken).statusCode.value()).isEqualTo(200)
+        assertThatThrownBy { accounts.refresh(legacy) }.isInstanceOf(ApiFailure::class.java)
+        code(me(next.accessToken),401,"UNAUTHORIZED")
     }
     @Test @Order(9) fun `size limit applies to JSON with Content-Length`() {
         code(request(HttpMethod.PATCH,"/profile","{\"x\":\"" + "a".repeat(1024*1024) + "\"}"),413,"REQUEST_TOO_LARGE")
