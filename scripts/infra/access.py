@@ -21,6 +21,11 @@ PROVIDERS = {
     'render': ('https://api.render.com/v1', 'RENDER_API_KEY'),
     'betterstack': ('https://telemetry.betterstack.com/api/v2', 'BETTERSTACK_API_KEY'),
 }
+MCP_SERVERS = {
+    'neon': ('CaloricaNeon', 'https://mcp.neon.tech/mcp?projectId=long-king-45707171'),
+    'render': ('CaloricaRender', 'https://mcp.render.com/mcp'),
+    'betterstack': ('CaloricaLogs', 'https://mcp.betterstack.com'),
+}
 
 
 class AccessError(Exception):
@@ -69,6 +74,15 @@ def mcp_headers(values, provider):
     if not token or any(character.isspace() for character in token):
         raise AccessError('Provider API key missing or invalid; no values were printed.')
     return {'Authorization': 'Bearer ' + token}
+
+
+def codex_command(arguments):
+    command = ['codex', '--cd', str(ROOT)]
+    for provider, (name, url) in MCP_SERVERS.items():
+        command.extend(['-c', 'mcp_servers.' + name + '.url=' + json.dumps(url),
+                        '-c', 'mcp_servers.' + name + '.bearer_token_env_var=' +
+                        json.dumps(PROVIDERS[provider][1])])
+    return command + arguments
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -236,6 +250,8 @@ def main(argv=None):
     headers.add_argument('provider', choices=PROVIDERS)
     run = commands.add_parser('run', help='Run a CLI with the shared profile in its environment.')
     run.add_argument('arguments', nargs=argparse.REMAINDER)
+    agent = commands.add_parser('codex', help='Start Codex with all three MCP servers and shared credentials.')
+    agent.add_argument('arguments', nargs=argparse.REMAINDER)
     dev = commands.add_parser('dev-run', help='Run Spring Boot locally against your dev DB.')
     dev.add_argument('--debug', action='store_true', help='JDWP on local port 5005.')
     args = parser.parse_args(argv)
@@ -263,11 +279,15 @@ def main(argv=None):
             else:
                 print(json.dumps(safe_payload(result, values), ensure_ascii=False, indent=2))
             return 0 if 200 <= result['http'] < 300 else 1
-        if args.command == 'run':
+        if args.command in ('run', 'codex'):
             if not shared_admin(values):
                 raise AccessError('run requires the shared admin profile.')
             command = args.arguments[1:] if args.arguments[:1] == ['--'] else args.arguments
-            if not command:
+            if args.command == 'codex':
+                for provider in PROVIDERS:
+                    mcp_headers(values, provider)
+                command = codex_command(command)
+            elif not command:
                 raise AccessError('Specify a CLI command after run --.')
             return subprocess.run(command, cwd=ROOT, env=dict(os.environ, **values)).returncode
         if args.command in ('db', 'db-admin', 'db-tables'):

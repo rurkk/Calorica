@@ -139,6 +139,17 @@ class InfrastructureAccessTest(unittest.TestCase):
             self.assertNotIn(secret, rendered)
         self.assertIn('8080', rendered)
 
+    def test_agent_launcher_passes_only_key_variable_names_in_arguments(self):
+        command = access.codex_command(['mcp', 'get', 'CaloricaRender'])
+        rendered = ' '.join(command)
+        for provider in ('CaloricaNeon', 'CaloricaRender', 'CaloricaLogs'):
+            self.assertIn('mcp_servers.' + provider + '.url=', rendered)
+        self.assertIn('bearer_token_env_var="RENDER_API_KEY"', rendered)
+        for key, secret in self.shared_profile().items():
+            if 'PASSWORD' in key or 'API_KEY' in key:
+                self.assertNotIn(secret, rendered)
+        self.assertEqual(command[-3:], ['mcp', 'get', 'CaloricaRender'])
+
 
 if __name__ == '__main__':
     unittest.main()
