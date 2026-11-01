@@ -7,6 +7,7 @@
 
 - [Roadmap задач по агентам](docs/semester-mvp/roadmap/README.md) — карточки, зависимости и параллельные направления.
 - [Трекер назначения и выполнения](docs/semester-mvp/roadmap/tracker.md).
+- [Как забронировать задачу](docs/semester-mvp/roadmap/claiming.md) — общая бронь для разработчиков и агентов.
 - [Границы семестрового MVP](docs/semester-mvp/scope.md) — функции Android и серверного API.
 - [Домен и расчёты](docs/semester-mvp/domain.md).
 - [Порядок реализации](docs/semester-mvp/plan.md).

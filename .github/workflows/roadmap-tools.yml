@@ -1,0 +1,25 @@
+name: Roadmap tools
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/roadmap/**'
+      - '.github/workflows/roadmap-tools.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/roadmap/**'
+      - '.github/workflows/roadmap-tools.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  reservations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check shared reservations against an isolated Git remote
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest discover -s scripts/roadmap -p 'test_*.py'
