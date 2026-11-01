@@ -50,19 +50,21 @@ class AuthInitialization(
         val email = policy.normalize(credentials)
         // A fixed, small number of real operations also exercises the memory-hard hot loop
         // before a low-CPU instance starts serving requests; no password parameters are reduced.
-        repeat(3) {
-            val hash = passwords.encode(credentials.password)
-            check(passwords.matches(credentials.password, hash))
-        }
-        // Reclaim temporary Argon2 work buffers before loading more JWT/MVC metadata.
-        // This runs at startup while API traffic is refused: the 256 MiB stand
-        // cannot retain the expanded heap alongside the codec/JIT allocation peak.
+        // Request reclamation of context garbage and each completed Argon2 working set.
+        // Retaining successive 19 MiB buffers during warmup exceeds the 256 MiB stand.
+        // These fixed boundaries run only at startup while API traffic is refused.
         System.gc()
+        repeat(3) {
+            val hash = reclaimAfter { passwords.encode(credentials.password) }
+            check(reclaimAfter { passwords.matches(credentials.password, hash) })
+        }
         val accountId = UUID.randomUUID()
         val sessionId = UUID.randomUUID()
         val expires = clock.instant().plusSeconds(30 * 86400)
         val issued = access.issue(accountId, sessionId, expires)
         check(access.verify(issued.value) == AccessTokens.Identity(accountId, sessionId))
+        // Release JWT bootstrap temporaries before Kotlin/Jackson metadata initialization.
+        System.gc()
         val refresh = mapper.readValue("""{"refreshToken":"initialization-only"}""", Refresh::class.java)
         val profile = Profile(null, null, null, null)
         val sample = Tokens(issued.value, refresh.refreshToken, issued.expiresAt, expires,
@@ -86,5 +88,10 @@ class AuthInitialization(
             setProperty("code", "SERVICE_UNAVAILABLE")
             setProperty("correlationId", UUID.randomUUID().toString())
         })
+    }
+    private fun <T> reclaimAfter(action: () -> T): T {
+        val result = action()
+        System.gc()
+        return result
     }
 }
