@@ -25,7 +25,7 @@
 | [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ожидает ручной приёмки | Да; foundation 1.0.0, signed APK 0.1.3, API26/API36 | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | [PR #9](https://github.com/rurkk/Calorica/pull/9), main `753a1b6`; [APK 0.1.3](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.3), self-check пройден; нужны человек и доступное физическое устройство |
 | [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | Ожидает релиза | Нет; merge проверен, живой выпуск впереди | `codex/t03-accounts-01a19823` / `eeb076d1e5ddcc374b3bed5326338201789444df` | [PR#14](https://github.com/rurkk/Calorica/pull/14) в main `06b7c96`; [CI/CD](https://github.com/rurkk/Calorica/actions/runs/41336309906), затем SHA/digest и auth/profile smoke |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
-| [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | Ожидает интеграции | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | Код/ревью и12unit+30integration сT03/FK025 прошли; нужны main/релиз T03,PR/CI/выпуск T05 |
+| [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | Ревью | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | [PR #23](https://github.com/rurkk/Calorica/pull/23): независимое ревью закрыто, 12 unit + 30 integration с пулом 2 прошли локально; CI и последовательный выпуск после T03 |
 | [T06](tasks/T06.md) | 5 | — | Ожидает зависимости | Нет | — | Нужны T02 |
 | [T07](tasks/T07.md) | 3 | — | Ожидает зависимости | Нет | — | Нужны T05 |
 | [T08](tasks/T08.md) | 6 | — | Ожидает зависимости | Нет | — | Нужны T02 |
@@ -259,6 +259,10 @@
 - Полный настоящий `check bootJar` на `b298ec5` успешен:12 unit +30 integration,0 failures/errors. Новая собственная PostgreSQL `calorica_t05_integrated` сначала подготовлена предыдущим foundation JAR40386c1:readiness200,только001; затем применены010+020+025. Все HTTP/JWT,owner/Admin,search/cursor,soft-delete,orphanFK,ConnectionHolder/REQUIRES_NEW и PostgreSQL гонки прошли без scratch init/Actor.
 - Предыдущий foundation JAR40386c1 повторно запущен на001+010+020+025:readiness200; агрегаты16 accounts/69 products до и после равны,история миграций сохранена. Остановлены только собственные проверенные тестовые JVM.
 - Следующий шаг: PR T05/CI,после завершения отдельного backend выпуска T03 — merge и последовательный GHCR→Render выпуск T05,проверка двух аккаунтов и точного digest. До интеграции/выпуска техническая готовность Нет; ручная приёмка не выполнена,бронь сохранена.
+
+- Функциональный [PR #23](https://github.com/rurkk/Calorica/pull/23), head `db67445ae9e6fd2ef3b23c3f499777d185918867`, содержит только backend. Свежая main с T03 `06b7c96` интегрирована; tracker публикуется отдельно.
+- На `db67445` полный `check bootJar` повторён на новой PostgreSQL с `DB_POOL_SIZE=2`: 12 unit и 30 integration прошли. Исправлен только тестовый наблюдатель гонок: отдельное JDBC-подключение к тестовой БД читает pg_locks и состояние строки, сохраняя assertions. Старый CI head `9e4658d` подтвердил два отказа этих тестов из-за нехватки третьего pooled connection; исправленный CI запущен на `db67445`. Приложение и его пул не менялись. Независимое ревью этой поправки новых дефектов не нашло.
+- До merge T05 ожидает зелёный CI PR #23 и завершение backend выпуска/самопроверки T03. Затем отдельный последовательный выпуск T05, сверка OCI revision/digest и живые два аккаунта; техническая готовность пока «Нет».
 
 ### Шаблон записи
 
