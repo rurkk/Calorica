@@ -215,6 +215,7 @@ def publish(args):
     command('gh', 'release', 'upload', tag, *map(str, sorted(directory.iterdir())), '--clobber', '--repo', repo)
     command('gh', 'release', 'edit', tag, '--draft=false', '--latest', '--repo', repo)
     plan['published'] = True
+    plan['release_url'] = f'https://github.com/{repo}/releases/tag/{tag}'
     Path('_release/plan.json').write_text(json.dumps(plan, indent=2) + '\n')
 
 
