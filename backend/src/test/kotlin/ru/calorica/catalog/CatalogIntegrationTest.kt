@@ -20,6 +20,7 @@ import ru.calorica.catalog.persistence.CatalogRepository
 import ru.calorica.platform.security.Actor
 import ru.calorica.platform.security.Role
 import java.math.BigDecimal
+import java.sql.DriverManager
 import java.util.UUID
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
@@ -234,15 +235,30 @@ class CatalogIntegrationTest @Autowired constructor(
             assertThat(it.status).isEqualTo(400)
         }
     }
+    /** Observe the test database outside the two-connection application pool used by CI/prod. */
+    private fun observer() = DriverManager.getConnection(requireNotNull(System.getenv("DB_URL")),
+        requireNotNull(System.getenv("DB_USERNAME")), requireNotNull(System.getenv("DB_PASSWORD")))
     private fun awaitBlocked() {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(1)
-        while (System.nanoTime() < deadline) {
-            val n = jdbc.sql("SELECT count(*) FROM pg_locks WHERE locktype='advisory' AND NOT granted AND classid IN (1128352847,1128352848)")
-                .query(Int::class.java).single()
-            if (n > 0) return
-            Thread.sleep(10)
+        observer().use { connection ->
+            connection.createStatement().use { statement ->
+                statement.queryTimeout = 1
+                while (System.nanoTime() < deadline) {
+                    val n = statement.executeQuery("""SELECT count(*) FROM pg_locks WHERE locktype='advisory'
+                        AND NOT granted AND classid IN (1128352847,1128352848)
+                        AND database=(SELECT oid FROM pg_database WHERE datname=current_database())""").use { r -> r.next(); r.getInt(1) }
+                    if (n > 0) return
+                    Thread.sleep(10)
+                }
+            }
         }
         fail<Unit>("Contending PostgreSQL transaction never waited for advisory lock")
+    }
+    private fun observedDeleted(id: UUID): Boolean = observer().use { connection ->
+        connection.prepareStatement("SELECT is_deleted FROM calorica.products WHERE id=?").use { statement ->
+            statement.setObject(1,id)
+            statement.executeQuery().use { r -> check(r.next()); r.getBoolean(1) }
+        }
     }
     @Test fun `selection waiting for personal deletion sees committed deletion after lock`() {
         val id = create(a)
@@ -271,7 +287,7 @@ class CatalogIntegrationTest @Autowired constructor(
             assertThat(selected.await(3,TimeUnit.SECONDS)).isTrue()
             val deleting = pool.submit(Callable { catalog.delete(admin.actor,id,"KEEP_REFERENCES",true) })
             awaitBlocked()
-            assertThat(catalog.get(a.actor,id).isDeleted).isFalse()
+            assertThat(observedDeleted(id)).isFalse()
             release.countDown(); selecting.get(3,TimeUnit.SECONDS); deleting.get(3,TimeUnit.SECONDS)
             assertThat(catalog.get(a.actor,id).isDeleted).isTrue()
         } finally { release.countDown(); pool.shutdownNow() }
