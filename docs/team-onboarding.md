@@ -3,6 +3,7 @@
 Репозиторий: [rurkk/Calorica](https://github.com/rurkk/Calorica).
 Порядок выбора и выполнения задачи — [CONTRIBUTING.md](../CONTRIBUTING.md).
 Адреса, права и команды инфраструктуры — [deploy/access/README.md](../deploy/access/README.md).
+Установка инструментов, запуск на телефоне и поиск ошибок — [краткая инструкция по отладке](debugging.md).
 
 ## Что получить от владельца
 
