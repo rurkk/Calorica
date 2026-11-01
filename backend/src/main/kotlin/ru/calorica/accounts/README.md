@@ -71,3 +71,10 @@ heap96MiB, memory512MiB; повторять на свежих процессах
 Gradle integration tests дополнительно проверяют отказ без записей при
 `REFUSING_TRAFFIC`, отсутствие изменений БД от initialization и ротацию refresh
 с хешем, полученным прежним Formatter-алгоритмом.
+
+После трёх crypto-циклов initialization один раз запрашивает GC до загрузки
+следующих JWT/MVC codecs. Это освобождает временные Argon2 work buffers и позволяет
+SerialGC сжать расширенный heap до readiness; иначе пик heap+metadata+JIT может
+превысить256MiB CI-стенда. GC является best-effort, поэтому успешность проверяется
+реальными fresh startup/restart под прежним лимитом, а не unit-assertion о памяти.
+В обработчиках HTTP принудительный GC не добавляется.

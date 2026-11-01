@@ -54,6 +54,10 @@ class AuthInitialization(
             val hash = passwords.encode(credentials.password)
             check(passwords.matches(credentials.password, hash))
         }
+        // Reclaim temporary Argon2 work buffers before loading more JWT/MVC metadata.
+        // This runs at startup while API traffic is refused: the 256 MiB stand
+        // cannot retain the expanded heap alongside the codec/JIT allocation peak.
+        System.gc()
         val accountId = UUID.randomUUID()
         val sessionId = UUID.randomUUID()
         val expires = clock.instant().plusSeconds(30 * 86400)
