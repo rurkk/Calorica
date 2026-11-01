@@ -72,6 +72,16 @@ class CatalogIntegrationTest @Autowired constructor(
     }
     private fun idList(node: JsonNode): List<UUID> = node["items"].map { UUID.fromString(it["id"].asText()) }
 
+    @Test fun `integrated catalog rejects orphan owner UUID via agent1 migration025`() {
+        val id = UUID.randomUUID()
+        assertThatThrownBy { jdbc.sql("""INSERT INTO calorica.products
+            (id,owner_id,name,manual_calories,manual_protein,manual_fat,manual_carbs)
+            VALUES (:id,:owner,'orphan test',0,0,0,0)""")
+            .param("id",id).param("owner",UUID.randomUUID()).update() }
+            .isInstanceOf(org.springframework.dao.DataIntegrityViolationException::class.java)
+        assertThat(jdbc.sql("SELECT count(*) FROM calorica.products WHERE id=:id").param("id",id)
+            .query(Int::class.java).single()).isZero()
+    }
     @Test fun `HTTP CRUD uses exact strings PATCH absence and retains deleted history`() {
         code(request(null, HttpMethod.GET, "/products"), 401, "UNAUTHORIZED")
         val id = create(a, "  Личный ${UUID.randomUUID()}  ")
