@@ -2,10 +2,13 @@ package com.rurkk.calorica
 
 import com.rurkk.calorica.core.api.*
 import com.rurkk.calorica.core.data.*
+import com.rurkk.calorica.core.ui.ServerWarmupController
+import com.rurkk.calorica.core.ui.ServerWarmupState
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
 import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.mockwebserver.*
@@ -133,5 +136,37 @@ class ApiNetworkTest {
     for (url in listOf("http://example.test/", "https://user:password@example.test/", "https://example.test/prefix/")) {
       assertThrows(IllegalArgumentException::class.java) { ApiClient.create(url, ApiClient.http(session, server.url("/").toString())) }
     }
+  }
+
+  @Test fun `startup retries only anonymous readiness GET until the server is ready`() = runBlocking {
+    session.replaceAccessToken("FAKE-NOT-A-TOKEN")
+    server.enqueue(response("<html>Starting</html>", 503))
+    server.enqueue(response("<html>Starting</html>"))
+    server.enqueue(response("""{"status":"UP"}"""))
+    val warmup = ServerWarmupController(this) { HttpConnectionRepository(api, executor).check() }
+    warmup.start()
+    withTimeout(8_000) { warmup.state.first { it == ServerWarmupState.Ready } }
+    assertEquals(3, server.requestCount)
+    repeat(3) {
+      val request = server.takeRequest(1, TimeUnit.SECONDS)!!
+      assertEquals("GET", request.method)
+      assertEquals("/actuator/health/readiness", request.path)
+      assertNull(request.getHeader("Authorization"))
+    }
+  }
+
+  @Test fun `pausing startup cancels the actual readiness HTTP request`() = runBlocking {
+    val failed = CountDownLatch(1)
+    val client = ApiClient.http(session, server.url("/").toString()).newBuilder().eventListener(object : EventListener() {
+      override fun callFailed(call: Call, ioe: IOException) { if (call.isCanceled()) failed.countDown() }
+    }).build()
+    val cancellable = ApiClient.create(server.url("/").toString(), client, true)
+    server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE))
+    val warmup = ServerWarmupController(this) { HttpConnectionRepository(cancellable, executor).check() }
+    warmup.start()
+    withContext(Dispatchers.IO) { assertNotNull(server.takeRequest(2, TimeUnit.SECONDS)) }
+    warmup.pause()
+    assertTrue(withContext(Dispatchers.IO) { failed.await(2, TimeUnit.SECONDS) })
+    assertEquals(ServerWarmupState.Idle, warmup.state.value)
   }
 }

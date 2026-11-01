@@ -24,8 +24,8 @@ android {
     buildConfigField("String", "API_BASE_URL", "\"$apiUrl\"")
     minSdk = 26
     targetSdk = 37
-    versionCode = providers.environmentVariable("CALORICA_VERSION_CODE").orNull?.toInt() ?: 3
-    versionName = providers.environmentVariable("CALORICA_VERSION_NAME").orNull ?: "0.1.2"
+    versionCode = providers.environmentVariable("CALORICA_VERSION_CODE").orNull?.toInt() ?: 4
+    versionName = providers.environmentVariable("CALORICA_VERSION_NAME").orNull ?: "0.1.3"
   }
 
   buildFeatures { compose = true; buildConfig = true }

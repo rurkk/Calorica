@@ -6,11 +6,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.rurkk.calorica.core.ui.ConnectionViewModel
 import com.rurkk.calorica.core.ui.ReadState
+import com.rurkk.calorica.core.ui.ServerWarmupState
+import com.rurkk.calorica.core.ui.ServerWarmupScreen
 
 /** Feature owners implement slots; only agent 4 edits root routes/DI. */
 interface FeatureScreens {
@@ -54,37 +59,55 @@ fun NavHostController.openProductPicker(request: ProductSelectionRequest) { navi
 
 @Composable
 fun CaloricaNavHost(connection: ConnectionViewModel, screens: FeatureScreens = FoundationScreens) {
+  val startup by connection.startupState.collectAsStateWithLifecycle()
+  val owner = LocalLifecycleOwner.current
+  DisposableEffect(connection, owner) {
+    val observer = LifecycleEventObserver { _, event ->
+      when (event) {
+        Lifecycle.Event.ON_START -> connection.startWarmup()
+        Lifecycle.Event.ON_STOP -> connection.pauseWarmup()
+        else -> Unit
+      }
+    }
+    owner.lifecycle.addObserver(observer)
+    if (owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) connection.startWarmup()
+    onDispose { owner.lifecycle.removeObserver(observer) }
+  }
   val nav = rememberNavController()
   val backStack by nav.currentBackStackEntryAsState()
   val current = backStack?.destination?.route
   Surface(Modifier.fillMaxSize()) {
-    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-      Text("Calorica", style = MaterialTheme.typography.headlineLarge)
-      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = { nav.navigate(Routes.DIARY) { launchSingleTop = true } }) { Text("Дневник") }
-        OutlinedButton(onClick = { nav.navigate(Routes.PRODUCTS) { launchSingleTop = true } }) { Text("Продукты") }
-      }
-      if (current != Routes.CONNECTION) {
-        TextButton(onClick = { nav.navigate(Routes.CONNECTION) { launchSingleTop = true } }) { Text("Связь с сервером") }
-      }
-      if (current != Routes.AUTH) {
-        TextButton(onClick = { nav.popBackStack() }) { Text("Назад") }
-      }
-      NavHost(navController = nav, startDestination = Routes.AUTH, modifier = Modifier.weight(1f)) {
-        composable(Routes.AUTH) { screens.Auth { nav.navigate(Routes.DIARY) { popUpTo(Routes.AUTH) { inclusive = true } } } }
-        composable(Routes.PRODUCTS) { entry -> screens.Products(rememberProductPickerHost(nav, entry)) }
-        composable(Routes.DIARY) { entry -> screens.Diary(rememberProductPickerHost(nav, entry)) }
-        composable(Routes.PRODUCT_PICKER) { entry ->
-          val request = ProductSelectionRequest(
-              requireNotNull(entry.arguments?.getString("requestId")),
-              ProductSelectionPurpose.valueOf(requireNotNull(entry.arguments?.getString("purpose"))),
-          )
-          screens.ProductPicker(request, onSelected = { result ->
-            nav.previousBackStackEntry?.savedStateHandle?.set(ProductSelectionResult.STATE_KEY, ProductSelectionResult(request, result).encode())
-            nav.popBackStack()
-          }, onCancel = { nav.popBackStack() })
+    if (startup != ServerWarmupState.Ready) {
+      ServerWarmupScreen(startup, connection::retryWarmup)
+    } else {
+      Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("Calorica", style = MaterialTheme.typography.headlineLarge)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          OutlinedButton(onClick = { nav.navigate(Routes.DIARY) { launchSingleTop = true } }) { Text("Дневник") }
+          OutlinedButton(onClick = { nav.navigate(Routes.PRODUCTS) { launchSingleTop = true } }) { Text("Продукты") }
         }
-        composable(Routes.CONNECTION) { ConnectionScreen(connection) }
+        if (current != Routes.CONNECTION) {
+          TextButton(onClick = { nav.navigate(Routes.CONNECTION) { launchSingleTop = true } }) { Text("Связь с сервером") }
+        }
+        if (current != Routes.AUTH) {
+          TextButton(onClick = { nav.popBackStack() }) { Text("Назад") }
+        }
+        NavHost(navController = nav, startDestination = Routes.AUTH, modifier = Modifier.weight(1f)) {
+          composable(Routes.AUTH) { screens.Auth { nav.navigate(Routes.DIARY) { popUpTo(Routes.AUTH) { inclusive = true } } } }
+          composable(Routes.PRODUCTS) { entry -> screens.Products(rememberProductPickerHost(nav, entry)) }
+          composable(Routes.DIARY) { entry -> screens.Diary(rememberProductPickerHost(nav, entry)) }
+          composable(Routes.PRODUCT_PICKER) { entry ->
+            val request = ProductSelectionRequest(
+                requireNotNull(entry.arguments?.getString("requestId")),
+                ProductSelectionPurpose.valueOf(requireNotNull(entry.arguments?.getString("purpose"))),
+            )
+            screens.ProductPicker(request, onSelected = { result ->
+              nav.previousBackStackEntry?.savedStateHandle?.set(ProductSelectionResult.STATE_KEY, ProductSelectionResult(request, result).encode())
+              nav.popBackStack()
+            }, onCancel = { nav.popBackStack() })
+          }
+          composable(Routes.CONNECTION) { ConnectionScreen(connection) }
+        }
       }
     }
   }
