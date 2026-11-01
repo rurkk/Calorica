@@ -21,7 +21,7 @@
 | Задача | Агент | Разработчик | Статус | Технически готово | Рабочая ветка / бронь | Блокер / следующий шаг |
 | --- | --- | --- | --- | --- | --- | --- |
 | [T00](tasks/T00.md) | 1 | Рауль / чат t00-contracts-01a19823 | Готово | Да; контракт 1.0.0 `e05b69b6` (полный SHA ниже), входы T02/T03/T05 | `codex/t00-contracts-01a19823` / архив claim `ad229bf4e3588b9534b732a753da443ac7c30a8f` | Принято Раулем 1 ноября 2026; блокеров T00 нет |
-| [T01](tasks/T01.md) | 8 | Рауль / координатор `01a1981e-f16f-7391-ad45-fab304e4a3f5`, исправление доставки | Исправление | Нет; автоматическая передача Render secret требует исправления | `codex/fix-render-workflow-secret` / `6a4d5686023f9042b4b21e466c9b0d041669967d` | После выпуска T03 обнаружен пустой Render secret в reusable workflow; исправление caller/callee, затем автоматический выпуск T05 |
+| [T01](tasks/T01.md) | 8 | Рауль / координатор `01a1981e-f16f-7391-ad45-fab304e4a3f5`, исправление доставки | Ожидает ручной приёмки | Да; автоматический выпуск T05, Render Live и readiness подтверждены | `codex/fix-render-workflow-secret` / `6a4d5686023f9042b4b21e466c9b0d041669967d` | [PR #25](https://github.com/rurkk/Calorica/pull/25) исправлен и проверен [автовыпуском T05](https://github.com/rurkk/Calorica/actions/runs/41339872797); нужно подтверждение человека для закрытия исправления |
 | [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Готово | Да; foundation 1.0.0, signed APK 0.1.3, API26/API36 | `codex/t02-android-foundation-01a19823` / архив claim `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | [PR #9](https://github.com/rurkk/Calorica/pull/9), main `753a1b6`; [APK 0.1.3](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.3), принято Раулем 1 ноября 2026; блокеров T02 нет |
 | [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | Готово | Да; 06b7c96, Live + OCI digest + 26 auth/profile сценариев подтверждены | `codex/t03-accounts-01a19823` / архив claim `eeb076d1e5ddcc374b3bed5326338201789444df` | Принято Раулем 1 ноября 2026; [PR#14](https://github.com/rurkk/Calorica/pull/14), выпущенная версия и доказательства ниже; блокеров T03 нет |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
@@ -67,9 +67,25 @@
   В одноразовом Git-проекте удаление mapping из caller воспроизводимо отклоняется
   actionlint как отсутствие обязательного `RENDER_API_KEY`; исходные файлы не меняются.
   Независимое AI-ревью одобрено. Значения секретов не выводились и не копировались.
-- Реальная проверка исправленного автоматического канала: следующий выпуск T05
-  после merge этой правки. До успешного deploy техническая готовность автоматической
-  доставки не подтверждена; старая ручная приёмка не переносится на исправление.
+- Интеграция: [PR #25](https://github.com/rurkk/Calorica/pull/25), main
+  `de8550b4fb3d9839bb38227caba6504730c09785`; [CI исправления](https://github.com/rurkk/Calorica/actions/runs/41338395420)
+  успешен, продуктовая сборка/релиз пропущены по CI-only scope.
+- Реальная проверка исправленного автоматического канала: [выпуск T05](https://github.com/rurkk/Calorica/actions/runs/41339872797)
+  после [PR #23](https://github.com/rurkk/Calorica/pull/23), SHA
+  `2f2a077e144da6e84a05901d60d4cb0ef7e12f37`. Координатор независимо проверил
+  event `push`, общий SUCCESS и SUCCESS всех jobs, включая `release / publish`
+  и `release / deploy` (124949386753). Manual dispatch для T05 не использовался.
+- Render API независимо подтвердил [deploy dep-dbjou7fb9u1s73em4cc0](https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40/deploys/dep-dbjou7fb9u1s73em4cc0)
+  Live, 1 ноября 2026 в 22:14:53 МСК (19:14:53Z), и тот же закреплённый image ref:
+  `ghcr.io/rurkk/calorica-backend@sha256:471e8a2c5323949988ab94679587b51010710303a8527266978819ab106a9779`.
+  В автоматическом deploy-job после Live зафиксировано `Public readiness: UP`.
+  Владелец T05 отдельно сверил OCI index/config и revision со SHA приложения;
+  функциональную приёмку каталога ведёт T05, она не подменяется проверкой доставки.
+- Техническая готовность доставки восстановлена. Статус — «Ожидает ручной приёмки»:
+  подтверждение человека для этого исправления ещё не получено, прежняя приёмка
+  автоматически не переносится. Для проверки открыть указанный push-run, убедиться
+  в SUCCESS `release / deploy`, совпадении Render digest и `Public readiness: UP`,
+  затем подтвердить исправление. Бронь сохраняется до явной приёмки.
 
 ### T03 — аккаунты, сессии и nullable-профиль
 
