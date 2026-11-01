@@ -131,12 +131,22 @@ HTTP: `http://localhost:8080`. В IDE подключите Java debugger к ло
 Каждый сервер получает свой ключ через локальный `http_headers_helper`, который
 читает `.env.infra` в корне этой рабочей копии. Личный OAuth для общего набора
 не требуется. В Codex откройте доверенный проект Calorica **из корня репозитория**
-и начните новый сеанс после копирования профиля. Проверка конфигурации:
+и начните новый сеанс после копирования профиля.
+
+Для запуска CLI-агента с готовыми настройками трёх MCP-серверов:
 
 ```sh
-codex mcp get CaloricaNeon
-codex mcp get CaloricaRender
-codex mcp get CaloricaLogs
+python3 scripts/infra/access.py codex
+```
+
+Команда передаёт Codex настройки явно, а ключи — через окружение. Она работает
+также когда CLI ещё не загрузил проектный config. Проверка конфигурации без
+запуска диалога с агентом:
+
+```sh
+python3 scripts/infra/access.py codex mcp get CaloricaNeon
+python3 scripts/infra/access.py codex mcp get CaloricaRender
+python3 scripts/infra/access.py codex mcp get CaloricaLogs
 ```
 
 `mcp-headers` — внутренний канал передачи Authorization в MCP-клиент.

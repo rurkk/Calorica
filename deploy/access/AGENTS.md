@@ -16,6 +16,7 @@ python3 scripts/infra/access.py db-tables
 python3 scripts/infra/access.py db --sql 'SELECT id, author FROM public.databasechangelog LIMIT 10;'
 python3 scripts/infra/access.py api render /services/srv-dbjk97vlk1mc739gja40
 python3 scripts/infra/access.py dev-run --debug
+python3 scripts/infra/access.py codex mcp get CaloricaRender
 ```
 
 - MCP `CaloricaNeon`, `CaloricaRender`, `CaloricaLogs` берут ключи из общего профиля
