@@ -22,7 +22,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | [T00](tasks/T00.md) | 1 | Рауль / чат t00-contracts-01a19823 | Готово | Да; контракт 1.0.0 `e05b69b6` (полный SHA ниже), входы T02/T03/T05 | `codex/t00-contracts-01a19823` / архив claim `ad229bf4e3588b9534b732a753da443ac7c30a8f` | Принято Раулем 1 ноября 2026; блокеров T00 нет |
 | [T01](tasks/T01.md) | 8 | Рауль / чат render-autodeploy-2026-11-01 | Ожидает ручной приёмки | Да; Android APK и backend GHCR → Render выпущены и проверены | `codex/render-autodeploy` / `4e3004500cf72f5db4abf7f7fe4db0963efe4be2` | Доставка доступна для следующих задач; полная ручная приёмка отдельно |
-| [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ревью | Нет | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | T00 технически готова; [PR #9](https://github.com/rurkk/Calorica/pull/9), проверки CI и ревью |
+| [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ожидает интеграции | Нет | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | T00/T01 технически готовы; [PR #9](https://github.com/rurkk/Calorica/pull/9), ревью/CI прошли; интеграция и signed APK |
 | [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | В работе | Нет | `codex/t03-accounts-01a19823` / `eeb076d1e5ddcc374b3bed5326338201789444df` | T00 технически готова; реализация auth/profile, исправления ревью и PostgreSQL/HTTP-проверки |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
 | [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | Ожидает интеграции | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | Реализация и независимое ревью доступны;5 unit/SQL проверки прошли; нужны реальные типы T03,FK025,полный HTTP/check/релиз |
@@ -146,6 +146,44 @@
   Финальная запись приёмки — ветка `codex/t00-close-accepted-01a19823` от
   `52bd0b0` origin/main. После публикации этой записи собственная бронь снимается
   командой release с точным сохранённым claim SHA; история брони сохраняется выше.
+
+### T02 — общая Android-основа API и навигации
+
+- Разработчик / агент: Рауль / 4; чат `01a19823-d56c-7291-a4d0-c3a21ad15809`.
+- Ветка: `codex/t02-android-foundation-01a19823`; отдельная копия `Calorica-agents/t02-android-01a19823`.
+- Claim: `d9a3b2787e2486633d2b361727e3cf4c18fe48ef`, 2026-11-01T17:35:05Z.
+- Зависимость: T00 контракт 1.0.0 (`e05b69b6b109d4408a02bacd0ea04a4835e912fa`),
+  интеграция `db7ed5f49c6de0eaf76d394869254312c604aa34`; техническая готовность подтверждена в main.
+- Исходный Android-каркас: `:app:assembleDebug` на JDK 21 прошёл; отдельный ARM64
+  эмулятор API 26 `calorica_t02_api26`, запуск исходного APK успешен. Это baseline, не приёмка T02.
+- Доставка T01: используется принятая автоматика, ключ подписи не меняется.
+  Общий `app/build.gradle.kts` обновляется только для зависимостей/API-адреса поверх T01.
+- Реализация: `core/api` (DTO/decimal/PATCH/HTTP 10s/ошибки), `core/data`
+  (auth/products/diary interfaces + adapters), Hilt, ReadState/ReadController,
+  маршруты и общий выбор с requestId. Потребители: [foundation 1.0.0](../../android/foundation.md).
+- Проверенный код: `1a02cdb806ce64864852a7c9f586abc2dd3fd4d1`; базовое ревью `50d7f3b` и повторное ревью origin/token дельты.
+- Проверки: 21 unit/MockWebServer тестов прошли (6 contract, 11 HTTP, 3 state, 1 navigation),
+  `:app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:lintDebug` — BUILD SUCCESSFUL.
+  Lint без ошибок; предупреждения о версиях библиотек/существующем icon/backup config.
+  Реальный NO_RESPONSE завершился за 10 секунд; отмена закрыла HTTP call;
+  разрыв после записи не вызвал повторный POST; malformed decimal object/array — INVALID_RESPONSE.
+- Независимое ревью агента 5: исправлены обработка object/array decimal и layout
+  placeholder-экранов. Тест выявил потерю typealias serializer в generic PATCH — исправлено,
+  добавлены точные проверки Set(BigDecimal). Финальное AI-ревью кода `50d7f3b` одобрено;
+  дополнительная origin/anonymous-token дельта также одобрена после успешного прогона 21 теста.
+- API 26 debug self-check: запуск, Дневник → выбор → отмена, Продукты и системный Назад
+  через UIAutomator прошли. Live readiness в APK завершился timeout 10s, не пустым результатом.
+  После доступности сервера ручной повтор дал UP. Offline проверен через Settings/авиарежим:
+  NETWORK вместо пустого ответа; после восстановления и ручного повтора снова UP.
+  Старый svc дал exit137, поэтому использован доступный UI Settings; исходная сеть восстановлена.
+- Следующий шаг: финальное ревью, PR/merge, автоматический signed APK и проверка
+  выпущенной версии на собственных эмуляторах API26/API36.
+- [PR #9](https://github.com/rurkk/Calorica/pull/9): [Android CI](https://github.com/rurkk/Calorica/actions/runs/41334123041)
+  на `964c43649323f308b3d7e34b6179a05ef440216c` прошёл; интеграция и signed release ещё не подтверждены.
+  Повторное объединение main меняет только tracker, код приложения идентичен проверенному.
+- Readiness с хоста HTTP200/UP за 0,7с; в Render прочитаны безопасные startup-события.
+  Готовность функциональных auth/products/diary этим не подтверждена;
+  физическое устройство не подключено. Ручная приёмка не выполнена, бронь сохраняется.
 
 ### T05 — каталог и личные продукты
 
