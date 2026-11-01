@@ -5,3 +5,9 @@ databaseChangeLog:
   - include:
       file: changes/010-accounts-profile.sql
       relativeToChangelogFile: true
+  - include:
+      file: changes/020-products.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/025-products-owner-fk.sql
+      relativeToChangelogFile: true
