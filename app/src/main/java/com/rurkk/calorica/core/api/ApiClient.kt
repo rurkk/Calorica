@@ -26,7 +26,10 @@ const val REQUEST_TIMEOUT_MILLIS = 10_000L
 }
 
 object ApiClient {
-  fun http(session: InMemorySession): OkHttpClient = OkHttpClient.Builder()
+  fun http(session: InMemorySession, baseUrl: String): OkHttpClient {
+    val origin = baseUrl.toHttpUrl()
+    val anonymous = setOf("/api/v1/accounts/register", "/api/v1/accounts/login", "/api/v1/accounts/refresh")
+    return OkHttpClient.Builder()
       .callTimeout(REQUEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
       .connectTimeout(REQUEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
       .readTimeout(REQUEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
@@ -35,9 +38,14 @@ object ApiClient {
       .followRedirects(false).followSslRedirects(false)
       .addInterceptor { chain ->
         val request = chain.request().newBuilder().header("Accept", "application/json, application/problem+json")
-        session.accessToken()?.let { request.header("Authorization", "Bearer $it") }
+        val url = chain.request().url
+        if (url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port &&
+            url.encodedPath.startsWith("/api/v1/") && url.encodedPath !in anonymous) {
+          session.accessToken()?.let { request.header("Authorization", "Bearer $it") }
+        }
         chain.proceed(request.build())
       }.build()
+  }
 
   /** allowHttp is exclusively for isolated MockWebServer tests, never DI/production. */
   fun create(baseUrl: String, http: OkHttpClient, allowHttp: Boolean = false): CaloricaApi {

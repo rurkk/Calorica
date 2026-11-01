@@ -73,7 +73,8 @@ interceptors нет; credentials/tokens не выводят секреты че�
 ## Сессия для T04
 
 Access token держится только в памяти и прикрепляется к запросам единственным
-interceptor. `InMemorySession.replaceAccessToken/clear` — точки подключения.
+interceptor только к защищённым `/api/v1` маршрутам настроенного origin.
+Login/register/refresh и readiness не получают access token. `InMemorySession.replaceAccessToken/clear` — точки подключения.
 HTTP AuthRepository возвращает Tokens, но сам не объявляет вход/выход и не хранит
 refresh token. Explicit refresh сериализуется mutex, автоматического refresh нет.
 T04 должен добавить single-flight orchestration: захватывать актуальный refresh

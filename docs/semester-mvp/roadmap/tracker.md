@@ -140,20 +140,25 @@
   (auth/products/diary interfaces + adapters), Hilt, ReadState/ReadController,
   маршруты и общий выбор с requestId. Потребители: [foundation 1.0.0](../../android/foundation.md).
 - Проверенный код: `aa5539b`; совместимый merge свежей main `50d7f3b6565db53db44ef4dc7a97b083b852dd74`.
-- Проверки: 20 unit/MockWebServer тестов прошли (6 contract, 10 HTTP, 3 state, 1 navigation),
+- Проверки: 21 unit/MockWebServer тестов прошли (6 contract, 11 HTTP, 3 state, 1 navigation),
   `:app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:lintDebug` — BUILD SUCCESSFUL.
   Lint без ошибок; предупреждения о версиях библиотек/существующем icon/backup config.
   Реальный NO_RESPONSE завершился за 10 секунд; отмена закрыла HTTP call;
   разрыв после записи не вызвал повторный POST; malformed decimal object/array — INVALID_RESPONSE.
 - Независимое ревью агента 5: исправлены обработка object/array decimal и layout
   placeholder-экранов. Тест выявил потерю typealias serializer в generic PATCH — исправлено,
-  добавлены точные проверки Set(BigDecimal). Финальное ревью SHA ожидается.
+  добавлены точные проверки Set(BigDecimal). Финальное AI-ревью кода `50d7f3b` одобрено;
+  дополнительная origin/anonymous-token дельта также одобрена после успешного прогона 21 теста.
 - API 26 debug self-check: запуск, Дневник → выбор → отмена, Продукты и системный Назад
   через UIAutomator прошли. Live readiness в APK завершился timeout 10s, не пустым результатом.
-  Отключение сети через старый svc API26 не выполнено (exit137); будет проверено отдельным способом.
+  После доступности сервера ручной повтор дал UP. Offline проверен через Settings/авиарежим:
+  NETWORK вместо пустого ответа; после восстановления и ручного повтора снова UP.
+  Старый svc дал exit137, поэтому использован доступный UI Settings; исходная сеть восстановлена.
 - Следующий шаг: финальное ревью, PR/merge, автоматический signed APK и проверка
   выпущенной версии на собственных эмуляторах API26/API36.
-- Живой backend и функциональные auth/products/diary пока не объявлены готовыми;
+- [PR #9](https://github.com/rurkk/Calorica/pull/9), CI ожидается; интеграция и signed release ещё не подтверждены.
+- Readiness с хоста HTTP200/UP за 0,7с; в Render прочитаны безопасные startup-события.
+  Готовность функциональных auth/products/diary этим не подтверждена;
   физическое устройство не подключено. Ручная приёмка не выполнена, бронь сохраняется.
 
 ### Шаблон записи

@@ -13,7 +13,7 @@ import okhttp3.OkHttpClient
 
 @Module @InstallIn(SingletonComponent::class)
 object ApiModule {
-  @Provides @Singleton fun http(session: InMemorySession): OkHttpClient = ApiClient.http(session)
+  @Provides @Singleton fun http(session: InMemorySession): OkHttpClient = ApiClient.http(session, BuildConfig.API_BASE_URL)
   @Provides @Singleton fun api(http: OkHttpClient): CaloricaApi = ApiClient.create(BuildConfig.API_BASE_URL, http)
 }
 @Module @InstallIn(SingletonComponent::class)
