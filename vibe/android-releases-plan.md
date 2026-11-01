@@ -12,4 +12,4 @@ Backend workflows, README, deploy и tracker меняет владелец T01.
    проверка API/local-data epoch и подтверждение оператора.
 5. Итоги со ссылками на APK, артефакты, SHA, workflow и стенд/логи.
 6. Python regression tests, actionlint, unit tests/debug/release сборка;
-   публикация и настройка секретов только после отдельного разрешения.
+   публикация, настройка секретов и проверка выпуска входят в полный цикл задачи.
