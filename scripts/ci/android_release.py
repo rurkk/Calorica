@@ -168,7 +168,9 @@ def verify_apk(apk, plan, sdk, fingerprint):
     certs = re.findall(r'Signer #\d+ certificate SHA-256 digest: ([a-fA-F0-9]+)', result)
     expected = fingerprint.replace(':', '').lower()
     if not re.fullmatch('[a-f0-9]{64}', expected) or [c.lower() for c in certs] != [expected]:
-        raise ValueError('APK signer differs from the pinned permanent certificate')
+        raise ValueError(f'APK signer differs from the pinned permanent certificate: '
+                         f'expected={expected}, actual={certs}, build_tools={tools.name}, '
+                         f'certificate_lines={[line for line in result.splitlines() if "certificate" in line.lower()]}')
     badging = command(str(tools / 'aapt'), 'dump', 'badging', str(apk))
     package = badging.splitlines()[0]
     if (f"name='{PACKAGE}'" not in package
@@ -215,6 +217,7 @@ def publish(args):
     command('gh', 'release', 'upload', tag, *map(str, sorted(directory.iterdir())), '--clobber', '--repo', repo)
     command('gh', 'release', 'edit', tag, '--draft=false', '--latest', '--repo', repo)
     plan['published'] = True
+    plan['release_url'] = f'https://github.com/{repo}/releases/tag/{tag}'
     Path('_release/plan.json').write_text(json.dumps(plan, indent=2) + '\n')
 
 
