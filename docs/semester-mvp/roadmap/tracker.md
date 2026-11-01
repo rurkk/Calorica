@@ -25,7 +25,7 @@
 | [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ревью | Нет | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | T00 технически готова; [PR #9](https://github.com/rurkk/Calorica/pull/9), проверки CI и ревью |
 | [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | В работе | Нет | `codex/t03-accounts-01a19823` / `eeb076d1e5ddcc374b3bed5326338201789444df` | T00 технически готова; реализация auth/profile, исправления ревью и PostgreSQL/HTTP-проверки |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
-| [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | В работе | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | T00 технически готова; каталог реализуется, полная интеграционная и живая проверка ждёт auth API T03 |
+| [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | Ожидает интеграции | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | Реализация и независимое ревью доступны;5 unit/SQL проверки прошли; нужны реальные типы T03,FK025,полный HTTP/check/релиз |
 | [T06](tasks/T06.md) | 5 | — | Ожидает зависимости | Нет | — | Нужны T02 |
 | [T07](tasks/T07.md) | 3 | — | Ожидает зависимости | Нет | — | Нужны T05 |
 | [T08](tasks/T08.md) | 6 | — | Ожидает зависимости | Нет | — | Нужны T02 |
@@ -146,6 +146,18 @@
   Финальная запись приёмки — ветка `codex/t00-close-accepted-01a19823` от
   `52bd0b0` origin/main. После публикации этой записи собственная бронь снимается
   командой release с точным сохранённым claim SHA; история брони сохраняется выше.
+
+### T05 — каталог и личные продукты
+
+- Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2`, агент2, рецензент агент3.
+- Бронь `5598768f609c23a71e567d8b001b9e7bbfb6204b`, 2026-11-01 17:35:27 UTC; ветка `codex/t05-catalog-01a19823`, worktree `/Users/raul/ItmoProjects/Calorica-agents/t05-catalog-01a19823`.
+- Вход T00: контракт1.0.0, merge `db7ed5f`. Реализация в [ветке T05](https://github.com/rurkk/Calorica/tree/codex/t05-catalog-01a19823), функциональные commits `ea0fb53`, `12f4741`, `6335a0c`.
+- Готов код конечных базовых/личных продуктов, Admin/owner-фильтров, строгого decimal/PATCH, нормализации/pg_trgm/keyset cursor, KEEP_REFERENCES и публичных CatalogRead/CatalogCalculation/CatalogMutationLock. В 020-products.sql —50 sourced USDA SR Legacy строк; include020 добавлен по делегации T00. T09/T14 не реализованы.
+- Независимое ревью агентом3 закрыто: исправлены привязка capabilities к физическому ConnectionHolder/REQUIRES_NEW, canonicalUUID и503 при недоступной БД без SQLState. Рецензент независимо сверил все50seed с USDA JSON; совпадают. Ревью не заменяет полный runtime прогон/приёмку.
+- Фактические проверки: baseline `40386c1` — JDK21 `check bootJar`,3 integration tests без ошибок. Файлы T05 в `12f4741` — scratch compilation,5 unit +1 PostgreSQL upgrade/revalidate test,все прошли. На коде `d322175` прошёл PostgreSQL SQL-harness: owner/search ranking/cursor/leaf allocation/retained deletion.
+- Scratch использует test-only Actor точной формы опубликованного T00,отдельный buildDir и одноразовую PostgreSQL17.11; это не fake-auth/живая приёмка и не релизный JAR. Настоящий CatalogIntegrationTest с T03 AccountsService+HTTP и гонками готов,но ещё не выполнен. Отдельная regression требует FK025 и отклонения orphan owner.
+- Согласование с T03: нужны реальный Actor/security,025-products-owner-fk.sql и его include от агента1. Не переносились чужие незакоммиченные изменения. Пользовательский выпуск/SA-02/живая приёмка ждут T03+FK025; полная техническая готовность T05 пока Нет.
+- Следующий шаг: совместимый полный `check bootJar` с T03/025,HTTP/concurrency checks,PR,последовательный GHCR→Render выпуск и реальные два аккаунта. Merge/релиз/ручная приёмка T05 не выполнены; бронь сохранена.
 
 ### Шаблон записи
 
