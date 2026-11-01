@@ -15,6 +15,7 @@ import java.security.SecureRandom
 import java.time.Clock
 import java.time.temporal.ChronoUnit
 import java.util.Base64
+import java.util.HexFormat
 import java.util.UUID
 
 @Service
@@ -87,5 +88,5 @@ class AccountsService(
     }
     private fun freshRefresh() = Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(32).also(random::nextBytes))
     private fun hash(raw: String) = MessageDigest.getInstance("SHA-256").digest(raw.toByteArray(Charsets.UTF_8))
-        .joinToString("") { "%02x".format(it) }
+        .let { HexFormat.of().formatHex(it) }
 }

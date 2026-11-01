@@ -1,5 +1,6 @@
 package ru.calorica.platform.security
 
+import org.springframework.boot.availability.ApplicationAvailability
 import jakarta.servlet.DispatcherType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -19,8 +20,8 @@ class SecurityConfiguration {
     @Bean
     fun clock(): Clock = Clock.systemUTC()
     @Bean
-    fun securityFilterChain(http: HttpSecurity, problems: ApiProblems, accounts: AccountsService, limits: AuthRateLimiter, addresses: ClientAddress): SecurityFilterChain = http
-        .addFilterBefore(AuthenticationFilter(accounts, limits, problems, addresses), AnonymousAuthenticationFilter::class.java)
+    fun securityFilterChain(http: HttpSecurity, problems: ApiProblems, accounts: AccountsService, limits: AuthRateLimiter, addresses: ClientAddress, availability: ApplicationAvailability): SecurityFilterChain = http
+        .addFilterBefore(AuthenticationFilter(accounts, limits, problems, addresses, availability), AnonymousAuthenticationFilter::class.java)
         .csrf { it.disable() } // Stateless API; no cookie authentication exists.
         .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
         .requestCache { it.disable() }

@@ -44,3 +44,38 @@ Timeout в момент уже начавшегося JDBC commit может и�
 Слои api/application/domain/persistence; другие модули используют Actor(id,role,sessionId)
 из platform/security и @AuthenticationPrincipal. JWT самостоятельно не разбирают;
 Admin не получает обход проверки владельца личного объекта.
+
+Перед `ACCEPTING_TRAFFIC` выполняется `AuthInitialization`: реальные codecs
+Credentials/Refresh/Tokens/ProblemDetail (включая фактические MVC converters и
+metadata контроллеров), email validator, три фиксированных цикла Argon2 encode/matches
+и JWT issue/verify инициализируются на данных в памяти. Аккаунты/сессии не создаются;
+синтетический JWT не имеет сессии и не проходит проверку `activeActor`.
+Поскольку HTTP-порт и liveness доступны раньше окончания ApplicationRunner,
+`AuthenticationFilter` отвечает503 на `/api/v1/` до готовности приложения,
+не расходуя auth bucket и не выполняя SQL/хеширование пользовательского запроса.
+Deadline8s и параметры Argon2 остаются прежними.
+
+Регрессия первого auth HTTP-запроса в **новом процессе** с отдельной одноразовой БД:
+
+```sh
+# Из корня репозитория; до этого не вызывать auth endpoints в этом процессе.
+python3 backend/scripts/cold_auth_smoke.py --url http://127.0.0.1:18035
+```
+
+Сценарий допускает только loopback, проверяет readiness, первый register201,
+login/refresh/me/profile, replay/revocation и logout; каждый HTTP-ответ должен
+уложиться в8s. Мутации не повторяются, в выводе только method/path/status/time/ID.
+Для проверки CPU после readiness ограничить только свой контейнер до0.1CPU,
+heap96MiB, memory512MiB; повторять на свежих процессах. Квоту при startup записывать
+отдельно: startup1CPU→requests0.1CPU не доказывает запуск под постоянной квотой0.1CPU.
+Gradle integration tests дополнительно проверяют отказ без записей при
+`REFUSING_TRAFFIC`, отсутствие изменений БД от initialization и ротацию refresh
+с хешем, полученным прежним Formatter-алгоритмом.
+
+Initialization запрашивает GC перед crypto, после каждой из шести операций
+encode/matches и после JWT перед дальнейшими codecs. Рабочие Argon2-буферы
+19MiB освобождаются между операциями; иначе несколько уже ненужных наборов
+одновременно расширяют heap рядом с metadata/JIT и могут превысить256MiB.
+Границы фиксированы и действуют только до readiness, не в HTTP-обработчиках.
+GC best-effort: соответствие бюджету проверяется fresh startup/restart
+с нулевыми OOM/restart на каждой стадии, а не unit-assertion о памяти.
