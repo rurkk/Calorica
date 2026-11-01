@@ -1,0 +1,2565 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Calorica semester API",
+    "version": "1.0.0",
+    "description": "Normative target contract; implementation readiness is tracked separately. See README.md."
+  },
+  "servers": [
+    {
+      "url": "https://calorica-backend.onrender.com/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/accounts/register": {
+      "post": {
+        "operationId": "register",
+        "tags": [
+          "accounts / T03"
+        ],
+        "x-owner": "accounts / T03",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tokens"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/login": {
+      "post": {
+        "operationId": "login",
+        "tags": [
+          "accounts / T03"
+        ],
+        "x-owner": "accounts / T03",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tokens"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/refresh": {
+      "post": {
+        "operationId": "refresh",
+        "tags": [
+          "accounts / T03"
+        ],
+        "x-owner": "accounts / T03",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tokens"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Refresh"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/logout": {
+      "post": {
+        "operationId": "logout",
+        "tags": [
+          "accounts / T03"
+        ],
+        "x-owner": "accounts / T03",
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/me": {
+      "get": {
+        "operationId": "getMe",
+        "tags": [
+          "accounts / T03"
+        ],
+        "x-owner": "accounts / T03",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile": {
+      "patch": {
+        "operationId": "patchProfile",
+        "tags": [
+          "accounts / T03"
+        ],
+        "x-owner": "accounts / T03",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilePatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "operationId": "searchProducts",
+        "tags": [
+          "catalog / T05"
+        ],
+        "x-owner": "catalog / T05",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "CreateProduct",
+        "tags": [
+          "catalog / T05"
+        ],
+        "x-owner": "catalog / T05",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{productId}": {
+      "patch": {
+        "operationId": "PatchProduct",
+        "tags": [
+          "catalog / T05"
+        ],
+        "x-owner": "catalog / T05",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductPatch"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "DeleteProduct",
+        "tags": [
+          "catalog / T14"
+        ],
+        "x-owner": "catalog / T14",
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "KEEP_REFERENCES",
+                "CASCADE"
+              ]
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "get": {
+        "operationId": "getProduct",
+        "tags": [
+          "catalog / T05"
+        ],
+        "x-owner": "catalog / T05",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/products/{productId}/deletion-preview": {
+      "get": {
+        "operationId": "PreviewDeletion",
+        "tags": [
+          "catalog / T14"
+        ],
+        "x-owner": "catalog / T14",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionPreview"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/products/{productId}/composition": {
+      "put": {
+        "operationId": "WriteComposition",
+        "tags": [
+          "catalog / T09-T11"
+        ],
+        "x-owner": "catalog / T09-T11",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompositionWrite"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/products/{productId}/labels": {
+      "put": {
+        "operationId": "AssignProductLabels",
+        "tags": [
+          "catalog labels / T13"
+        ],
+        "x-owner": "catalog labels / T13",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelAssignment"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/products": {
+      "post": {
+        "operationId": "adminCreateProduct",
+        "tags": [
+          "catalog / T05"
+        ],
+        "x-owner": "catalog / T05",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/products/{productId}": {
+      "patch": {
+        "operationId": "adminPatchProduct",
+        "tags": [
+          "catalog / T05"
+        ],
+        "x-owner": "catalog / T05",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductPatch"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "adminDeleteProduct",
+        "tags": [
+          "catalog / T14"
+        ],
+        "x-owner": "catalog / T14",
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "KEEP_REFERENCES",
+                "CASCADE"
+              ]
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/products/{productId}/deletion-preview": {
+      "get": {
+        "operationId": "adminPreviewDeletion",
+        "tags": [
+          "catalog / T14"
+        ],
+        "x-owner": "catalog / T14",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionPreview"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/products/{productId}/composition": {
+      "put": {
+        "operationId": "adminWriteComposition",
+        "tags": [
+          "catalog / T09-T11"
+        ],
+        "x-owner": "catalog / T09-T11",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompositionWrite"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/products/{productId}/labels": {
+      "put": {
+        "operationId": "adminAssignProductLabels",
+        "tags": [
+          "catalog labels / T13"
+        ],
+        "x-owner": "catalog labels / T13",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelAssignment"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/products/{productId}/units": {
+      "get": {
+        "operationId": "getProductUnits",
+        "tags": [
+          "catalog units / T12"
+        ],
+        "x-owner": "catalog units / T12",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Unit"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/products/{productId}/units/ml": {
+      "put": {
+        "operationId": "setMillilitres",
+        "tags": [
+          "catalog units / T12"
+        ],
+        "x-owner": "catalog units / T12",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Unit"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnitWrite"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteMillilitres",
+        "tags": [
+          "catalog units / T12"
+        ],
+        "x-owner": "catalog units / T12",
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/product-labels": {
+      "get": {
+        "operationId": "getProductLabels",
+        "tags": [
+          "catalog labels / T13"
+        ],
+        "x-owner": "catalog labels / T13",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Label"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/product-labels": {
+      "post": {
+        "operationId": "createProductLabel",
+        "tags": [
+          "catalog labels / T13"
+        ],
+        "x-owner": "catalog labels / T13",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Label"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/product-labels/{labelId}": {
+      "patch": {
+        "operationId": "patchProductLabel",
+        "tags": [
+          "catalog labels / T13"
+        ],
+        "x-owner": "catalog labels / T13",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Label"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelWrite"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteProductLabel",
+        "tags": [
+          "catalog labels / T13"
+        ],
+        "x-owner": "catalog labels / T13",
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labelId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/meal-labels": {
+      "get": {
+        "operationId": "getMealLabels",
+        "tags": [
+          "diary / T07"
+        ],
+        "x-owner": "diary / T07",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Label"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/diary": {
+      "get": {
+        "operationId": "getDiary",
+        "tags": [
+          "diary / T07"
+        ],
+        "x-owner": "diary / T07",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiaryDay"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "zone",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          }
+        ]
+      }
+    },
+    "/diary/entries": {
+      "post": {
+        "operationId": "createDiaryEntry",
+        "tags": [
+          "diary / T07"
+        ],
+        "x-owner": "diary / T07",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiaryEntry"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiaryWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/diary/entries/{entryId}": {
+      "get": {
+        "operationId": "getDiaryEntry",
+        "tags": [
+          "diary / T07"
+        ],
+        "x-owner": "diary / T07",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiaryEntry"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchDiaryEntry",
+        "tags": [
+          "diary / T07"
+        ],
+        "x-owner": "diary / T07",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiaryEntry"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiaryPatch"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteDiaryEntry",
+        "tags": [
+          "diary / T07"
+        ],
+        "x-owner": "diary / T07",
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/analytics": {
+      "get": {
+        "operationId": "getAnalytics",
+        "tags": [
+          "analytics / T15"
+        ],
+        "x-owner": "analytics / T15",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Analytics"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem; status/code mapping in README",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "zone",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DAY",
+                "WEEK",
+                "MONTH"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Mass": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]{0,6})(\\.[0-9]{1,3})?$"
+      },
+      "NutritionInput": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]{0,4})(\\.[0-9]{1,2})?$"
+      },
+      "Factor": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]{0,3})(\\.[0-9]{1,12})?$"
+      },
+      "Fraction": {
+        "type": "string",
+        "pattern": "^(0(\\.[0-9]{1,12})?|1(\\.0{1,12})?)$"
+      },
+      "Percent": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]?|100)(\\.[0-9]{1,10})?$"
+      },
+      "Calculated": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+      },
+      "NutritionInputSet": {
+        "type": "object",
+        "properties": {
+          "calories": {
+            "$ref": "#/components/schemas/NutritionInput"
+          },
+          "protein": {
+            "$ref": "#/components/schemas/NutritionInput"
+          },
+          "fat": {
+            "$ref": "#/components/schemas/NutritionInput"
+          },
+          "carbs": {
+            "$ref": "#/components/schemas/NutritionInput"
+          }
+        },
+        "required": [
+          "calories",
+          "protein",
+          "fat",
+          "carbs"
+        ],
+        "additionalProperties": false
+      },
+      "Nutrition": {
+        "type": "object",
+        "properties": {
+          "calories": {
+            "$ref": "#/components/schemas/Calculated"
+          },
+          "protein": {
+            "$ref": "#/components/schemas/Calculated"
+          },
+          "fat": {
+            "$ref": "#/components/schemas/Calculated"
+          },
+          "carbs": {
+            "$ref": "#/components/schemas/Calculated"
+          }
+        },
+        "required": [
+          "calories",
+          "protein",
+          "fat",
+          "carbs"
+        ],
+        "additionalProperties": false
+      },
+      "Credentials": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "Refresh": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "refreshToken"
+        ],
+        "additionalProperties": false
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "calorieTarget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "proteinTarget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fatTarget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "carbsTarget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "calorieTarget",
+          "proteinTarget",
+          "fatTarget",
+          "carbsTarget"
+        ],
+        "additionalProperties": false
+      },
+      "ProfilePatch": {
+        "type": "object",
+        "properties": {
+          "calorieTarget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "proteinTarget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fatTarget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "carbsTarget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ]
+          },
+          "profile": {
+            "$ref": "#/components/schemas/Profile"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "profile"
+        ],
+        "additionalProperties": false
+      },
+      "Tokens": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string",
+            "enum": [
+              "Bearer"
+            ]
+          },
+          "accessExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "sessionExpiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "account": {
+            "$ref": "#/components/schemas/Account"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "tokenType",
+          "accessExpiresAt",
+          "sessionExpiresAt",
+          "account"
+        ],
+        "additionalProperties": false
+      },
+      "Component": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fraction": {
+            "$ref": "#/components/schemas/Fraction"
+          },
+          "yieldFactor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Factor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "productId",
+          "fraction",
+          "yieldFactor"
+        ],
+        "additionalProperties": false
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ownerId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "LEAF",
+              "COMPOSITE"
+            ]
+          },
+          "manualNutrition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionInputSet"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nutritionPer100g": {
+            "$ref": "#/components/schemas/Nutrition"
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Component"
+            },
+            "maxItems": 100
+          },
+          "manualYieldFactor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Factor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "effectiveYieldFactor": {
+            "$ref": "#/components/schemas/Calculated"
+          },
+          "yieldSource": {
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "MANUAL",
+              "INGREDIENTS"
+            ]
+          },
+          "productLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "name",
+          "isDeleted",
+          "kind",
+          "manualNutrition",
+          "nutritionPer100g",
+          "components",
+          "manualYieldFactor",
+          "effectiveYieldFactor",
+          "yieldSource",
+          "productLabelIds"
+        ],
+        "additionalProperties": false
+      },
+      "ProductCreate": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "manualNutrition": {
+                "$ref": "#/components/schemas/NutritionInputSet"
+              }
+            },
+            "required": [
+              "name",
+              "manualNutrition"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "composition": {
+                "$ref": "#/components/schemas/CompositionWrite"
+              }
+            },
+            "required": [
+              "name",
+              "composition"
+            ],
+            "additionalProperties": false
+          }
+        ],
+        "description": "LEAF requires manualNutrition; new COMPOSITE accepts non-empty composition, no fictitious manual nutrition. Composition create requires at least one component (semantic validation). T05 supports LEAF; T09/T11 add COMPOSITE."
+      },
+      "ProductPatch": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "manualNutrition": {
+            "$ref": "#/components/schemas/NutritionInputSet"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "PercentComponent": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "percent": {
+            "$ref": "#/components/schemas/Percent"
+          },
+          "yieldFactor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Factor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "productId",
+          "percent"
+        ],
+        "additionalProperties": false
+      },
+      "GramComponent": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "grams": {
+            "$ref": "#/components/schemas/Mass"
+          },
+          "yieldFactor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Factor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "productId",
+          "grams"
+        ],
+        "additionalProperties": false
+      },
+      "CompositionWrite": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "inputMode": {
+                "type": "string",
+                "const": "PERCENT"
+              },
+              "components": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PercentComponent"
+                },
+                "maxItems": 100
+              },
+              "manualYieldFactor": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Factor"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "manualNutrition": {
+                "$ref": "#/components/schemas/NutritionInputSet"
+              }
+            },
+            "required": [
+              "inputMode",
+              "components"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "inputMode": {
+                "type": "string",
+                "const": "GRAMS"
+              },
+              "components": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GramComponent"
+                },
+                "minItems": 1,
+                "maxItems": 100
+              },
+              "manualYieldFactor": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Factor"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "outputGrams": {
+                "$ref": "#/components/schemas/Mass"
+              }
+            },
+            "required": [
+              "inputMode",
+              "components"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "DeletionPreview": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cascadeAllowed": {
+            "type": "boolean"
+          },
+          "affectedProductIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "productId",
+          "cascadeAllowed",
+          "affectedProductIds"
+        ],
+        "additionalProperties": false
+      },
+      "DiaryWrite": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/Mass"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "g",
+              "ml"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "mealLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 4,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "productId",
+          "quantity",
+          "unit",
+          "occurredAt",
+          "mealLabelIds"
+        ],
+        "additionalProperties": false
+      },
+      "DiaryPatch": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/Mass"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "g",
+              "ml"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "mealLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 4,
+            "uniqueItems": true
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "DiaryEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "productDeleted": {
+            "type": "boolean"
+          },
+          "consumedGrams": {
+            "$ref": "#/components/schemas/Mass"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "Z$"
+          },
+          "mealLabelIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 4,
+            "uniqueItems": true
+          },
+          "nutrition": {
+            "$ref": "#/components/schemas/Nutrition"
+          }
+        },
+        "required": [
+          "id",
+          "productId",
+          "productName",
+          "productDeleted",
+          "consumedGrams",
+          "occurredAt",
+          "mealLabelIds",
+          "nutrition"
+        ],
+        "additionalProperties": false
+      },
+      "DiaryDay": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "zone": {
+            "type": "string"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiaryEntry"
+            }
+          },
+          "total": {
+            "$ref": "#/components/schemas/Nutrition"
+          }
+        },
+        "required": [
+          "date",
+          "zone",
+          "entries",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "Label": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "LabelWrite": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "LabelAssignment": {
+        "type": "object",
+        "properties": {
+          "labelIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "labelIds"
+        ],
+        "additionalProperties": false
+      },
+      "Unit": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "g",
+              "ml"
+            ]
+          },
+          "gramsPerUnit": {
+            "$ref": "#/components/schemas/Factor"
+          }
+        },
+        "required": [
+          "code",
+          "gramsPerUnit"
+        ],
+        "additionalProperties": false
+      },
+      "UnitWrite": {
+        "type": "object",
+        "properties": {
+          "gramsPerUnit": {
+            "$ref": "#/components/schemas/Factor"
+          }
+        },
+        "required": [
+          "gramsPerUnit"
+        ],
+        "additionalProperties": false
+      },
+      "AnalyticsDay": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "total": {
+            "$ref": "#/components/schemas/Nutrition"
+          }
+        },
+        "required": [
+          "date",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "MealGroup": {
+        "type": "object",
+        "properties": {
+          "labelId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "total": {
+            "$ref": "#/components/schemas/Nutrition"
+          }
+        },
+        "required": [
+          "labelId",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "ProductGroup": {
+        "type": "object",
+        "properties": {
+          "labelId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "grams": {
+            "$ref": "#/components/schemas/Calculated"
+          }
+        },
+        "required": [
+          "labelId",
+          "grams"
+        ],
+        "additionalProperties": false
+      },
+      "Analytics": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDateExclusive": {
+            "type": "string",
+            "format": "date"
+          },
+          "zone": {
+            "type": "string"
+          },
+          "dayCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 31
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalyticsDay"
+            }
+          },
+          "total": {
+            "$ref": "#/components/schemas/Nutrition"
+          },
+          "dailyAverage": {
+            "$ref": "#/components/schemas/Nutrition"
+          },
+          "mealLabels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MealGroup"
+            }
+          },
+          "productLabels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductGroup"
+            }
+          }
+        },
+        "required": [
+          "startDate",
+          "endDateExclusive",
+          "zone",
+          "dayCount",
+          "days",
+          "total",
+          "dailyAverage",
+          "mealLabels",
+          "productLabels"
+        ],
+        "additionalProperties": false
+      },
+      "ProductPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            },
+            "maxItems": 100
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "Problem": {
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "code",
+          "correlationId"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "code"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}
