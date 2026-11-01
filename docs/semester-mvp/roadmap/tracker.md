@@ -99,6 +99,12 @@
 - Claim: `ad229bf4e3588b9534b732a753da443ac7c30a8f`, 2026-11-01T17:24:14Z.
 - Контракт: [1.0.0](../contracts/v1/README.md), OpenAPI и frozen fixtures;
   [реестр](../contracts/migrations.md), [аудит](../contracts/baseline.md).
+- Интеграция: [PR #5](https://github.com/rurkk/Calorica/pull/5), merge
+  `db7ed5f49c6de0eaf76d394869254312c604aa34` в удалённой main. Проверка
+  документов повторена после fetch этой main: validate.py успешно, diff чистый.
+  [PR CI #30](https://github.com/rurkk/Calorica/actions/runs/41332076839) успешен
+  на `3545287ac6bf82288d201a848120006231c72bee`; changes/required success,
+  verify/automation/release skipped по документационному scope.
 - Контрактный SHA: `e05b69b6b109d4408a02bacd0ea04a4835e912fa`; [PR #5](https://github.com/rurkk/Calorica/pull/5).
   После merge этой записи в main T02/T03/T05 могут начинать по технически готовым
   входам, не ожидая ручного статуса «Готово». Нереализованный API и T01 не объявлены готовыми.
