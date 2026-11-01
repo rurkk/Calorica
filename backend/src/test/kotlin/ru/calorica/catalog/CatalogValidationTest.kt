@@ -5,6 +5,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import ru.calorica.catalog.api.CatalogInput
+import ru.calorica.catalog.api.CatalogExceptionHandler
+import ru.calorica.platform.api.ApiProblems
+import org.springframework.dao.DataAccessResourceFailureException
+import org.springframework.dao.QueryTimeoutException
+import org.springframework.mock.web.MockHttpServletRequest
 import ru.calorica.catalog.domain.CatalogFailure
 import ru.calorica.catalog.domain.NutritionValues
 import ru.calorica.catalog.domain.ProductNames
@@ -32,6 +37,14 @@ class CatalogValidationTest {
         val result = CatalogInput.patch(mapper.readTree("""{"name":"  Новый  "}"""))
         assertThat(result.first).isEqualTo("Новый")
         assertThat(result.second).isNull()
+    }
+    @Test fun `database resource failures and timeouts without SQLState are unavailable`() {
+        val handler = CatalogExceptionHandler(ApiProblems(mapper))
+        for (error in listOf(DataAccessResourceFailureException("private diagnostic"), QueryTimeoutException("private diagnostic"))) {
+            val response = handler.database(error, MockHttpServletRequest())
+            assertThat(response.statusCode.value()).isEqualTo(503)
+            assertThat(mapper.writeValueAsString(response.body)).doesNotContain("private diagnostic")
+        }
     }
     @Test fun `unsupported composition is rejected without inventing manual nutrition`() {
         assertThatThrownBy { CatalogInput.create(mapper.readTree("""{"name":"Состав","composition":{}}""")) }

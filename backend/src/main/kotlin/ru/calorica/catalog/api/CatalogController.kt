@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
+import org.springframework.dao.DataAccessResourceFailureException
+import org.springframework.dao.QueryTimeoutException
+import org.springframework.dao.TransientDataAccessResourceException
 import org.springframework.dao.DataAccessException
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -11,6 +14,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import ru.calorica.catalog.application.CatalogService
+import ru.calorica.catalog.domain.CatalogIds
 import ru.calorica.catalog.domain.CatalogFailure
 import ru.calorica.catalog.domain.Nutrition
 import ru.calorica.catalog.domain.NutritionValues
@@ -19,7 +23,6 @@ import ru.calorica.catalog.domain.ProductNames
 import ru.calorica.platform.api.ApiProblems
 import ru.calorica.platform.security.Actor
 import java.sql.SQLException
-import java.util.UUID
 
 object CatalogInput {
     private fun fields(node: JsonNode, allowed: Set<String>) {
@@ -62,7 +65,7 @@ class CatalogController(private val catalog: CatalogService) {
         @RequestParam(defaultValue = "20") limit: Int, @RequestParam(required = false) cursor: String?) =
         catalog.search(actor(current), q, limit, cursor)
     @GetMapping("/products/{productId}")
-    fun get(@AuthenticationPrincipal current: Actor?, @PathVariable productId: UUID) = catalog.get(actor(current), productId)
+    fun get(@AuthenticationPrincipal current: Actor?, @PathVariable productId: String) = catalog.get(actor(current), CatalogIds.parse(productId))
     @PostMapping("/products", "/admin/products")
     fun create(@AuthenticationPrincipal current: Actor?, @RequestBody body: JsonNode, request: HttpServletRequest): ResponseEntity<Product> {
         val input = CatalogInput.create(body)
@@ -70,16 +73,16 @@ class CatalogController(private val catalog: CatalogService) {
             request.servletPath.startsWith("/api/v1/admin/")))
     }
     @PatchMapping("/products/{productId}", "/admin/products/{productId}")
-    fun patch(@AuthenticationPrincipal current: Actor?, @PathVariable productId: UUID, @RequestBody body: JsonNode,
+    fun patch(@AuthenticationPrincipal current: Actor?, @PathVariable productId: String, @RequestBody body: JsonNode,
         request: HttpServletRequest): Product {
         val input = CatalogInput.patch(body)
-        return catalog.patch(actor(current), productId, input.first, input.second, request.servletPath.startsWith("/api/v1/admin/"))
+        return catalog.patch(actor(current), CatalogIds.parse(productId), input.first, input.second, request.servletPath.startsWith("/api/v1/admin/"))
     }
     @DeleteMapping("/products/{productId}", "/admin/products/{productId}")
-    fun delete(@AuthenticationPrincipal current: Actor?, @PathVariable productId: UUID, @RequestParam mode: String,
+    fun delete(@AuthenticationPrincipal current: Actor?, @PathVariable productId: String, @RequestParam mode: String,
         request: HttpServletRequest): ResponseEntity<Void> {
         if (mode !in setOf("KEEP_REFERENCES", "CASCADE")) CatalogFailure.badRequest()
-        catalog.delete(actor(current), productId, mode, request.servletPath.startsWith("/api/v1/admin/"))
+        catalog.delete(actor(current), CatalogIds.parse(productId), mode, request.servletPath.startsWith("/api/v1/admin/"))
         return ResponseEntity.noContent().build()
     }
 }
@@ -98,7 +101,8 @@ class CatalogExceptionHandler(private val problems: ApiProblems) {
     @ExceptionHandler(DataAccessException::class)
     fun database(error: DataAccessException, request: HttpServletRequest): ResponseEntity<Any> {
         val state = generateSequence<Throwable>(error) { it.cause }.filterIsInstance<SQLException>().firstOrNull()?.sqlState
-        val status = if (state in setOf("55P03", "57014", "08000", "08001", "08003", "08006", "08007", "57P01")) 503 else 500
+        val status = if (error is DataAccessResourceFailureException || error is QueryTimeoutException ||
+            error is TransientDataAccessResourceException || state in setOf("55P03", "57014", "08000", "08001", "08003", "08006", "08007", "57P01")) 503 else 500
         return failure(CatalogFailure(status, if (status == 503) "SERVICE_UNAVAILABLE" else "INTERNAL_SERVER_ERROR"), request)
     }
 }

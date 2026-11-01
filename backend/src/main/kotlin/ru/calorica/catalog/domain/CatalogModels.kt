@@ -69,3 +69,11 @@ object NutritionValues {
 data class LeafAllocation(val rootOrdinal: Int, val leafId: UUID, val allocatedGrams: BigDecimal)
 data class CatalogPortion(val rootOrdinal: Int, val productId: UUID, val consumedGrams: BigDecimal)
 
+
+object CatalogIds {
+    private val canonical = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
+    fun parse(value: String): UUID {
+        if (!canonical.matches(value)) CatalogFailure.badRequest()
+        return UUID.fromString(value)
+    }
+}

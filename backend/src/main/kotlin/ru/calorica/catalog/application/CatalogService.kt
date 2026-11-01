@@ -3,6 +3,7 @@ package ru.calorica.catalog.application
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
 import ru.calorica.platform.security.Actor
+import ru.calorica.catalog.domain.CatalogIds
 import ru.calorica.catalog.domain.CatalogFailure
 import ru.calorica.catalog.domain.Nutrition
 import ru.calorica.catalog.domain.Product
@@ -74,13 +75,13 @@ class CatalogService(
             val node = mapper.readTree(Base64.getUrlDecoder().decode(cursor))
             if (!node.isObject || node.size() != 6 || node["fingerprint"]?.asText() != fingerprint ||
                 !node["tier"].isInt || node["tier"].intValue() !in 0..2 || !node["score"].isTextual ||
-                !node["name"].isTextual || !node["id"].isTextual || node["version"]?.intValue() != 1)
+                !node["name"].isTextual || !node["id"].isTextual || (!node["version"].isInt || node["version"].intValue() != 1))
                 CatalogFailure.badRequest()
             val scoreText = node["score"].textValue()
             if (scoreText.length > 32 || !Regex("[01](\\.[0-9]+)?").matches(scoreText)) CatalogFailure.badRequest()
             val score = scoreText.toBigDecimal()
             if (score > BigDecimal.ONE || node["name"].textValue().length > 400) CatalogFailure.badRequest()
-            return SearchKey(node["tier"].intValue(), score, node["name"].textValue(), UUID.fromString(node["id"].textValue()))
+            return SearchKey(node["tier"].intValue(), score, node["name"].textValue(), CatalogIds.parse(node["id"].textValue()))
         } catch (e: CatalogFailure) { throw e } catch (e: Exception) { CatalogFailure.badRequest() }
     }
     private fun encode(key: SearchKey, fingerprint: String): String = Base64.getUrlEncoder().withoutPadding()
