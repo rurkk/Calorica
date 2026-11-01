@@ -22,10 +22,10 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | [T00](tasks/T00.md) | 1 | Рауль / чат t00-contracts-01a19823 | Готово | Да; контракт 1.0.0 `e05b69b6` (полный SHA ниже), входы T02/T03/T05 | `codex/t00-contracts-01a19823` / архив claim `ad229bf4e3588b9534b732a753da443ac7c30a8f` | Принято Раулем 1 ноября 2026; блокеров T00 нет |
 | [T01](tasks/T01.md) | 8 | Рауль / чат render-autodeploy-2026-11-01 | Ожидает ручной приёмки | Да; Android APK и backend GHCR → Render выпущены и проверены | `codex/render-autodeploy` / `4e3004500cf72f5db4abf7f7fe4db0963efe4be2` | Доставка доступна для следующих задач; полная ручная приёмка отдельно |
-| [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ожидает интеграции | Нет | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | T00/T01 технически готовы; [PR #9](https://github.com/rurkk/Calorica/pull/9), ревью/CI прошли; интеграция и signed APK |
-| [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | В работе | Нет | `codex/t03-accounts-01a19823` / `eeb076d1e5ddcc374b3bed5326338201789444df` | T00 технически готова; реализация auth/profile, исправления ревью и PostgreSQL/HTTP-проверки |
+| [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ожидает ручной приёмки | Да; foundation 1.0.0, signed APK 0.1.3, API26/API36 | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | [PR #9](https://github.com/rurkk/Calorica/pull/9), main `753a1b6`; [APK 0.1.3](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.3), self-check пройден; нужны человек и доступное физическое устройство |
+| [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | Ревью | Нет; проверенный код в PR, живой выпуск впереди | `codex/t03-accounts-01a19823` / `eeb076d1e5ddcc374b3bed5326338201789444df` | [PR #14](https://github.com/rurkk/Calorica/pull/14); 7 unit +16 integration, независимое ревью одобрено; CI и выпуск |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
-| [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | Ожидает интеграции | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | Реализация и независимое ревью доступны;5 unit/SQL проверки прошли; нужны реальные типы T03,FK025,полный HTTP/check/релиз |
+| [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | Ожидает интеграции | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | Код/ревью и12unit+30integration сT03/FK025 прошли; нужны main/релиз T03,PR/CI/выпуск T05 |
 | [T06](tasks/T06.md) | 5 | — | Ожидает зависимости | Нет | — | Нужны T02 |
 | [T07](tasks/T07.md) | 3 | — | Ожидает зависимости | Нет | — | Нужны T05 |
 | [T08](tasks/T08.md) | 6 | — | Ожидает зависимости | Нет | — | Нужны T02 |
@@ -48,6 +48,25 @@
 или работающего health endpoint не закрывает функциональную задачу.
 
 ## Подтверждения по задаче
+
+### T03 — аккаунты, сессии и nullable-профиль
+
+- Разработчик: Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d`; агент 1; независимый рецензент2 (`review_t03`).
+- Ветка: `codex/t03-accounts-01a19823`; отдельная копия `Calorica-agents/t03-accounts-01a19823`.
+- Claim: `eeb076d1e5ddcc374b3bed5326338201789444df`, 2026-11-01T17:35:11Z; бронь сохраняется.
+- Вход: T00 PR#5, merge `db7ed5f`, контракт `e05b69b6b109d4408a02bacd0ea04a4835e912fa` (1.0.0); T01 технически готова по записи владельца.
+- Код: `f137f7beff772e1f054f0fb6d7fca28607d91236`, [PR#14](https://github.com/rurkk/Calorica/pull/14).
+- Проверки: JDK21, отдельная локальная PostgreSQL17.11; `backend/gradlew -p backend check bootJar` — 7 unit и16 integration без ошибок. В том числе реальные refresh/replay/logout гонки, unique email, nullable PATCH/изоляция, права, rate limits, chunked и slow-body, HTTP deadline/late rollback.
+- Обновление: предыдущий foundation JAR создал001, текущие тесты применили010; предыдущий JAR повторно запущен на001+010 с readiness200 и сохранёнными тестовыми записями. Пользовательские main/dev-team БД для тестов не использованы.
+- Независимое ревью `review_t03`: proxy/deadline/lifecycle замечания исправлены; итоговое одобрение для `f137f7b`. Проверены код, XML 7+16, diff --check; рецензент отдельно Gradle не запускал. Это AI-ревью, не ручная приёмка человека.
+- Интеграция: master включает010, 020 не изменяется. Общий Actor(id,role,sessionId) опубликован для T05. FK025 по реестру готовится отдельной интеграцией после010+020; каталог не выпускается пользователям без него.
+- Ограничения: без AUTH_JWT_SECRET ключ случайный на процесс, restart→refresh; rate buckets одного инстанса. Timeout во время уже начавшегося commit имеет неопределённый исход, запись не повторяется автоматически.
+- CI/CD и живой API: ещё не выполнены для этой версии. Перед merge перепроверяется main и последовательность backend deploy; затем точный SHA/digest, readiness и два auth/profile аккаунта.
+- Ручная приёмка: не выполнена; после подтверждённого выпуска останется «Ожидает ручной приёмки».
+
+
+
+
 
 ### Готовность доставки для следующих задач, 1 ноября 2026
 
@@ -176,14 +195,48 @@
   После доступности сервера ручной повтор дал UP. Offline проверен через Settings/авиарежим:
   NETWORK вместо пустого ответа; после восстановления и ручного повтора снова UP.
   Старый svc дал exit137, поэтому использован доступный UI Settings; исходная сеть восстановлена.
-- Следующий шаг: финальное ревью, PR/merge, автоматический signed APK и проверка
-  выпущенной версии на собственных эмуляторах API26/API36.
-- [PR #9](https://github.com/rurkk/Calorica/pull/9): [Android CI](https://github.com/rurkk/Calorica/actions/runs/41334123041)
-  на `964c43649323f308b3d7e34b6179a05ef440216c` прошёл; интеграция и signed release ещё не подтверждены.
-  Повторное объединение main меняет только tracker, код приложения идентичен проверенному.
-- Readiness с хоста HTTP200/UP за 0,7с; в Render прочитаны безопасные startup-события.
-  Готовность функциональных auth/products/diary этим не подтверждена;
-  физическое устройство не подключено. Ручная приёмка не выполнена, бронь сохраняется.
+- Интеграция: [PR #9](https://github.com/rurkk/Calorica/pull/9), merge
+  `753a1b6f10186245b6fdaf54ef9891b54ad1665a`, 2026-11-01T18:05:57Z.
+  Финальный PR [Android CI](https://github.com/rurkk/Calorica/actions/runs/41334443011)
+  на `61b052b8e0bf5a5c63be6d2c8b1f34e5f18050b5` успешен; защиты не обходились.
+- Выпуск: [Android CI + signed publish](https://github.com/rurkk/Calorica/actions/runs/41334824162)
+  завершён SUCCESS; [android-v0.1.3](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.3),
+  versionName `0.1.3`, versionCode `4`, source SHA
+  `753a1b6f10186245b6fdaf54ef9891b54ad1665a`.
+- `release.json`, обе суммы SHA256SUMS, package `com.rurkk.calorica`, minSdk26 и
+  фактическая подпись проверены на скачанном APK. SHA-256 APK:
+  `8dd023d34adac5d52374a932f3b7fb4dc7f2157d121a19a88021d621b6b23102`.
+  Сертификат SHA-256 `df0cd33806531f682d53e031c9abeaddd41160f973ba75ea16575755f80236f1`
+  совпал с repository variable и предыдущим подписанным 0.1.2; fixtures.json в APK нет.
+- Самостоятельная проверка именно выпущенного APK через ADB/UIAutomator, без снимков/видео:
+  - `calorica_t02_api26` / emulator-5586: Android8.0.0, API26, ARM64,
+    OSR1.180418.028.A3/10734686; подписанная 0.1.2/code3 обновлена `adb install -r`
+    до 0.1.3/code4 без удаления signed приложения/данных. Запуск успешен.
+  - `calorica_t02_api36` / emulator-5584: Android16, API36, ARM64,
+    BE2A.250530.026.F3/13894323; чистая установка 0.1.3/code4 и запуск успешны.
+  - На обоих: Дневник → Выбрать продукт → Отмена, Продукты → системный Назад,
+    Связь с сервером → реальный HTTPS readiness → «Сервер доступен».
+  - API26: Settings/авиарежим → NETWORK с понятной ошибкой; после восстановления
+    и ручного retry снова UP. Пустые данные не появлялись, исходная сеть восстановлена.
+  - API36: при искусственной задержке 5000мс начато чтение, системный Назад,
+    повторный вход → Idle; поздний ответ не опубликован. Задержка восстановлена в none.
+    Реальную отмену HTTP call отдельно подтверждает unit/MockWebServer тест.
+  - SHA-256 base.apk, прочитанного с каждого устройства, совпал с опубликованным APK;
+    PID приложения есть, в фильтрованном AndroidRuntime нет FATAL EXCEPTION.
+- Readiness с хоста также HTTP200/UP; это не доказательство готовности бизнес-API
+  auth/products/diary последующих карточек. SQL/миграции/backend не менялись,
+  backend-релиз и PostgreSQL-тесты для T02 не применимы.
+- Технический вход для агентов5/6: [foundation 1.0.0](../../android/foundation.md),
+  DTO/repositories/DI, маршруты и ProductPickerHost доступны в main. T04/T06/T08
+  этим поручением не выполнялись. Доказательства относятся только к APK0.1.3/source753a1b6;
+  последующие warmup-изменения требуют своей версии/проверки.
+- Ручная приёмка: **не выполнена**. Человеку установить APK0.1.3, повторить маршруты,
+  отключение/восстановление сети по foundation.md и явно подтвердить результат.
+  Физическое Android-устройство не подключено; проверка на нём не выполнена.
+  Статус «Ожидает ручной приёмки», claim сохраняется до явного подтверждения/передачи.
+- Итоговый отчёт меняет только документы: Gradle/новый продуктовый релиз для него
+  не запускаются. Повторные документы не меняют source SHA уже проверенного APK.
+
 
 ### T05 — каталог и личные продукты
 
@@ -195,7 +248,12 @@
 - Фактические проверки: baseline `40386c1` — JDK21 `check bootJar`,3 integration tests без ошибок. Файлы T05 в `12f4741` — scratch compilation,5 unit +1 PostgreSQL upgrade/revalidate test,все прошли. На коде `d322175` прошёл PostgreSQL SQL-harness: owner/search ranking/cursor/leaf allocation/retained deletion.
 - Scratch использует test-only Actor точной формы опубликованного T00,отдельный buildDir и одноразовую PostgreSQL17.11; это не fake-auth/живая приёмка и не релизный JAR. Настоящий CatalogIntegrationTest с T03 AccountsService+HTTP и гонками готов,но ещё не выполнен. Отдельная regression требует FK025 и отклонения orphan owner.
 - Согласование с T03: нужны реальный Actor/security,025-products-owner-fk.sql и его include от агента1. Не переносились чужие незакоммиченные изменения. Пользовательский выпуск/SA-02/живая приёмка ждут T03+FK025; полная техническая готовность T05 пока Нет.
-- Следующий шаг: совместимый полный `check bootJar` с T03/025,HTTP/concurrency checks,PR,последовательный GHCR→Render выпуск и реальные два аккаунта. Merge/релиз/ручная приёмка T05 не выполнены; бронь сохранена.
+- Совместный локальный merge опубликованного T03 `f137f7b` с T05: `45040ec`. Настоящий JDK21 `check bootJar` (без scratch init/Actor) собрал JAR;12 unit прошли,из30 integration прошли29. Единственный отказ — тест orphan owner,так как025 ещё не интегрирована. Все реальные HTTP/JWT,owner/Admin,search/cursor,soft-delete,REQUIRES_NEW/ConnectionHolder и две PostgreSQL гонки прошли. Общийcheck остаётся красным; это не техническая готовность/релиз. После025 повторить всё на новой чистой БД,не на scratch Actors.
+- Readiness старого выпущенного образа:1 ноября17:59:44UTC,HTTPS200 за1.32с,UP. Render API200 подтвердил прежнийLive deploy `dep-dbjn3n7lk1mc739ojk7g`,образ `sha256:4db6c37067a0470905d210d06a1669a6e692d39f275149585a3e83b4ee85e7a3`; это не выпуск T03/T05. Агрегат50последних логов не обнаружил exception types,сырые логи не публиковались.
+- FK025 получена точным коммитом агента1 `e81e71a3fdcee0a5787a1e0edd072064a3d36f8f`,перенесена как `b298ec5`; меняет только SQL025 и его include,без каскада и без переписывания020.
+- Полный настоящий `check bootJar` на `b298ec5` успешен:12 unit +30 integration,0 failures/errors. Новая собственная PostgreSQL `calorica_t05_integrated` сначала подготовлена предыдущим foundation JAR40386c1:readiness200,только001; затем применены010+020+025. Все HTTP/JWT,owner/Admin,search/cursor,soft-delete,orphanFK,ConnectionHolder/REQUIRES_NEW и PostgreSQL гонки прошли без scratch init/Actor.
+- Предыдущий foundation JAR40386c1 повторно запущен на001+010+020+025:readiness200; агрегаты16 accounts/69 products до и после равны,история миграций сохранена. Остановлены только собственные проверенные тестовые JVM.
+- Следующий шаг: PR T05/CI,после завершения отдельного backend выпуска T03 — merge и последовательный GHCR→Render выпуск T05,проверка двух аккаунтов и точного digest. До интеграции/выпуска техническая готовность Нет; ручная приёмка не выполнена,бронь сохранена.
 
 ### Шаблон записи
 
