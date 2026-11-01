@@ -21,7 +21,7 @@
 | Задача | Агент | Разработчик | Статус | Технически готово | Рабочая ветка / бронь | Блокер / следующий шаг |
 | --- | --- | --- | --- | --- | --- | --- |
 | [T00](tasks/T00.md) | 1 | Рауль / чат t00-contracts-01a19823 | Готово | Да; контракт 1.0.0 `e05b69b6` (полный SHA ниже), входы T02/T03/T05 | `codex/t00-contracts-01a19823` / архив claim `ad229bf4e3588b9534b732a753da443ac7c30a8f` | Принято Раулем 1 ноября 2026; блокеров T00 нет |
-| [T01](tasks/T01.md) | 8 | Рауль / чат render-autodeploy-2026-11-01 | Готово | Да; Android APK и backend GHCR → Render выпущены и проверены | `codex/render-autodeploy` / архив claim `4e3004500cf72f5db4abf7f7fe4db0963efe4be2` | Принято Раулем 1 ноября 2026; блокеров T01 нет |
+| [T01](tasks/T01.md) | 8 | Рауль / координатор `01a1981e-f16f-7391-ad45-fab304e4a3f5`, исправление доставки | Исправление | Нет; автоматическая передача Render secret требует исправления | `codex/fix-render-workflow-secret` / `6a4d5686023f9042b4b21e466c9b0d041669967d` | После выпуска T03 обнаружен пустой Render secret в reusable workflow; исправление caller/callee, затем автоматический выпуск T05 |
 | [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ожидает ручной приёмки | Да; foundation 1.0.0, signed APK 0.1.3, API26/API36 | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | [PR #9](https://github.com/rurkk/Calorica/pull/9), main `753a1b6`; [APK 0.1.3](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.3), self-check пройден; нужны человек и доступное физическое устройство |
 | [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | Ожидает ручной приёмки | Да;06b7c96, Live+OCI digest+26 auth/profile сценариев подтверждены | `codex/t03-accounts-01a19823` / `eeb076d1e5ddcc374b3bed5326338201789444df` | [PR#14](https://github.com/rurkk/Calorica/pull/14), [доставка](https://github.com/rurkk/Calorica/actions/runs/41337560492); ручные шаги и точные digest ниже; бронь сохранена |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
@@ -48,6 +48,28 @@
 или работающего health endpoint не закрывает функциональную задачу.
 
 ## Подтверждения по задаче
+
+### T01 — исправление передачи Render secret, 1 ноября 2026
+
+- Дефект: автоматический выпуск T03, [run 41336309906](https://github.com/rurkk/Calorica/actions/runs/41336309906),
+  публикует GHCR-образ, но `release / deploy` получает пустой `RENDER_API_KEY`.
+  Ручной recovery workflow с тем же environment успешно доставляет образ;
+  это не подтверждение автоматического канала.
+- Исправление ведёт координатор, условный агент 8, чат
+  `01a1981e-f16f-7391-ad45-fab304e4a3f5`; новая бронь
+  `6a4d5686023f9042b4b21e466c9b0d041669967d`, 2026-11-01T18:44:06Z.
+  Прежняя бронь T01 снята после принятия; её история ниже сохранена.
+- Причина: caller не передаёт environment secret в reusable workflow.
+  Добавлена именованная передача и обязательное объявление `workflow_call.secrets`;
+  environment `backend-production`, scope ключа, фильтры и сериализация сохранены.
+  [Правило GitHub](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#using-inputs-and-secrets-in-a-reusable-workflow).
+- Проверки: 30 Python CI-тестов, actionlint 1.7.7 и `git diff --check` прошли.
+  В одноразовом Git-проекте удаление mapping из caller воспроизводимо отклоняется
+  actionlint как отсутствие обязательного `RENDER_API_KEY`; исходные файлы не меняются.
+  Независимое AI-ревью одобрено. Значения секретов не выводились и не копировались.
+- Реальная проверка исправленного автоматического канала: следующий выпуск T05
+  после merge этой правки. До успешного deploy техническая готовность автоматической
+  доставки не подтверждена; старая ручная приёмка не переносится на исправление.
 
 ### T03 — аккаунты, сессии и nullable-профиль
 

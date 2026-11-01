@@ -135,6 +135,9 @@ Git-сборки Render. Существующие проверки GitHub сох
 - Образ публичный: пароль GHCR в Render не нужен. Образы используемых выпусков
   сохраняйте в GHCR: Render повторно загружает их при развёртывании и перезапуске.
 - В GitHub environment **backend-production** хранится `RENDER_API_KEY`.
+  Caller `backend.yml` явно передаёт его в `backend-release.yml`, где он объявлен
+  обязательным входным secret. Job `deploy` выбирает environment и получает его
+  значение; без передачи caller environment secret разрешается в пустую строку.
   Это существующий административный ключ Render; значение в Git не входит.
   ID сервиса и ссылки берутся из `deploy/access/infrastructure.json`.
 - Скрипт `scripts/ci/render_deploy.py` допускает только Calorica и digest,
