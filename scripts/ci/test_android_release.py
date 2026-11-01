@@ -237,6 +237,8 @@ class AndroidLifecycleTest(unittest.TestCase):
             self.assertEqual('c' * 64, manifest['certificate_sha256'])
             self.assertFalse(releases[0]['draft'])
             self.assertTrue(json.loads(Path('_release/plan.json').read_text())['published'])
+            self.assertEqual('https://github.com/rurkk/Calorica/releases/tag/android-v0.1.2',
+                             json.loads(Path('_release/plan.json').read_text())['release_url'])
             release.prepare(args)
             self.assertTrue(json.loads(Path('_release/plan.json').read_text())['published'])
             with self.assertRaisesRegex(ValueError, 'already published'):
