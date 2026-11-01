@@ -21,11 +21,11 @@
 | Задача | Агент | Разработчик | Статус | Технически готово | Рабочая ветка / бронь | Блокер / следующий шаг |
 | --- | --- | --- | --- | --- | --- | --- |
 | [T00](tasks/T00.md) | 1 | Рауль / чат t00-contracts-01a19823 | Готово | Да; контракт 1.0.0 `e05b69b6` (полный SHA ниже), входы T02/T03/T05 | `codex/t00-contracts-01a19823` / архив claim `ad229bf4e3588b9534b732a753da443ac7c30a8f` | Принято Раулем 1 ноября 2026; блокеров T00 нет |
-| [T01](tasks/T01.md) | 8 | Рауль / чат render-autodeploy-2026-11-01 | Готово | Да; Android APK и backend GHCR → Render выпущены и проверены | `codex/render-autodeploy` / архив claim `4e3004500cf72f5db4abf7f7fe4db0963efe4be2` | Принято Раулем 1 ноября 2026; блокеров T01 нет |
+| [T01](tasks/T01.md) | 8 | Рауль / координатор `01a1981e-f16f-7391-ad45-fab304e4a3f5`, исправление доставки | Исправление | Нет; автоматическая передача Render secret требует исправления | `codex/fix-render-workflow-secret` / `6a4d5686023f9042b4b21e466c9b0d041669967d` | После выпуска T03 обнаружен пустой Render secret в reusable workflow; исправление caller/callee, затем автоматический выпуск T05 |
 | [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ожидает ручной приёмки | Да; foundation 1.0.0, signed APK 0.1.3, API26/API36 | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | [PR #9](https://github.com/rurkk/Calorica/pull/9), main `753a1b6`; [APK 0.1.3](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.3), self-check пройден; нужны человек и доступное физическое устройство |
-| [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | Ревью | Нет; проверенный код в PR, живой выпуск впереди | `codex/t03-accounts-01a19823` / `eeb076d1e5ddcc374b3bed5326338201789444df` | [PR #14](https://github.com/rurkk/Calorica/pull/14); 7 unit +16 integration, независимое ревью одобрено; CI и выпуск |
+| [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | Ожидает релиза | Нет; merge проверен, живой выпуск впереди | `codex/t03-accounts-01a19823` / `eeb076d1e5ddcc374b3bed5326338201789444df` | [PR#14](https://github.com/rurkk/Calorica/pull/14) в main `06b7c96`; [CI/CD](https://github.com/rurkk/Calorica/actions/runs/41336309906), затем SHA/digest и auth/profile smoke |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
-| [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | Ожидает интеграции | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | Код/ревью и12unit+30integration сT03/FK025 прошли; нужны main/релиз T03,PR/CI/выпуск T05 |
+| [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | Ревью | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | [PR #23](https://github.com/rurkk/Calorica/pull/23): независимое ревью закрыто, 12 unit + 30 integration с пулом 2 прошли локально; CI и последовательный выпуск после T03 |
 | [T06](tasks/T06.md) | 5 | — | Ожидает зависимости | Нет | — | Нужны T02 |
 | [T07](tasks/T07.md) | 3 | — | Ожидает зависимости | Нет | — | Нужны T05 |
 | [T08](tasks/T08.md) | 6 | — | Ожидает зависимости | Нет | — | Нужны T02 |
@@ -49,6 +49,28 @@
 
 ## Подтверждения по задаче
 
+### T01 — исправление передачи Render secret, 1 ноября 2026
+
+- Дефект: автоматический выпуск T03, [run 41336309906](https://github.com/rurkk/Calorica/actions/runs/41336309906),
+  публикует GHCR-образ, но `release / deploy` получает пустой `RENDER_API_KEY`.
+  Ручной recovery workflow с тем же environment успешно доставляет образ;
+  это не подтверждение автоматического канала.
+- Исправление ведёт координатор, условный агент 8, чат
+  `01a1981e-f16f-7391-ad45-fab304e4a3f5`; новая бронь
+  `6a4d5686023f9042b4b21e466c9b0d041669967d`, 2026-11-01T18:44:06Z.
+  Прежняя бронь T01 снята после принятия; её история ниже сохранена.
+- Причина: caller не передаёт environment secret в reusable workflow.
+  Добавлена именованная передача и обязательное объявление `workflow_call.secrets`;
+  environment `backend-production`, scope ключа, фильтры и сериализация сохранены.
+  [Правило GitHub](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#using-inputs-and-secrets-in-a-reusable-workflow).
+- Проверки: 30 Python CI-тестов, actionlint 1.7.7 и `git diff --check` прошли.
+  В одноразовом Git-проекте удаление mapping из caller воспроизводимо отклоняется
+  actionlint как отсутствие обязательного `RENDER_API_KEY`; исходные файлы не меняются.
+  Независимое AI-ревью одобрено. Значения секретов не выводились и не копировались.
+- Реальная проверка исправленного автоматического канала: следующий выпуск T05
+  после merge этой правки. До успешного deploy техническая готовность автоматической
+  доставки не подтверждена; старая ручная приёмка не переносится на исправление.
+
 ### T03 — аккаунты, сессии и nullable-профиль
 
 - Разработчик: Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d`; агент 1; независимый рецензент2 (`review_t03`).
@@ -61,7 +83,10 @@
 - Независимое ревью `review_t03`: proxy/deadline/lifecycle замечания исправлены; итоговое одобрение для `f137f7b`. Проверены код, XML 7+16, diff --check; рецензент отдельно Gradle не запускал. Это AI-ревью, не ручная приёмка человека.
 - Интеграция: master включает010, 020 не изменяется. Общий Actor(id,role,sessionId) опубликован для T05. FK025 по реестру готовится отдельной интеграцией после010+020; каталог не выпускается пользователям без него.
 - Ограничения: без AUTH_JWT_SECRET ключ случайный на процесс, restart→refresh; rate buckets одного инстанса. Timeout во время уже начавшегося commit имеет неопределённый исход, запись не повторяется автоматически.
-- CI/CD и живой API: ещё не выполнены для этой версии. Перед merge перепроверяется main и последовательность backend deploy; затем точный SHA/digest, readiness и два auth/profile аккаунта.
+- Интеграция T03: [PR#14](https://github.com/rurkk/Calorica/pull/14), merge `06b7c96a0a20fe701e98c522431d6511b044dcbf`; все required gates и ограниченный Docker stand прошли на окончательном head `70b5a8de072642b7575cfbf3bf3cc4684827f062` ([прогон](https://github.com/rurkk/Calorica/actions/runs/41335622319)). Свежая main и чужой backend deploy проверены до merge; backend-конфликтов не было.
+- Финальный локальный check на новой пустой PostgreSQL: 7 unit +16 integration без ошибок. Совместный check с опубликованной T05 и025 на отдельной чистой PostgreSQL:12 unit +30 integration без ошибок.
+- Миграция025: отдельный авторский commit `e81e71a3fdcee0a5787a1e0edd072064a3d36f8f`, ветка `codex/t03-t05-owner-fk-01a19823`; независимое ревью одобрено. Владелец T05 принял точный SQL без изменений (его cherry-pick `b298ec5`) и ждёт завершения T03 deploy/smoke перед следующим backend выпуском.
+- CI/CD: [основной прогон](https://github.com/rurkk/Calorica/actions/runs/41336309906) выполняется. Живые auth/profile, точные OCI revision/index/amd64 digest и Render deploy для этой версии ещё не подтверждены.
 - Ручная приёмка: не выполнена; после подтверждённого выпуска останется «Ожидает ручной приёмки».
 
 
@@ -256,6 +281,10 @@
 - Полный настоящий `check bootJar` на `b298ec5` успешен:12 unit +30 integration,0 failures/errors. Новая собственная PostgreSQL `calorica_t05_integrated` сначала подготовлена предыдущим foundation JAR40386c1:readiness200,только001; затем применены010+020+025. Все HTTP/JWT,owner/Admin,search/cursor,soft-delete,orphanFK,ConnectionHolder/REQUIRES_NEW и PostgreSQL гонки прошли без scratch init/Actor.
 - Предыдущий foundation JAR40386c1 повторно запущен на001+010+020+025:readiness200; агрегаты16 accounts/69 products до и после равны,история миграций сохранена. Остановлены только собственные проверенные тестовые JVM.
 - Следующий шаг: PR T05/CI,после завершения отдельного backend выпуска T03 — merge и последовательный GHCR→Render выпуск T05,проверка двух аккаунтов и точного digest. До интеграции/выпуска техническая готовность Нет; ручная приёмка не выполнена,бронь сохранена.
+
+- Функциональный [PR #23](https://github.com/rurkk/Calorica/pull/23), head `db67445ae9e6fd2ef3b23c3f499777d185918867`, содержит только backend. Свежая main с T03 `06b7c96` интегрирована; tracker публикуется отдельно.
+- На `db67445` полный `check bootJar` повторён на новой PostgreSQL с `DB_POOL_SIZE=2`: 12 unit и 30 integration прошли. Исправлен только тестовый наблюдатель гонок: отдельное JDBC-подключение к тестовой БД читает pg_locks и состояние строки, сохраняя assertions. Старый CI head `9e4658d` подтвердил два отказа этих тестов из-за нехватки третьего pooled connection; исправленный CI запущен на `db67445`. Приложение и его пул не менялись. Независимое ревью этой поправки новых дефектов не нашло.
+- До merge T05 ожидает зелёный CI PR #23 и завершение backend выпуска/самопроверки T03. Затем отдельный последовательный выпуск T05, сверка OCI revision/digest и живые два аккаунта; техническая готовность пока «Нет».
 
 ### Шаблон записи
 
