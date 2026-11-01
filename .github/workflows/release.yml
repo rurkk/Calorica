@@ -1,36 +1,125 @@
-name: Android manual prerelease
+name: Android release
 
 on:
+  workflow_call:
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Тег выпуска, например android-v0.1.1"
-        required: true
+      mode:
+        description: 'release — новая версия; retry — повтор; rollback — старый код с новой версией'
+        type: choice
+        options: [release, retry, rollback]
+        default: release
+      release_tag:
+        description: 'Для retry/rollback: android-vX.Y.Z (для retry допустим draft)'
+        type: string
+      compatibility_confirmed:
+        description: 'Для rollback: проверена совместимость с действующим API и данными на устройстве'
+        type: boolean
+        default: false
+      reason:
+        description: 'Причина rollback и результат проверки совместимости (без секретов)'
         type: string
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: calorica-android-release
+  cancel-in-progress: false
 
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Reserve version or reuse release
+        id: plan
+        env:
+          GH_TOKEN: ${{ secrets.ANDROID_RELEASE_TOKEN || github.token }}
+          MODE: ${{ inputs.mode || 'release' }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          CONFIRMED: ${{ inputs.compatibility_confirmed }}
+          REASON: ${{ inputs.reason }}
+        run: |
+          args=(--mode "$MODE" --tag "$RELEASE_TAG" --reason "$REASON")
+          if [ "$CONFIRMED" = true ]; then args+=(--confirmed); fi
+          python3 scripts/ci/android_release.py prepare "${args[@]}"
+      - uses: actions/checkout@v7
+        if: steps.plan.outputs.published == 'false'
+        with:
+          ref: ${{ steps.plan.outputs.source_sha }}
+          path: source
+          persist-credentials: false
       - uses: actions/setup-java@v6
+        if: steps.plan.outputs.published == 'false'
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: '17'
+      - uses: actions/setup-java@v6
+        if: steps.plan.outputs.published == 'false'
+        with:
+          distribution: temurin
+          java-version: '21'
       - uses: gradle/actions/setup-gradle@v6
-      - name: Validate Android release tag
+        if: steps.plan.outputs.published == 'false'
+      - name: Restore permanent signing key
+        if: steps.plan.outputs.published == 'false'
         env:
-          RELEASE_TAG: ${{ inputs.tag }}
-        run: '[[ "$RELEASE_TAG" =~ ^android-v[0-9]+\.[0-9]+\.[0-9]+$ ]]'
-      - run: ./gradlew :app:assembleDebug
-      - name: Create prerelease with APK
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          CERT_SHA256: ${{ vars.ANDROID_SIGNING_CERT_SHA256 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          for setting in KEYSTORE_BASE64 CERT_SHA256 STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!setting}" ]; then
+              echo "::error::Missing Android signing setting: $setting. See docs/android-releases.md"
+              exit 1
+            fi
+          done
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/calorica-release.jks"
+      - name: Test and build signed release APK
+        if: steps.plan.outputs.published == 'false'
+        working-directory: source
         env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag }}
-        run: >-
-          gh release create "$RELEASE_TAG" app/build/outputs/apk/debug/app-debug.apk
-          --title "Calorica $RELEASE_TAG" --prerelease
-          --notes "Технический Android-каркас Calorica. Продуктовые функции ещё не реализованы. APK собран как debug и не предназначен для Google Play."
+          CALORICA_VERSION_CODE: ${{ steps.plan.outputs.version_code }}
+          CALORICA_VERSION_NAME: ${{ steps.plan.outputs.version_name }}
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/calorica-release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease
+      - name: Verify APK and publish reserved release
+        if: steps.plan.outputs.published == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.ANDROID_RELEASE_TOKEN || github.token }}
+          ANDROID_SIGNING_CERT_SHA256: ${{ vars.ANDROID_SIGNING_CERT_SHA256 }}
+        run: python3 scripts/ci/android_release.py publish
+      - uses: actions/upload-artifact@v7
+        if: always() && steps.plan.outputs.published == 'false'
+        with:
+          name: android-release-${{ steps.plan.outputs.version_name }}-${{ github.run_attempt }}
+          path: |
+            _release/assets/
+            source/app/build/reports/tests/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Remove signing material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/calorica-release.jks"
+      - name: Release links and source revision
+        if: always()
+        env:
+          CALORICA_DEPLOY_URL: ${{ vars.CALORICA_DEPLOY_URL }}
+          CALORICA_DEPLOY_LOGS_URL: ${{ vars.CALORICA_DEPLOY_LOGS_URL }}
+          CALORICA_LOGS_URL: ${{ vars.CALORICA_LOGS_URL }}
+          RESULT: ${{ job.status }}
+        run: python3 scripts/ci/android_release.py summary --status "$RESULT"
