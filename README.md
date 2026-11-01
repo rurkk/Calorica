@@ -60,7 +60,7 @@ Calorica — мобильное приложение для учёта пита�
 В `backend/` добавлен отдельный Kotlin/Spring Boot-каркас: Spring JDBC, PostgreSQL,
 Liquibase, закрытые по умолчанию маршруты, health/readiness и контейнерный запуск.
 Каркас развёрнут на Render с PostgreSQL в Neon и публичным HTTPS.
-Обновление нового стенда пока выполняется вручную.
+Серверные изменения в `main` автоматически доставляются через GHCR в Render.
 Бизнес-API и пользовательские сессии ещё не реализованы.
 Инструкции: [backend](backend/README.md), [CI/CD и размещение](deploy/backend/README.md).
 
@@ -82,8 +82,8 @@ Liquibase, закрытые по умолчанию маршруты, health/rea
   — доступ по личным приглашениям; инструкция команды приведена выше.
 - Backend: Docker, 0.1 CPU / 512 MB RAM; JVM heap 16–96 MiB.
   PostgreSQL 17: Neon, compute 0.25 CU, база `neondb`.
-- HTTPS предоставляет Render. Обновления — Manual Deploy из `main`;
-  Auto-Deploy выключен. Ограничения бесплатных тарифов и инструкции —
+- HTTPS предоставляет Render. GitHub Actions публикует backend в GHCR и
+  автоматически разворачивает точный digest в Render. Инструкции —
   в [deploy/render/README.md](deploy/render/README.md).
 
 ### Предыдущий стенд VPS
@@ -154,6 +154,7 @@ APK будет в `app/build/outputs/apk/debug/app-debug.apk`.
 `Android manual prerelease` запускается вручную, создаёт prerelease в GitHub и прикладывает debug APK.
 
 `Backend CI` независимо проверяет сервер и инфраструктуру и выпускает контейнер
-в GHCR после успешных проверок изменений backend в `main`. Прежний SSH-деплой
-относится к недоступному VPS; он не обновляет Render. Новый стенд обновляется
-вручную из Render Dashboard. Документация не запускает сборки GitHub Actions.
+в GHCR после успешных проверок изменений backend в `main`, затем передаёт
+опубликованный digest в Render и ожидает завершения деплоя.
+Прежний SSH-деплой удалён из workflow. Документация не запускает сборки
+GitHub Actions или автодеплой Render.

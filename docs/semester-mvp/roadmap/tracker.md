@@ -21,7 +21,7 @@
 | Задача | Агент | Разработчик | Статус | Технически готово | Рабочая ветка / бронь | Блокер / следующий шаг |
 | --- | --- | --- | --- | --- | --- | --- |
 | [T00](tasks/T00.md) | 1 | — | К назначению | Нет | — | Назначить разработчика |
-| [T01](tasks/T01.md) | 8 | — | К назначению | Нет | — | Назначить разработчика |
+| [T01](tasks/T01.md) | 8 | Рауль / чат render-autodeploy-2026-11-01 | В работе | Нет; выполняется только автодеплой Render | `codex/render-autodeploy` / `4e3004500cf72f5db4abf7f7fe4db0963efe4be2` | GHCR → Render по digest; Android-релизы согласованы с отдельным чатом; резервные копии вне текущей доработки |
 | [T02](tasks/T02.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T00 |
 | [T03](tasks/T03.md) | 1 | — | Ожидает зависимости | Нет | — | Нужны T00 |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
@@ -48,6 +48,36 @@
 или работающего health endpoint не закрывает функциональную задачу.
 
 ## Подтверждения по задаче
+
+### T01: автодеплой Render, 1 ноября 2026
+
+- После обсуждения On Commit владелец выбрал **GHCR → Render** по digest.
+  Render переключён с Git-сборки на Existing Image, `autoDeployTrigger=off`;
+  адрес API, тариф Free, Neon и переменные приложения сохранены.
+- Добавлены deploy-job после публикации образа и ручной workflow повторной
+  доставки/совместимого отката. Скрипт ждёт `Live`, ошибки и таймаут делают
+  workflow красным. Существующие проверки сохранены, новые проверки приложения
+  и CI-gates владелец отложил.
+- SSH-job, пять переменных `BACKEND_DEPLOY_*` и два секрета `BACKEND_SSH_*`
+  удалены. `RENDER_API_KEY` сохранён в environment backend-production.
+- Проверки: 8 Python-тестов scripts/ci, actionlint изменённых workflows,
+  локальные ссылки и git diff --check прошли. Исторический deploy.sh проверен
+  в Linux-контейнере PostgreSQL 17; control-flow checks прошли.
+- Первый запуск готового образа: [Render deploy dep-dbjn19vb9u1s73eh10vg](https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40/deploys/dep-dbjn19vb9u1s73eh10vg),
+  `Live` 1 ноября 2026 в 17:04 UTC. Образ из commit `955123d2e3a5cae3a4e41afa925551ac4497315e`
+  (код backend совпадает с текущей main), index digest
+  `sha256:4db6c37067a0470905d210d06a1669a6e692d39f275149585a3e83b4ee85e7a3`.
+  Render подтвердил ref и amd64 manifest digest
+  `sha256:101d3ce2c6dac530c006525dcc6a4039a8b79fc0b4750d78fa5ec9d8a4703425`.
+  Интеграция: [PR #2](https://github.com/rurkk/Calorica/pull/2).
+- Бронь подтверждена 1 ноября 2026 в 16:53 UTC. T01 целиком не закрывается:
+  резервные копии и полная ручная приёмка остаются отдельной работой.
+- По разрешению владельца согласована помощь Android-чата
+  `01a1980a-73e7-7322-930c-7d77a497f548`, ветка `codex/android-releases`:
+  `.github/workflows/android.yml`, `release.yml`, `scripts/ci/android_*`,
+  `app/build.gradle.kts`, `docs/android-releases.md` и его локальный план.
+  Этот чат владеет backend workflows, `scripts/ci/render_*`, deploy, README
+  и tracker; общая бронь T01 сохраняется.
 
 ### Входные расхождения для T00
 

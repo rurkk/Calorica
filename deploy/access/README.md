@@ -196,7 +196,8 @@ python3 scripts/infra/access.py run -- neon projects list --org-id org-summer-ri
 Настоящий запрос с HTTP 401 и тем же request ID проверен в потоке.
 
 - Render Free: 0.1 CPU / 512 MB, heap JVM 16–96 MiB, автосон после 15 минут;
-  холодный старт может занять около минуты. Обновления — Manual Deploy из `main`.
+  холодный старт может занять около минуты. Обновления — GitHub Actions → GHCR → Render
+  по digest из `main`, без выпуска для документации; [настройки](../render/README.md).
 - Neon Free: 0.25 CU, автосон по настройке Free (5 минут). Основная БД и dev-ветки
   делят 100 CU-часов на проект в месяц и лимит данных 1 ГБ.
 - Better Stack Free: 3 ГБ логов, хранение 3 дня; регион логов United States

@@ -90,7 +90,8 @@ CI/CD и эксплуатация: [deploy/backend/README.md](../deploy/backend/
 API: `https://calorica-backend.onrender.com`.
 Проверка: `GET /actuator/health/readiness` → `200 {"status":"UP"}`.
 С 1 ноября 2026 backend размещён на Render Free, PostgreSQL 17 — в Neon Free
-во Франкфурте. Первый выпуск из main проверен; обновления пока ручные через
-Render Dashboard. HTTPS предоставляет Render. Настройки, адреса, ограничения
+во Франкфурте. Обновления из main автоматические: GitHub Actions → GHCR → Render
+по digest; Markdown и документация не выпускают backend. HTTPS предоставляет Render.
+Настройки, адреса, ограничения
 тарифов и интеграция Codex — в [deploy/render/README.md](../deploy/render/README.md).
 Прежний VPS недоступен; его Compose и Nginx сохранены как отдельные инструкции.

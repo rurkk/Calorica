@@ -42,15 +42,12 @@
 | --- | --- |
 | Name | `calorica-backend` |
 | Service ID | `srv-dbjk97vlk1mc739gja40` |
-| Repository / branch | `rurkk/Calorica`, `main` |
+| Source | Existing Image: `ghcr.io/rurkk/calorica-backend@sha256:…` |
 | Region | Frankfurt |
-| Runtime | Docker |
-| Root Directory | `backend/` |
-| Dockerfile Path | `./Dockerfile` относительно Root Directory |
-| Docker Build Context | `.` относительно Root Directory |
+| Runtime | Image; образ linux/amd64 собирается в GitHub Actions |
 | Compute | Free: 0.1 CPU, 512 MB RAM |
 | Health Check Path | `/actuator/health/liveness` |
-| Auto-Deploy | Off; обновление через Manual Deploy |
+| Auto-Deploy | Off: доставкой конкретного digest управляет GitHub Actions |
 
 HTTPS предоставляет Render; отдельный Nginx и сертификат на VPS не нужны.
 Приложение слушает порт 8080, совпадающий с Docker healthcheck. Liveness в Render
@@ -116,15 +113,56 @@ SQL-пароль основной ветки в общем пакете совп
 
 ## Обновления и сохранность данных
 
-Render сейчас обновляется вручную из `main`. Перед включением Auto-Deploy после
-успешных CI-проверок нужно отключить прежний SSH-деплой: repository variable
-`BACKEND_DEPLOY_ENABLED=false`. Настройки GitHub этой задачей не изменялись.
-Для автодеплоя настройте фильтры так, чтобы Markdown и документация не запускали
-новую сборку. Старый GitHub workflow не разворачивает приложение на Render.
+Действующий путь: **GitHub Actions → GHCR → Render**. После серверных изменений
+в `main` существующий Backend CI публикует образ linux/amd64, затем job `deploy`
+передаёт Render точный `ghcr.io/rurkk/calorica-backend@sha256:…`. Render скачивает
+готовый образ и запускает его; исходники на Render повторно не собираются.
+Liquibase применяет миграции при запуске. Адрес API и переменные окружения сохраняются.
+
+Доставкой управляет GitHub Actions; `autoDeployTrigger=off` отключает независимые
+Git-сборки Render. Существующие проверки GitHub сохранены; новые проверки
+приложения или режим After CI Checks Pass в Render этим изменением не настраиваются.
+
+Фильтрацией компонентов управляет `.github/workflows/backend.yml`:
+документация и Android не выпускают backend. Изменения только workflow проверяют
+инфраструктуру, без продуктового релиза. Деплои сериализованы группой
+`calorica-render-deploy`; устаревшая автоматическая ревизия пропускается.
+
+### Настройки доставки
+
+- Существующий сервис `srv-dbjk97vlk1mc739gja40`: **Settings → Build → Source →
+  Existing Image**, репозиторий образов `ghcr.io/rurkk/calorica-backend`.
+- Образ публичный: пароль GHCR в Render не нужен. Образы используемых выпусков
+  сохраняйте в GHCR: Render повторно загружает их при развёртывании и перезапуске.
+- В GitHub environment **backend-production** хранится `RENDER_API_KEY`.
+  Это существующий административный ключ Render; значение в Git не входит.
+  ID сервиса и ссылки берутся из `deploy/access/infrastructure.json`.
+- Скрипт `scripts/ci/render_deploy.py` допускает только Calorica и digest,
+  запускает деплой через Render API и до 10 минут ждёт `Live`. Ошибка API,
+  неудачный deploy или таймаут завершают workflow с ошибкой.
+- После успешного запуска тот же digest сохраняется как Image URL сервиса,
+  чтобы последующие ручные запуски использовали эту версию. В итогах workflow —
+  digest, SHA workflow и ссылки на deploy, API и runtime-логи.
+- Workflow **Render deploy existing image** запускается вручную из `main`:
+  в поле `image` передайте полный существующий `ghcr.io/rurkk/calorica-backend@sha256:…`.
+  Это повтор доставки либо откат на образ, совместимый с текущей схемой БД;
+  схема и данные автоматически не откатываются. SHA workflow — версия скрипта,
+  источник кода самого образа смотрите в OCI label `org.opencontainers.image.revision`.
+
+SSH-job удалён из `.github/workflows/backend-release.yml`; старые переменные
+`BACKEND_DEPLOY_*` и секреты `BACKEND_SSH_*` удалены из GitHub. Compose и скрипт
+VPS сохранены для локальных проверок и как историческая конфигурация.
+
+Статус конкретной версии: **Render Dashboard → Events**, там же доступны логи
+запуска и ссылка на образ. `Live` подтверждает запуск, readiness доступен по
+ссылке выше. Проверки бизнес-сценариев этим статусом не заменяются.
+Для временной остановки автоматической доставки отключите job `deploy`
+в backend release workflow через PR; флаг Auto-Deploy в Render уже выключен
+и сам по себе не блокирует API-запуски из GitHub Actions.
 
 Регулярные внешние резервные копии и мониторинг ещё не настроены. Free не означает
 подтверждённые SLA, RPO или RTO; квоты обоих провайдеров нужно контролировать.
 
-Документация провайдеров: [Render Docker](https://render.com/docs/docker),
+Документация провайдеров: [Render Images](https://render.com/docs/deploying-an-image),
 [Render Free](https://render.com/docs/free), [Neon CLI init](https://neon.com/docs/cli/init),
 [Neon Java](https://neon.com/docs/guides/java), [Neon Free](https://neon.com/pricing).
