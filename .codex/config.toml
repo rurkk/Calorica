@@ -1,3 +1,8 @@
 [mcp_servers.Neon]
 type = "http"
-url = "https://mcp.neon.tech/mcp?projectId=long-king-45707171"
+url = "https://mcp.neon.tech/mcp?projectId=long-king-45707171&readonly=true"
+
+[mcp_servers.BetterStack]
+type = "http"
+url = "https://mcp.betterstack.com"
+scopes = ["read"]

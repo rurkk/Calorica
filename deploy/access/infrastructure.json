@@ -1,0 +1,16 @@
+{
+  "api_base_url": "https://calorica-backend.onrender.com",
+  "render_dashboard_url": "https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40",
+  "render_logs_url": "https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40/logs",
+  "render_service_id": "srv-dbjk97vlk1mc739gja40",
+  "neon_console_url": "https://console.neon.tech/app/projects/long-king-45707171/",
+  "neon_org_id": "org-summer-rice-10673431",
+  "neon_project_id": "long-king-45707171",
+  "neon_main_branch_id": "br-old-sky-bawhtlz5",
+  "shared_db_host": "ep-morning-grass-barfhgst.c-8.eu-central-1.aws.neon.tech",
+  "database": "neondb",
+  "shared_logs_url": "https://telemetry.betterstack.com/team/t627028/tail?s=l2819108",
+  "betterstack_team_id": "t627028",
+  "betterstack_source_id": "2819108",
+  "log_stream_connected": true
+}
