@@ -68,10 +68,14 @@ def deploy(token, image, service_id, call=request, sleep=time.sleep, clock=time.
             print(f'Render status: {status}', flush=True)
             previous_status = status
         if status == 'live':
+            if current.get('image', {}).get('ref') != image:
+                raise DeployError(f'Render reports a different image for this deploy: {url}')
             # Persist only a successful digest for future restarts/manual deploys.
-            call(token, path, 'PATCH', {'autoDeployTrigger': 'off', 'image': {
+            saved = call(token, path, 'PATCH', {'autoDeployTrigger': 'off', 'image': {
                 'ownerId': service['ownerId'], 'imagePath': image,
             }})
+            if saved.get('imagePath') != image:
+                raise DeployError(f'Render does not persist the live image: {url}')
             return url
         if status in {'build_failed', 'update_failed', 'pre_deploy_failed', 'canceled', 'deactivated'}:
             raise DeployError(f'Render deploy ends with {status}: {url}')

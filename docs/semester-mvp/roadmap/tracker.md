@@ -60,9 +60,16 @@
   и CI-gates владелец отложил.
 - SSH-job, пять переменных `BACKEND_DEPLOY_*` и два секрета `BACKEND_SSH_*`
   удалены. `RENDER_API_KEY` сохранён в environment backend-production.
-- Проверки: 7 Python-тестов scripts/ci, actionlint изменённых workflows,
+- Проверки: 8 Python-тестов scripts/ci, actionlint изменённых workflows,
   локальные ссылки и git diff --check прошли. Исторический deploy.sh проверен
   в Linux-контейнере PostgreSQL 17; control-flow checks прошли.
+- Первый запуск готового образа: [Render deploy dep-dbjn19vb9u1s73eh10vg](https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40/deploys/dep-dbjn19vb9u1s73eh10vg),
+  `Live` 1 ноября 2026 в 17:04 UTC. Образ из commit `955123d2e3a5cae3a4e41afa925551ac4497315e`
+  (код backend совпадает с текущей main), index digest
+  `sha256:4db6c37067a0470905d210d06a1669a6e692d39f275149585a3e83b4ee85e7a3`.
+  Render подтвердил ref и amd64 manifest digest
+  `sha256:101d3ce2c6dac530c006525dcc6a4039a8b79fc0b4750d78fa5ec9d8a4703425`.
+  Интеграция: [PR #2](https://github.com/rurkk/Calorica/pull/2).
 - Бронь подтверждена 1 ноября 2026 в 16:53 UTC. T01 целиком не закрывается:
   резервные копии и полная ручная приёмка остаются отдельной работой.
 - По разрешению владельца согласована помощь Android-чата

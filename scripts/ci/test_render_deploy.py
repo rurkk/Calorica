@@ -18,7 +18,7 @@ class _Render:
         if method == 'POST':
             return {'id': 'dep-example'}
         if '/deploys/' in path:
-            return {'status': next(self.statuses, 'update_in_progress')}
+            return {'status': next(self.statuses, 'update_in_progress'), 'image': {'ref': IMAGE}}
         return {'ownerId': 'owner', 'imagePath': IMAGE,
                 'serviceDetails': {'runtime': self.runtime}}
 
@@ -72,4 +72,11 @@ class RenderDeployTest(unittest.TestCase):
         with self.assertRaises(DeployError):
             render.deploy()
         self.assertEqual(render.seconds, 600)
+        self.assertNotIn('PATCH', [call[0] for call in render.calls])
+
+    def test_rejects_a_live_deploy_with_a_different_digest(self):
+        render = _Render(statuses=('live',))
+        other_image = IMAGE_PREFIX + 'b' * 64
+        with self.assertRaises(DeployError):
+            render.deploy(image=other_image)
         self.assertNotIn('PATCH', [call[0] for call in render.calls])
