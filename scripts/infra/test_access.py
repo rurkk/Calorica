@@ -55,6 +55,13 @@ class InfrastructureAccessTest(unittest.TestCase):
         self.assertNotIn(profile['PGPASSWORD'], errors.getvalue())
         self.assertIn('[secret hidden]', errors.getvalue())
 
+    def test_query_rejects_psql_shell_commands_before_starting_a_process(self):
+        def runner(*args, **kwargs):
+            self.fail('A SQL-only helper must not send shell commands to psql.')
+        for sql in ('\\! env', 'SELECT 1; \\! env'):
+            with self.subTest(sql=sql), self.assertRaises(access.AccessError):
+                access.query(self.profile(), REGISTRY, sql, runner, 'psql-test')
+
     def test_local_backend_rejects_the_shared_database_even_with_developer_credentials(self):
         values = {'DEV_BRANCH': 'dev-test', 'DEV_DB_USERNAME': 'neondb_owner',
                   'DEV_DB_PASSWORD': 'private',

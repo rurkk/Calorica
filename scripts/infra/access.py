@@ -85,6 +85,10 @@ def query(values, registry, sql, runner=subprocess.run, binary=None):
     env = readonly_environment(values, registry)
     if not sql.strip():
         raise AccessError('SQL is empty.')
+    # psql also interprets backslash commands, including shell/file operations.
+    # This small helper accepts SQL only, including for input read from a file.
+    if '\\' in sql:
+        raise AccessError('Backslashes and psql commands are not supported; use SQL only.')
     # The DB role has SELECT grants only. A READ ONLY transaction is a second limit.
     result = runner([binary or psql_binary(), '-X', '--no-password', '-v', 'ON_ERROR_STOP=1',
                      '-P', 'pager=off'], input='BEGIN READ ONLY;\n' + sql + '\nROLLBACK;\n',
