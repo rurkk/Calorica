@@ -22,7 +22,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | [T00](tasks/T00.md) | 1 | Рауль / чат t00-contracts-01a19823 | Готово | Да; контракт 1.0.0 `e05b69b6` (полный SHA ниже), входы T02/T03/T05 | `codex/t00-contracts-01a19823` / архив claim `ad229bf4e3588b9534b732a753da443ac7c30a8f` | Принято Раулем 1 ноября 2026; блокеров T00 нет |
 | [T01](tasks/T01.md) | 8 | Рауль / чат render-autodeploy-2026-11-01 | Ожидает ручной приёмки | Да; Android APK и backend GHCR → Render выпущены и проверены | `codex/render-autodeploy` / `4e3004500cf72f5db4abf7f7fe4db0963efe4be2` | Доставка доступна для следующих задач; полная ручная приёмка отдельно |
-| [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ожидает релиза | Нет; код интегрирован, signed APK проверяется | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | [PR #9](https://github.com/rurkk/Calorica/pull/9) слит; main `753a1b6`; автоматический signed APK и API26/API36 self-check |
+| [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Ожидает ручной приёмки | Да; foundation 1.0.0, signed APK 0.1.3, API26/API36 | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | [PR #9](https://github.com/rurkk/Calorica/pull/9), main `753a1b6`; [APK 0.1.3](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.3), self-check пройден; нужны человек и доступное физическое устройство |
 | [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | Ревью | Нет; проверенный код в PR, живой выпуск впереди | `codex/t03-accounts-01a19823` / `eeb076d1e5ddcc374b3bed5326338201789444df` | [PR #14](https://github.com/rurkk/Calorica/pull/14); 7 unit +16 integration, независимое ревью одобрено; CI и выпуск |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
 | [T05](tasks/T05.md) | 2 | Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2` | Ожидает интеграции | Нет | `codex/t05-catalog-01a19823` / `5598768f609c23a71e567d8b001b9e7bbfb6204b` | Код/ревью и12unit+30integration сT03/FK025 прошли; нужны main/релиз T03,PR/CI/выпуск T05 |
@@ -199,14 +199,44 @@
   `753a1b6f10186245b6fdaf54ef9891b54ad1665a`, 2026-11-01T18:05:57Z.
   Финальный PR [Android CI](https://github.com/rurkk/Calorica/actions/runs/41334443011)
   на `61b052b8e0bf5a5c63be6d2c8b1f34e5f18050b5` успешен; защиты не обходились.
-- Следующий шаг: автоматический signed APK и проверка выпущенной версии
-  на собственных эмуляторах API26/API36; подготовлен signed baseline 0.1.2/code3.
-- [PR #9](https://github.com/rurkk/Calorica/pull/9): [Android CI](https://github.com/rurkk/Calorica/actions/runs/41334123041)
-  на `964c43649323f308b3d7e34b6179a05ef440216c` прошёл; интеграция подтверждена выше, signed release ещё не подтверждён.
-  Повторное объединение main меняет только tracker, код приложения идентичен проверенному.
-- Readiness с хоста HTTP200/UP за 0,7с; в Render прочитаны безопасные startup-события.
-  Готовность функциональных auth/products/diary этим не подтверждена;
-  физическое устройство не подключено. Ручная приёмка не выполнена, бронь сохраняется.
+- Выпуск: [Android CI + signed publish](https://github.com/rurkk/Calorica/actions/runs/41334824162)
+  завершён SUCCESS; [android-v0.1.3](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.3),
+  versionName `0.1.3`, versionCode `4`, source SHA
+  `753a1b6f10186245b6fdaf54ef9891b54ad1665a`.
+- `release.json`, обе суммы SHA256SUMS, package `com.rurkk.calorica`, minSdk26 и
+  фактическая подпись проверены на скачанном APK. SHA-256 APK:
+  `8dd023d34adac5d52374a932f3b7fb4dc7f2157d121a19a88021d621b6b23102`.
+  Сертификат SHA-256 `df0cd33806531f682d53e031c9abeaddd41160f973ba75ea16575755f80236f1`
+  совпал с repository variable и предыдущим подписанным 0.1.2; fixtures.json в APK нет.
+- Самостоятельная проверка именно выпущенного APK через ADB/UIAutomator, без снимков/видео:
+  - `calorica_t02_api26` / emulator-5586: Android8.0.0, API26, ARM64,
+    OSR1.180418.028.A3/10734686; подписанная 0.1.2/code3 обновлена `adb install -r`
+    до 0.1.3/code4 без удаления signed приложения/данных. Запуск успешен.
+  - `calorica_t02_api36` / emulator-5584: Android16, API36, ARM64,
+    BE2A.250530.026.F3/13894323; чистая установка 0.1.3/code4 и запуск успешны.
+  - На обоих: Дневник → Выбрать продукт → Отмена, Продукты → системный Назад,
+    Связь с сервером → реальный HTTPS readiness → «Сервер доступен».
+  - API26: Settings/авиарежим → NETWORK с понятной ошибкой; после восстановления
+    и ручного retry снова UP. Пустые данные не появлялись, исходная сеть восстановлена.
+  - API36: при искусственной задержке 5000мс начато чтение, системный Назад,
+    повторный вход → Idle; поздний ответ не опубликован. Задержка восстановлена в none.
+    Реальную отмену HTTP call отдельно подтверждает unit/MockWebServer тест.
+  - SHA-256 base.apk, прочитанного с каждого устройства, совпал с опубликованным APK;
+    PID приложения есть, в фильтрованном AndroidRuntime нет FATAL EXCEPTION.
+- Readiness с хоста также HTTP200/UP; это не доказательство готовности бизнес-API
+  auth/products/diary последующих карточек. SQL/миграции/backend не менялись,
+  backend-релиз и PostgreSQL-тесты для T02 не применимы.
+- Технический вход для агентов5/6: [foundation 1.0.0](../../android/foundation.md),
+  DTO/repositories/DI, маршруты и ProductPickerHost доступны в main. T04/T06/T08
+  этим поручением не выполнялись. Доказательства относятся только к APK0.1.3/source753a1b6;
+  последующие warmup-изменения требуют своей версии/проверки.
+- Ручная приёмка: **не выполнена**. Человеку установить APK0.1.3, повторить маршруты,
+  отключение/восстановление сети по foundation.md и явно подтвердить результат.
+  Физическое Android-устройство не подключено; проверка на нём не выполнена.
+  Статус «Ожидает ручной приёмки», claim сохраняется до явного подтверждения/передачи.
+- Итоговый отчёт меняет только документы: Gradle/новый продуктовый релиз для него
+  не запускаются. Повторные документы не меняют source SHA уже проверенного APK.
+
 
 ### T05 — каталог и личные продукты
 
