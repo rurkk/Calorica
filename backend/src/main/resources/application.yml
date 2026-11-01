@@ -7,6 +7,7 @@ spring:
     password: ${DB_PASSWORD}
     hikari:
       schema: public
+      connection-init-sql: "SET statement_timeout = '5s'; SET lock_timeout = '2s'"
       maximum-pool-size: ${DB_POOL_SIZE:5}
       connection-timeout: 3000
       validation-timeout: 2000
@@ -53,3 +54,6 @@ management:
           include: livenessState
         readiness:
           include: readinessState,db,schema
+calorica:
+  auth:
+    jwt-secret: ${AUTH_JWT_SECRET:}

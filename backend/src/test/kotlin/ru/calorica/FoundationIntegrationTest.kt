@@ -63,12 +63,13 @@ class FoundationIntegrationTest @Autowired constructor(
         assertThat(jdbc.sql("SELECT current_schema()").query(String::class.java).single()).isEqualTo("public")
         assertThat(jdbc.sql("SELECT count(*) FROM public.databasechangelog WHERE id = '001-foundation'")
             .query(Int::class.java).single()).isEqualTo(1)
+        val before = jdbc.sql("SELECT count(*) FROM public.databasechangelog").query(Int::class.java).single()
         val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(dataSource.connection))
         Liquibase("db/changelog/db.changelog-master.yaml", ClassLoaderResourceAccessor(), database).use {
             it.validate()
             it.update(liquibase.Contexts(), liquibase.LabelExpression())
         }
-        assertThat(jdbc.sql("SELECT count(*) FROM public.databasechangelog").query(Int::class.java).single()).isEqualTo(1)
+        assertThat(jdbc.sql("SELECT count(*) FROM public.databasechangelog").query(Int::class.java).single()).isEqualTo(before)
         assertThat(jdbc.sql("SELECT count(*) FROM pg_namespace WHERE nspname = 'calorica'")
             .query(Int::class.java).single()).isEqualTo(1)
     }

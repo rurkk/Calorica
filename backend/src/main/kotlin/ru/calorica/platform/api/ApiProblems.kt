@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @Component
 class ApiProblems(private val mapper: ObjectMapper) {
-    fun problem(status: Int, request: HttpServletRequest): ProblemDetail {
+    fun problem(status: Int, request: HttpServletRequest, code: String? = null, errors: List<FieldFailure> = emptyList()): ProblemDetail {
         val httpStatus = HttpStatus.resolve(status) ?: HttpStatus.INTERNAL_SERVER_ERROR
         return ProblemDetail.forStatusAndDetail(httpStatus, when (httpStatus.value()) {
             401 -> "Authentication is required."
@@ -24,7 +24,12 @@ class ApiProblems(private val mapper: ObjectMapper) {
             in 400..499 -> "The request could not be accepted."
             else -> "An internal error occurred."
         }).apply {
-            setProperty("code", httpStatus.name)
+            setProperty("code", code ?: when (status) {
+                413 -> "REQUEST_TOO_LARGE"
+                422 -> "VALIDATION_FAILED"
+                else -> httpStatus.name
+            })
+            if (errors.isNotEmpty()) setProperty("errors", errors)
             setProperty("correlationId", request.getAttribute(RequestIdFilter.ATTRIBUTE))
         }
     }

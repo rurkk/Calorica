@@ -22,7 +22,7 @@ class RequestIdFilter : OncePerRequestFilter() {
         MDC.put("correlationId", id)
         val start = System.nanoTime()
         try { chain.doFilter(request, response) } finally {
-            accessLog.info("request id={} method={} status={} durationMs={}", id, request.method,
+            if (request.getAttribute(DeadlineFilter.MANAGED) != true) accessLog.info("request id={} method={} status={} durationMs={}", id, request.method,
                 response.status, (System.nanoTime() - start) / 1_000_000)
             MDC.remove("correlationId")
         }
