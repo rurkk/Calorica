@@ -126,6 +126,54 @@ class AndroidReleaseTest(unittest.TestCase):
                             release.verify_apk(Path('app.apk'), plan, directory, certificate)
 
 
+    def test_sdk_37_signature_scheme_labels_match_the_permanent_certificate(self):
+        certificate = 'c' * 64
+        badging = "package: name='com.rurkk.calorica' versionCode='3' versionName='0.1.2'"
+        output = (f'V2 Signer: certificate DN: CN=Calorica Android Release\n'
+                  f'V2 Signer: certificate SHA-256 digest: {certificate}\n'
+                  f'V3.0 Signer: certificate SHA-256 digest: {certificate}')
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / 'build-tools' / '37.0.0').mkdir(parents=True)
+            with patch.object(release, 'command', side_effect=[output, badging]):
+                self.assertEqual(certificate, release.verify_apk(Path('app.apk'), self.choose(), directory, certificate))
+
+    def test_sdk_37_rejects_an_unpinned_certificate_in_any_signature_scheme(self):
+        output = (f'V2 Signer: certificate SHA-256 digest: {"c" * 64}\n'
+                  f'V3.1 Signer: certificate SHA-256 digest: {"d" * 64}')
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / 'build-tools' / '37.0.0').mkdir(parents=True)
+            with patch.object(release, 'command', return_value=output):
+                with self.assertRaisesRegex(ValueError, 'pinned'):
+                    release.verify_apk(Path('app.apk'), self.choose(), directory, 'c' * 64)
+
+    def test_v31_sdk_range_signers_use_the_same_permanent_certificate(self):
+        certificate = 'c' * 64
+        badging = "package: name='com.rurkk.calorica' versionCode='3' versionName='0.1.2'"
+        output = (f'Signer (minSdkVersion=33, maxSdkVersion=2147483647) certificate SHA-256 digest: {certificate}\n'
+                  f'Signer (minSdkVersion=24, maxSdkVersion=32) certificate SHA-256 digest: {certificate}\n'
+                  f'Source Stamp Signer certificate SHA-256 digest: {"d" * 64}')
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / 'build-tools' / '37.0.0').mkdir(parents=True)
+            with patch.object(release, 'command', side_effect=[output, badging]):
+                self.assertEqual(certificate, release.verify_apk(Path('app.apk'), self.choose(), directory, certificate))
+
+    def test_v31_rejects_an_unpinned_signer_for_any_sdk_range(self):
+        output = (f'Signer (minSdkVersion=33, maxSdkVersion=2147483647) certificate SHA-256 digest: {"c" * 64}\n'
+                  f'Signer (minSdkVersion=24, maxSdkVersion=32) certificate SHA-256 digest: {"d" * 64}')
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / 'build-tools' / '37.0.0').mkdir(parents=True)
+            with patch.object(release, 'command', return_value=output):
+                with self.assertRaisesRegex(ValueError, 'pinned'):
+                    release.verify_apk(Path('app.apk'), self.choose(), directory, 'c' * 64)
+
+    def test_a_source_stamp_alone_does_not_prove_the_apk_signer(self):
+        output = f'Source Stamp Signer certificate SHA-256 digest: {"c" * 64}'
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / 'build-tools' / '37.0.0').mkdir(parents=True)
+            with patch.object(release, 'command', return_value=output):
+                with self.assertRaisesRegex(ValueError, 'pinned'):
+                    release.verify_apk(Path('app.apk'), self.choose(), directory, 'c' * 64)
+
     def test_summary_keeps_apk_link_when_artifact_upload_fails_after_publish(self):
         import argparse
         import os
