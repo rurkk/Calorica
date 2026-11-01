@@ -1,0 +1,292 @@
+[
+  {
+    "name": "register",
+    "method": "post",
+    "path": "/accounts/register",
+    "request": {
+      "email": "student@example.test",
+      "password": "example-only-123"
+    },
+    "status": 201,
+    "response": {
+      "accessToken": "FAKE-NOT-A-TOKEN",
+      "refreshToken": "FAKE-NOT-A-TOKEN",
+      "tokenType": "Bearer",
+      "accessExpiresAt": "2026-11-01T09:15:00Z",
+      "sessionExpiresAt": "2026-12-01T09:00:00Z",
+      "account": {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "email": "student@example.test",
+        "role": "USER",
+        "profile": {
+          "calorieTarget": null,
+          "proteinTarget": null,
+          "fatTarget": null,
+          "carbsTarget": null
+        }
+      }
+    }
+  },
+  {
+    "name": "search",
+    "method": "get",
+    "path": "/products",
+    "status": 200,
+    "response": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "ownerId": null,
+          "name": "Контрольный лист 400",
+          "isDeleted": false,
+          "kind": "LEAF",
+          "manualNutrition": {
+            "calories": "400",
+            "protein": "0",
+            "fat": "0",
+            "carbs": "0"
+          },
+          "nutritionPer100g": {
+            "calories": "400",
+            "protein": "0",
+            "fat": "0",
+            "carbs": "0"
+          },
+          "components": [],
+          "manualYieldFactor": null,
+          "effectiveYieldFactor": "1",
+          "yieldSource": "DEFAULT",
+          "productLabelIds": []
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000002",
+          "ownerId": null,
+          "name": "Контрольный лист 80",
+          "isDeleted": false,
+          "kind": "LEAF",
+          "manualNutrition": {
+            "calories": "80",
+            "protein": "0",
+            "fat": "0",
+            "carbs": "0"
+          },
+          "nutritionPer100g": {
+            "calories": "80",
+            "protein": "0",
+            "fat": "0",
+            "carbs": "0"
+          },
+          "components": [],
+          "manualYieldFactor": null,
+          "effectiveYieldFactor": "1",
+          "yieldSource": "DEFAULT",
+          "productLabelIds": []
+        }
+      ],
+      "nextCursor": null
+    }
+  },
+  {
+    "name": "composition",
+    "method": "put",
+    "path": "/products/{productId}/composition",
+    "request": {
+      "inputMode": "PERCENT",
+      "components": [
+        {
+          "productId": "00000000-0000-4000-8000-000000000001",
+          "percent": "50",
+          "yieldFactor": "0.5"
+        },
+        {
+          "productId": "00000000-0000-4000-8000-000000000002",
+          "percent": "50",
+          "yieldFactor": "1.5"
+        }
+      ],
+      "manualYieldFactor": null
+    },
+    "status": 200,
+    "response": {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "ownerId": "00000000-0000-4000-8000-000000000004",
+      "name": "Контрольный состав",
+      "isDeleted": false,
+      "kind": "COMPOSITE",
+      "manualNutrition": null,
+      "nutritionPer100g": {
+        "calories": "240",
+        "protein": "0",
+        "fat": "0",
+        "carbs": "0"
+      },
+      "components": [
+        {
+          "productId": "00000000-0000-4000-8000-000000000001",
+          "fraction": "0.5",
+          "yieldFactor": "0.5"
+        },
+        {
+          "productId": "00000000-0000-4000-8000-000000000002",
+          "fraction": "0.5",
+          "yieldFactor": "1.5"
+        }
+      ],
+      "manualYieldFactor": null,
+      "effectiveYieldFactor": "1",
+      "yieldSource": "INGREDIENTS",
+      "productLabelIds": []
+    }
+  },
+  {
+    "name": "diary-create",
+    "method": "post",
+    "path": "/diary/entries",
+    "request": {
+      "productId": "00000000-0000-4000-8000-000000000003",
+      "quantity": "200",
+      "unit": "g",
+      "occurredAt": "2026-11-01T09:00:00Z",
+      "mealLabelIds": [
+        "00000000-0000-4000-8000-000000000006"
+      ]
+    },
+    "status": 201,
+    "response": {
+      "id": "00000000-0000-4000-8000-000000000005",
+      "productId": "00000000-0000-4000-8000-000000000003",
+      "productName": "Контрольный состав",
+      "productDeleted": false,
+      "consumedGrams": "200",
+      "occurredAt": "2026-11-01T09:00:00Z",
+      "mealLabelIds": [
+        "00000000-0000-4000-8000-000000000006"
+      ],
+      "nutrition": {
+        "calories": "480",
+        "protein": "0",
+        "fat": "0",
+        "carbs": "0"
+      }
+    }
+  },
+  {
+    "name": "diary-day",
+    "method": "get",
+    "path": "/diary",
+    "status": 200,
+    "response": {
+      "date": "2026-11-01",
+      "zone": "Europe/Moscow",
+      "entries": [
+        {
+          "id": "00000000-0000-4000-8000-000000000005",
+          "productId": "00000000-0000-4000-8000-000000000003",
+          "productName": "Контрольный состав",
+          "productDeleted": false,
+          "consumedGrams": "200",
+          "occurredAt": "2026-11-01T09:00:00Z",
+          "mealLabelIds": [
+            "00000000-0000-4000-8000-000000000006"
+          ],
+          "nutrition": {
+            "calories": "480",
+            "protein": "0",
+            "fat": "0",
+            "carbs": "0"
+          }
+        }
+      ],
+      "total": {
+        "calories": "480",
+        "protein": "0",
+        "fat": "0",
+        "carbs": "0"
+      }
+    }
+  },
+  {
+    "name": "invalid-percent",
+    "method": "put",
+    "path": "/products/{productId}/composition",
+    "request": {
+      "inputMode": "PERCENT",
+      "components": [
+        {
+          "productId": "00000000-0000-4000-8000-000000000001",
+          "percent": "90"
+        }
+      ]
+    },
+    "status": 422,
+    "response": {
+      "type": "about:blank",
+      "title": "Unprocessable Entity",
+      "status": 422,
+      "detail": "Сумма процентов должна быть равна 100.",
+      "code": "INVALID_COMPOSITION",
+      "correlationId": "00000000-0000-4000-8000-000000000007",
+      "errors": [
+        {
+          "field": "components",
+          "code": "PERCENT_SUM"
+        }
+      ]
+    }
+  },
+  {
+    "name": "create-composite",
+    "method": "post",
+    "path": "/products",
+    "request": {
+      "name": "Контрольный состав",
+      "composition": {
+        "inputMode": "PERCENT",
+        "components": [
+          {
+            "productId": "00000000-0000-4000-8000-000000000001",
+            "percent": "50",
+            "yieldFactor": "0.5"
+          },
+          {
+            "productId": "00000000-0000-4000-8000-000000000002",
+            "percent": "50",
+            "yieldFactor": "1.5"
+          }
+        ],
+        "manualYieldFactor": null
+      }
+    },
+    "status": 201,
+    "response": {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "ownerId": "00000000-0000-4000-8000-000000000004",
+      "name": "Контрольный состав",
+      "isDeleted": false,
+      "kind": "COMPOSITE",
+      "manualNutrition": null,
+      "nutritionPer100g": {
+        "calories": "240",
+        "protein": "0",
+        "fat": "0",
+        "carbs": "0"
+      },
+      "components": [
+        {
+          "productId": "00000000-0000-4000-8000-000000000001",
+          "fraction": "0.5",
+          "yieldFactor": "0.5"
+        },
+        {
+          "productId": "00000000-0000-4000-8000-000000000002",
+          "fraction": "0.5",
+          "yieldFactor": "1.5"
+        }
+      ],
+      "manualYieldFactor": null,
+      "effectiveYieldFactor": "1",
+      "yieldSource": "INGREDIENTS",
+      "productLabelIds": []
+    }
+  }
+]
