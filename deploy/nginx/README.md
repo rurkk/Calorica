@@ -1,5 +1,9 @@
 # HTTPS учебного стенда Calorica
 
+Архивная инструкция для прежнего VPS, недоступного по результатам проверки
+24 октября 2026 года. На текущем стенде HTTPS предоставляет Render:
+[Render + Neon](../render/README.md).
+
 API: `https://caloricaitmo.duckdns.org`.
 Readiness: `https://caloricaitmo.duckdns.org/actuator/health/readiness`.
 В DuckDNS IPv4 этого имени указывает на `62.84.122.55`; AAAA-запись не задана.

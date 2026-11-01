@@ -87,8 +87,10 @@ CI/CD и эксплуатация: [deploy/backend/README.md](../deploy/backend/
 
 ## Учебный стенд
 
-API: `https://caloricaitmo.duckdns.org`.
+API: `https://calorica-backend.onrender.com`.
 Проверка: `GET /actuator/health/readiness` → `200 {"status":"UP"}`.
-Контейнеры обновляются из main через GitHub Actions, суммарные ограничения —
-352 MiB ОЗУ и 0.5 CPU. HTTPS и продление сертификата описаны в
-[deploy/nginx/README.md](../deploy/nginx/README.md).
+С 1 ноября 2026 backend размещён на Render Free, PostgreSQL 17 — в Neon Free
+во Франкфурте. Первый выпуск из main проверен; обновления пока ручные через
+Render Dashboard. HTTPS предоставляет Render. Настройки, адреса, ограничения
+тарифов и интеграция Codex — в [deploy/render/README.md](../deploy/render/README.md).
+Прежний VPS недоступен; его Compose и Nginx сохранены как отдельные инструкции.

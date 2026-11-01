@@ -6,6 +6,10 @@ local.properties
 .idea/
 *.hprof
 .DS_Store
+.env
+.env.*
+!.env.example
 .codex-presentation-build-stage1/
 docs/presentation/Calorica-stage-1.pptx
 docs/presentation/Calorica-stage-1-v*.pptx
+.neon

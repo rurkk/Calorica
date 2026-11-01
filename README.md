@@ -41,7 +41,8 @@ Calorica — мобильное приложение для учёта пита�
 
 В `backend/` добавлен отдельный Kotlin/Spring Boot-каркас: Spring JDBC, PostgreSQL,
 Liquibase, закрытые по умолчанию маршруты, health/readiness и контейнерный запуск.
-Каркас развёрнут на учебном стенде с HTTPS и автоматическим деплоем.
+Каркас развёрнут на Render с PostgreSQL в Neon и публичным HTTPS.
+Обновление нового стенда пока выполняется вручную.
 Бизнес-API и пользовательские сессии ещё не реализованы.
 Инструкции: [backend](backend/README.md), [CI/CD и размещение](deploy/backend/README.md).
 
@@ -50,8 +51,25 @@ Liquibase, закрытые по умолчанию маршруты, health/rea
 
 ## Инфраструктура учебного стенда
 
-Calorica размещена на общем VPS Yarumo: `62.84.122.55`, Ubuntu 24.04,
-2 CPU и около 2 ГБ RAM. Стенд настроен и проверен 30 сентября 2026 года.
+С 1 ноября 2026 года используется Render Free и Neon Free во Франкфурте.
+
+- API: [calorica-backend.onrender.com](https://calorica-backend.onrender.com).
+- [Readiness](https://calorica-backend.onrender.com/actuator/health/readiness) —
+  приложение, БД и схема; [liveness](https://calorica-backend.onrender.com/actuator/health/liveness) — процесс.
+- [Render Dashboard](https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40),
+  [Neon Console](https://console.neon.tech/app/projects/long-king-45707171/).
+- Backend: Docker, 0.1 CPU / 512 MB RAM; JVM heap 16–96 MiB.
+  PostgreSQL 17: Neon, compute 0.25 CU, база `neondb`.
+- HTTPS предоставляет Render. Обновления — Manual Deploy из `main`;
+  Auto-Deploy выключен. Ограничения бесплатных тарифов и инструкции —
+  в [deploy/render/README.md](deploy/render/README.md).
+
+### Предыдущий стенд VPS
+
+VPS Yarumo `62.84.122.55` недоступен по результатам проверки 24 октября 2026 года.
+Ниже сохранены параметры размещения, проверенные 30 сентября 2026 года;
+это историческая конфигурация. Домен DuckDNS не перенастраивался, данные старой
+БД не перенесены.
 
 | Адрес | Назначение |
 | --- | --- |
@@ -113,6 +131,7 @@ APK будет в `app/build/outputs/apk/debug/app-debug.apk`.
 
 `Android manual prerelease` запускается вручную, создаёт prerelease в GitHub и прикладывает debug APK. Для доставки в Google Play потребуется отдельная настройка подписи и доступа к Play Console.
 
-`Backend CI` независимо проверяет сервер и инфраструктуру. После успешных проверок
-изменений backend в `main` настроены выпуск контейнера в GHCR и автоматический
-деплой по digest на учебный стенд. Документация не запускает сборки.
+`Backend CI` независимо проверяет сервер и инфраструктуру и выпускает контейнер
+в GHCR после успешных проверок изменений backend в `main`. Прежний SSH-деплой
+относится к недоступному VPS; он не обновляет Render. Новый стенд обновляется
+вручную из Render Dashboard. Документация не запускает сборки GitHub Actions.
