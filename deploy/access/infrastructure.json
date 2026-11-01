@@ -12,5 +12,9 @@
   "shared_logs_url": "https://telemetry.betterstack.com/team/t627028/tail?s=l2819108",
   "betterstack_team_id": "t627028",
   "betterstack_source_id": "2819108",
-  "log_stream_connected": true
+  "log_stream_connected": true,
+  "access_mode": "shared_admin",
+  "shared_dev_branch": "dev-team",
+  "shared_dev_branch_id": "br-raspy-cell-bagu0sub",
+  "shared_dev_db_host": "ep-shiny-term-ba000h7f.c-8.eu-central-1.aws.neon.tech"
 }

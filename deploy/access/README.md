@@ -1,241 +1,217 @@
-# Доступ к инфраструктуре Calorica
+# Общий доступ к инфраструктуре Calorica
 
-Единая инструкция для разработчиков и агентов. Состояние на 1 ноября 2026 года.
-Адреса без секретов также собраны в [infrastructure.json](infrastructure.json).
-Пароли передаются каждому участнику отдельным файлом `.env.infra`.
+Единая инструкция для разработчиков и агентов. С 1 ноября 2026 года команда
+использует **один общий административный набор** `.env.infra`, выбранный владельцем.
+Каждому участнику передаётся одинаковый закрытый архив. Пароли и API-ключи
+в репозиторий не входят; адреса находятся в [infrastructure.json](infrastructure.json).
 
-## Что доступно
+## Что входит в набор
 
-| Задача | Способ | Права |
+| Ресурс | Общие права через SQL / API / MCP | Вход в веб-панель |
 | --- | --- | --- |
-| Проверить состояние backend | Публичные health endpoints или команда `status` | Без входа |
-| Посмотреть данные общей БД | Личная SQL-учётка `calorica_ro_*`, psql или IDE | Чтение таблиц `calorica` и истории Liquibase |
-| Менять схему и данные, отлаживать backend | Личная ветка Neon `dev-*` и локальный запуск JVM | Полные права внутри своей ветки БД |
-| Посмотреть проект в Neon Console | Личное приглашение в организацию Raul | Viewer: метаданные проекта; SQL-доступ предоставлен отдельно |
-| Посмотреть runtime-логи | Better Stack, после принятия приглашения Member | Поток подключён; приглашения отправлены |
-| Деплой, настройки Render, его build-логи | Владелец Render | Коллегам не выдаётся ключ владельца |
+| Neon / PostgreSQL | Организационный API-ключ и SQL `neondb_owner`: чтение, запись, DDL, миграции, управление ресурсами проекта | Личные приглашения Admin |
+| Render | API-ключ владельца аккаунта: сервисы, конфигурация, статусы, деплои и логи в рамках доступных API | На Hobby один участник; дополнительные места требуют оплаты |
+| Better Stack | Глобальный API-ключ Read & write: источники, запросы логов и другие доступные API-операции | Бесплатные личные приглашения Member для работы с Telemetry |
+| Локальная отладка | Общая ветка Neon `dev-team`, отдельный пароль владельца ветки, запуск JVM и debugger | SQL-клиент или IDE |
+| GitHub | Исходники и статусы/логи CI доступны в публичном репозитории | Личный аккаунт GitHub для собственных действий |
 
-На Render Hobby доступен один участник workspace; приглашение команды требует
-платного тарифа. Free web service также не предоставляет SSH/shell.
-Поэтому командная отладка выполняется локально с личной БД, а runtime-логи
-доступны через бесплатный Better Stack.
-[Ограничения Render](https://render.com/docs/team-members),
-[Free web services](https://render.com/docs/free).
+Общий API-доступ работает у разработчиков и агентов без личного OAuth.
+У веб-панелей сохраняется модель ролей провайдеров: ключ API не является паролем
+для входа на сайт. В Better Stack персональные Admin/Responder помечены Billable,
+поэтому участники приглашены как Member, а административные API-операции доступны
+через общий ключ. Платные тарифы и лицензии этой настройкой не включались.
+[Render team members](https://render.com/docs/team-members),
+[Render API keys](https://api-docs.render.com/reference/authentication),
+[Better Stack pricing](https://betterstack.com/pricing).
 
-Backend сейчас содержит инфраструктурный каркас. Таблиц предметной области пока
-нет, а бизнес-маршруты закрыты: HTTP 401 на `/api/products` ожидаем.
+Организационный ключ Neon администрирует ресурсы организации, но некоторые
+операции с участниками, приглашениями и переносом проектов требуют личного
+ключа Admin. Для них используйте личный вход по приглашению Admin.
+[Матрица прав Neon API](https://neon.com/docs/manage/orgs-api).
 
 ## Адреса
 
 | Ресурс | Ссылка |
 | --- | --- |
 | API | [calorica-backend.onrender.com](https://calorica-backend.onrender.com) |
-| Liveness — процесс | [health/liveness](https://calorica-backend.onrender.com/actuator/health/liveness) |
-| Readiness — приложение, БД и схема | [health/readiness](https://calorica-backend.onrender.com/actuator/health/readiness) |
-| Render, для владельца | [Dashboard](https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40) · [Логи](https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40/logs) |
+| Liveness процесса | [health/liveness](https://calorica-backend.onrender.com/actuator/health/liveness) |
+| Readiness приложения, БД и схемы | [health/readiness](https://calorica-backend.onrender.com/actuator/health/readiness) |
+| Render | [Dashboard](https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40) |
 | Neon | [Проект calorica](https://console.neon.tech/app/projects/long-king-45707171/) |
-| Runtime-логи | [Better Stack Live tail](https://telemetry.betterstack.com/team/t627028/tail?s=l2819108) — источник `Calorica Render logs`, ID `2819108` |
+| Runtime-логи | [Better Stack Live tail](https://telemetry.betterstack.com/team/t627028/tail?s=l2819108) |
 | Исходники и CI | [GitHub](https://github.com/rurkk/Calorica) · [Actions](https://github.com/rurkk/Calorica/actions) |
 
-Общая БД: `neondb`, PostgreSQL 17, ветка `main` (`br-old-sky-bawhtlz5`).
+Neon: организация `org-summer-rice-10673431`, проект `long-king-45707171`,
+основная ветка `br-old-sky-bawhtlz5`, БД `neondb`, PostgreSQL 17.
 Host: `ep-morning-grass-barfhgst.c-8.eu-central-1.aws.neon.tech`, порт `5432`.
-Проект Neon: `long-king-45707171`, организация `org-summer-rice-10673431`.
-Оба сервиса размещены во Франкфурте. Старый VPS и адрес DuckDNS больше
-не используются для подключения к рабочему стенду.
+Render: `srv-dbjk97vlk1mc739gja40`, workspace `tea-d67200p5pdvs73c2u8n0`.
+Backend и БД находятся во Франкфурте; старый VPS/DuckDNS для работы не используются.
 
-## Первое подключение участника
+## Первое подключение
 
-1. Принять личные приглашения Neon и Better Stack на ту почту, которую передали владельцу.
-2. Клонировать репозиторий. Получить от владельца **свой** пакет доступа,
-   скопировать `.env.infra` в корень рабочей копии, выполнить `chmod 600 .env.infra`.
-3. Установить Python 3.9+ и PostgreSQL client `psql` 17+. На macOS: `brew install libpq`;
-   скрипт умеет находить стандартный путь Homebrew на Apple Silicon.
-4. Из корня репозитория проверить доступ:
+1. Получить от владельца общий архив `calorica-team-admin.zip` по закрытому каналу.
+2. Получить актуальный `main` репозитория. Скопировать `.env.infra` из архива
+   в корень рабочей копии и выполнить `chmod 600 .env.infra`.
+3. Установить Python 3.9+ и клиент `psql` 17+. На Apple Silicon достаточно
+   `brew install libpq`: скрипт находит стандартный путь Homebrew.
+4. Для веб-панелей принять личные приглашения Neon Admin и Better Stack Member.
+5. Проверить доступ из корня репозитория:
 
 ```sh
 python3 scripts/infra/access.py status
 python3 scripts/infra/access.py db-tables
-python3 scripts/infra/access.py db --sql 'SELECT id, author, dateexecuted FROM public.databasechangelog LIMIT 10;'
+python3 scripts/infra/access.py db --sql 'SELECT current_user, id, author FROM public.databasechangelog LIMIT 10;'
+python3 scripts/infra/access.py api neon /projects/long-king-45707171
+python3 scripts/infra/access.py api render /services/srv-dbjk97vlk1mc739gja40
+python3 scripts/infra/access.py api betterstack /sources
 ```
 
-`status` не требует пароля. Render Free засыпает после 15 минут без запросов;
-холодный запуск может занять около минуты. При таймауте повторите проверку вручную.
-Не настраивайте периодический ping ради предотвращения сна: он расходует
-бесплатные ресурсы Render и Neon. [Поведение Free](https://render.com/docs/free).
-
-Путь к профилю можно задать явно:
+Путь к профилю можно задать параметром перед командой:
 
 ```sh
 python3 scripts/infra/access.py --env-file /absolute/private/path/.env.infra db-tables
-python3 scripts/infra/access.py db --file /absolute/path/query.sql
 ```
 
-`db` принимает SQL. Обратная косая черта запрещена, в том числе внутри строк:
-это исключает команды оболочки и файловые операции psql. При необходимости
-получить такой символ в SQL используйте `chr(92)`.
+Скрипт не исполняет env как shell-код. API-ключи идут в HTTP-заголовках,
+SQL-пароль — в окружении дочернего процесса; секреты не передаются в argv.
+Вывод API скрывает пароли, токены и значения секретных env-переменных.
+HTTP-перенаправления API отключены, чтобы не пересылать ключи другому адресу.
 
-Скрипт не исполняет содержимое env как shell-код и не передаёт пароль аргументом
-процесса. Профиль исключён из Git. Не прикладывайте его к issue, PR или сообщению
-агенту; достаточно передать агенту путь к локальному файлу.
+## SQL и миграции
 
-### Подключение из IDE или SQL-клиента
+`PG*` в общем профиле указывают на основную БД с ролью владельца. Она имеет
+права на изменение данных и схемы. Для просмотра команда `db` открывает
+READ ONLY транзакцию и завершает её ROLLBACK. Для записи используйте `db-admin`:
 
-Для общей БД укажите Host, Port, Database, User и Password из блока `PG*`
-своего профиля. Выберите TLS с проверкой сертификата и имени сервера (`verify-full`)
-и системное доверенное хранилище CA; для libpq также `channel_binding=require`.
-Не используйте `neondb_owner` для общей БД.
+```sh
+# Проверка административного подключения без изменения данных:
+python3 scripts/infra/access.py db-admin --sql 'SELECT current_user;'
+# Выполнение подготовленного SQL с COMMIT:
+python3 scripts/infra/access.py db-admin --file /absolute/path/change.sql
+```
 
-SQL-учётки имеют SELECT на текущие таблицы `calorica` и новые таблицы, созданные
-в этой схеме ролью `neondb_owner`; на `public` доступна только история и lock
-Liquibase. Запись в постоянные таблицы и создание объектов схемы запрещены
-правами PostgreSQL. Таймаут одного запроса — 5 секунд, лимит — 3 соединения
-на пользователя. Закрывайте неиспользуемые консоли.
+`db` и `db-admin` принимают SQL; обратная косая черта запрещена также внутри строк,
+чтобы исключить команды оболочки и файловые операции psql. Для символа используйте
+`chr(92)`. В IDE укажите `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`
+из общего профиля; TLS с проверкой сертификата и имени сервера (`verify-full`).
+У libpq также используются системные CA и `channel_binding=require`.
 
-Neon Viewer показывает метаданные, но не даёт строк подключения или SQL Editor.
-Права Viewer и персональное подключение PostgreSQL — разные уровни доступа.
-[Роли Neon](https://neon.com/docs/manage/user-permissions),
-[права БД](https://neon.com/docs/manage/database-access).
+SQL-пароль основной ветки используется развёрнутым backend. При его ротации
+обновите общий пакет и `DB_PASSWORD` в Render согласованно. Эта настройка доступа
+не меняет рабочий пароль приложения.
 
-## Локальная отладка и изменения данных
+Миграции разрабатывайте в dev-ветке и переносите через Git/ревью. Применённые
+changesets не переписывайте. Интеграционные тесты backend требуют отдельной
+чистой одноразовой БД, см. [backend/README.md](../../backend/README.md).
 
-Созданы отдельные ветки `dev-kamila` и `dev-raul`. Каждому участнику передаётся
-пароль владельца **его ветки**, отличный от пароля основной БД.
-Ветки изолированы: изменения схемы и строк не переносятся в `main` автоматически.
-Миграции переносятся через код и ревью, после чего применяются при деплое.
+## Локальный backend и debugger
 
-Требуется JDK 21. Команда использует `DEV_*` из личного профиля, включает профиль
-Spring `prod` и ограничивает пул двумя соединениями:
+Общий профиль содержит `DEV_*` для `dev-team`. Пароль этой ветки отличается
+от основной БД. Для запуска нужны JDK 21 и доступ к Neon; Docker локально
+для такого запуска не требуется:
 
 ```sh
 python3 scripts/infra/access.py dev-run
-# Запуск с ожиданием подключения Java debugger на локальном порту 5005:
 python3 scripts/infra/access.py dev-run --debug
 ```
 
-Backend слушает `http://localhost:8080`. В IDE создайте Remote JVM Debug на порту
-5005; остановка — Ctrl+C. Общий endpoint Neon скрипт для `dev-run` отклоняет.
-Пароль личной dev-ветки проверен: он не подходит к основной ветке.
+HTTP: `http://localhost:8080`. В IDE подключите Java debugger к локальному порту
+5005; с `--debug` JVM ожидает debugger. Пул БД ограничен двумя соединениями.
+Остановка — Ctrl+C. При параллельной разработке согласуйте изменения общей dev-ветки
+или создайте отдельные ветки средствами Neon API/MCP.
 
-Для SQL-изменений в своей ветке используйте Host из `DEV_DB_URL`, базу `neondb`,
-`DEV_DB_USERNAME` и `DEV_DB_PASSWORD`. Не подключайте миграционные/интеграционные
-тесты к общей БД. `backend/gradlew check` требует отдельную чистую одноразовую БД;
-обычная dev-ветка с уже применёнными миграциями для такого теста не подходит.
-Подробности локального Docker и тестов — в [backend/README.md](../../backend/README.md).
+## Агенты: MCP и CLI
 
-Ветки созданы как снимки `main` на момент выдачи доступа. Новые миграции из Git
-Liquibase применит при следующем запуске локального backend. Сброс/удаление ветки
-уничтожает её собственные изменения; такие операции согласуйте с владельцем.
+В [.codex/config.toml](../../.codex/config.toml) настроены три сервера:
 
-## Runtime-логи
+- `CaloricaNeon` — проект Neon, SQL и операции с БД/ветками;
+- `CaloricaRender` — инфраструктура и отладка сервиса Render;
+- `CaloricaLogs` — Better Stack, источники и запросы runtime-логов.
 
-Better Stack создан на Free: 3 ГБ логов, хранение 3 дня. Источник `Calorica Render logs`
-создан, приглашения двух участников отправлены с бесплатной ролью Member.
-Передача логов Render включена и проверена настоящим HTTP-запросом. На Free регион логов — United States
-(`us-west-2a`); смена региона в интерфейсе помечена как платная и не выполнялась.
-Не считайте отсутствие событий в Better Stack доказательством исправности backend.
-[Тариф Better Stack](https://betterstack.com/pricing).
-
-На Render Hobby поток логов задаётся для всего workspace. В текущем workspace
-есть Calorica и ещё один приостановленный учебный сервис. Владелец подтвердил
-передачу логов обоих сервисов; при запуске второго его логи также будут доступны
-участникам Better Stack. Исключение сервиса из общего потока на Hobby недоступно.
-[Механизм Log Streams](https://render.com/docs/log-streams).
-
-Откройте Live tail и выберите источник `Calorica Render logs`. Это источник
-workspace; события Calorica отмечены `syslog.host: calorica-backend`.
-Для поиска
-конкретного HTTP-запроса используйте `correlationId` из ответа/Problem Details
-или заголовок `X-Request-Id`; access-лог содержит тот же идентификатор, метод,
-статус и длительность. Введите ID в двойных кавычках в поисковую строку и нажмите
-Enter. Не добавляйте в сообщения тела запросов, пароли или токены.
-Build/deploy-логи остаются в Render у владельца; runtime-поток их не заменяет.
-
-## Доступ агентов
-
-Для агента, работающего локально в репозитории, доступны те же команды
-`scripts/infra/access.py`. Достаточно Python и личного профиля с правами 600.
-Запрос агенту может выглядеть так:
-
-> Проверь статус Calorica и последние миграции. Используй scripts/infra/access.py
-> и мой локальный .env.infra. Не выводи секреты; общую БД только читай.
-> Изменения и запуск backend выполняй на моей dev-ветке.
-
-В [.codex/config.toml](../../.codex/config.toml) подключён Neon OAuth MCP,
-ограниченный проектом Calorica и `readonly=true`. В доверенной рабочей копии
-начните новый сеанс Codex; вход CLI из корня:
+Каждый сервер получает свой ключ через локальный `http_headers_helper`, который
+читает `.env.infra` в корне этой рабочей копии. Личный OAuth для общего набора
+не требуется. В Codex откройте доверенный проект Calorica **из корня репозитория**
+и начните новый сеанс после копирования профиля. Проверка конфигурации:
 
 ```sh
-codex mcp login Neon
+codex mcp get CaloricaNeon
+codex mcp get CaloricaRender
+codex mcp get CaloricaLogs
 ```
 
-Это вход в личный аккаунт Neon. MCP использует его платформенные права: Viewer
-не получает SQL только за счёт наличия MCP. У Viewer SQL работает через личный
-профиль и Python/psql, а MCP — в пределах доступных метаданных.
-Ограничение `readonly=true` не запрещает другие действия владельца через CLI
-или Console; агенты не должны использовать owner-профиль вместо персонального.
+`mcp-headers` — внутренний канал передачи Authorization в MCP-клиент.
+Не запускайте эту служебную команду вручную в чате и не публикуйте её stdout.
+Если доступен только терминал, агент использует те же команды `access.py api`,
+`db`, `db-admin`, `status` и `dev-run`. Локальные MCP helper-команды не применяются
+к агенту, который работает на удалённом облачном исполнителе без этого файла.
+Для такого исполнителя ключи надо отдельно поместить в его закрытые секреты.
+[Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli),
+[формат helper](https://learn.chatgpt.com/codex/config-file/config-reference),
 [Neon MCP](https://neon.com/docs/ai/neon-mcp-server),
-[настройка Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
-
-Для Better Stack в том же config подключён OAuth MCP `https://mcp.betterstack.com`
-со scope `read`. Каждый участник входит своим аккаунтом после принятия приглашения:
-
-```sh
-codex mcp login BetterStack --scopes read
-```
-
-При выборе разрешений оставьте Read-only. Для владельца OAuth-вход успешно
-выполнен с запросом scope `read`; сервер публикует scopes `read` и `write` в
-[OAuth metadata](https://mcp.betterstack.com/.well-known/oauth-protected-resource).
-В текущем чате новые MCP-инструменты не загружаются: начать новый сеанс нужно
-после сохранения конфигурации. Реальные runtime-события проверены в Live tail;
-вызов MCP-инструмента чтения логов в новом сеансе отдельно ещё не выполнялся.
-
-Если `codex mcp get BetterStack` сообщает, что сервер не найден, откройте именно
-рабочую копию с этим config и разрешите доверие проекту в Codex: конфигурация
-`.codex/config.toml` загружается только для доверенных проектов. Не добавляйте
-owner API key в качестве обхода. Общие ключи Render/Neon/Better Stack не раздаются.
+[Render MCP](https://render.com/docs/mcp-server),
 [Better Stack MCP](https://betterstack.com/docs/getting-started/integrations/mcp/).
 
-## Квоты и эксплуатация
+Пример задания агенту:
 
-- Render Free: 0.1 CPU / 512 MB, heap JVM 16–96 MiB; обновление вручную из `main`.
-- Neon Free: по 0.25 CU на endpoint, автосон по настройке Free (5 минут).
-  Все dev-ветки и основная БД делят **100 CU-часов в месяц на проект** и лимит
-  данных 1 ГБ; создание веток не даёт отдельную месячную квоту.
-  [Neon Free](https://neon.com/pricing).
-- Останавливайте локальный backend после работы: его пул может поддерживать
-  соединения с dev-веткой и мешать сну. Не держите SQL-клиент с автообновлением.
-- Платные тарифы, карты, responder licenses и мониторинг постоянными запросами
-  для этой схемы не требуются и не включались.
-- Регулярные внешние резервные копии и автоматические оповещения пока не настроены.
+> Используй общий .env.infra через scripts/infra/access.py или MCP CaloricaNeon,
+> CaloricaRender, CaloricaLogs. Проверь readiness, состояние сервиса, последние
+> миграции и runtime-логи. Секреты не выводи. Разработку и отладку веди на dev-team;
+> запись в основную БД выполняй только в рамках порученного изменения.
 
-## Памятка владельцу
+CLI с ключами из общего профиля можно запустить так:
 
-Приглашение Neon не отправляет пароль SQL. Каждому участнику передайте только
-его пакет `.env.infra` + `PERSONAL-SETUP.md` по личному каналу. Пакеты не размещать
-в репозитории, GitHub Releases или общедоступном облаке. Не пересылайте admin
-`.env.local`, из которого работает основная БД/Render.
+```sh
+python3 scripts/infra/access.py run -- neon projects list --org-id org-summer-rice-10673431
+```
 
-[readonly.sql](readonly.sql) содержит воспроизводимые общие SELECT-grants без
-паролей. Новому участнику дополнительно нужны отдельный LOGIN, членство в
-`calorica_observer`, личный пароль и dev-ветка с собственным паролем владельца.
-Если таблицы создаёт другая роль, настройте default privileges для этой роли
-отдельно; текущая настройка распространяется на `neondb_owner`.
+При API-изменениях используйте `--method POST|PATCH|PUT|DELETE` и JSON-файл тела
+через `--data-file`. Если ответ содержит нужные новые секреты, сохраните его
+через `--output-file /absolute/private/new-file.json`: создаётся новый файл
+с правами 600, stdout содержит только HTTP-статус. Общий ключ Render даёт доступ
+ко всему аккаунту, в том числе к старому приостановленному сервису; наличие
+такого права не является заданием изменять соседние проекты.
 
-При отзыве доступа отключите личный SQL LOGIN в `main`, завершите его активные
-соединения, отзовите приглашение/членство Neon и Better Stack. Отдельно смените
-пароль владельца личной dev-ветки или удалите её после согласования сохранности
-данных. Удаление человека из Neon не отзывает его пароль PostgreSQL.
+## Логи, статусы и бесплатные ресурсы
 
-Проверка инфраструктурных инструментов без Android/Gradle:
+В Better Stack подключён источник `Calorica Render logs`, ID `2819108`.
+Это общий поток Render workspace, включающий также старый приостановленный сервис
+при его запуске, что подтверждено владельцем. События Calorica помечены
+`syslog.host: calorica-backend`. Для конкретного запроса ищите в Live tail
+`X-Request-Id` / `correlationId` из HTTP-ответа, заключив ID в двойные кавычки.
+Настоящий запрос с HTTP 401 и тем же request ID проверен в потоке.
+
+- Render Free: 0.1 CPU / 512 MB, heap JVM 16–96 MiB, автосон после 15 минут;
+  холодный старт может занять около минуты. Обновления — Manual Deploy из `main`.
+- Neon Free: 0.25 CU, автосон по настройке Free (5 минут). Основная БД и dev-ветки
+  делят 100 CU-часов на проект в месяц и лимит данных 1 ГБ.
+- Better Stack Free: 3 ГБ логов, хранение 3 дня; регион логов United States
+  (`us-west-2a`), выбор другого региона в UI платный.
+- Статус проверяйте вручную. Постоянный ping и SQL auto-refresh расходуют квоты.
+  После отладки останавливайте локальный backend и закрывайте SQL-сессии.
+- Бизнес-API ещё не реализован; 401 на `/api/products` ожидаем. Регулярные внешние
+  резервные копии и автоматические оповещения пока не настроены.
+
+[Render Free](https://render.com/docs/free), [Neon Free](https://neon.com/pricing).
+
+## Хранение и смена общего набора
+
+Передавайте один и тот же закрытый архив только участникам команды. Не размещайте
+его в Git, GitHub Releases, issue или общедоступной ссылке. Агенту достаточно
+пути к `.env.infra`; не вставляйте значения в промпт. Если нужно отозвать общий
+доступ, ротируйте общие ключи и SQL-пароль, затем раздайте обновлённый пакет
+оставшимся участникам. Ротация SQL-пароля требует обновления Render.
+
+Ранее созданные персональные read-only учётки и dev-ветки сохраняются как прежний
+способ подключения. Новый общий пакет заменяет их для текущей командной работы.
+[readonly.sql](readonly.sql) относится к прежней схеме SELECT-grants.
+
+Проверки инструментов без Android/Gradle:
 
 ```sh
 python3 -m unittest discover -s scripts/infra -p 'test_*.py'
 ```
 
-Проверено: оба личных SELECT, запрет постоянных DDL/DML в основной БД даже при
-снятии session read-only, транзакционные CREATE/INSERT/ALTER в личных ветках
-с последующим ROLLBACK, отказ dev-паролей при попытке входа в основную БД.
-Публичные liveness/readiness вернули HTTP 200/UP. Контрольный GET закрытого
-`/api/products` вернул ожидаемый 401, а его `X-Request-Id` найден в Better Stack
-в записи `RequestIdFilter` с тем же статусом.
+Проверка 1 ноября 2026 года: общие ключи вернули HTTP 200 у трёх провайдеров;
+через MCP выполнены SQL Neon, `list_services` и `list_logs` Render, запрос
+`count()` по реальным логам Better Stack. Подтверждены SQL-запись и DDL транзакцией
+с откатом и отказ пароля dev-team при подключении к основной ветке.

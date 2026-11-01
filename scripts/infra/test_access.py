@@ -81,6 +81,64 @@ class InfrastructureAccessTest(unittest.TestCase):
         self.assertEqual(env['DB_PASSWORD'], 'private')
         self.assertEqual(env['DB_POOL_SIZE'], '2')
 
+    def shared_profile(self):
+        return dict(self.profile(), ACCESS_MODE='shared_admin', PGUSER='neondb_owner',
+                    NEON_API_KEY='private-neon-key', RENDER_API_KEY='private-render-key',
+                    BETTERSTACK_API_KEY='private-logs-key')
+
+    def test_shared_admin_keeps_default_queries_read_only(self):
+        env = access.readonly_environment(self.shared_profile(), REGISTRY)
+        self.assertIn('default_transaction_read_only=on', env['PGOPTIONS'])
+
+    def test_write_queries_require_the_explicit_shared_admin_profile(self):
+        with self.assertRaises(access.AccessError):
+            access.query(self.profile(), REGISTRY, 'SELECT 1;', write=True)
+
+    def test_explicit_admin_queries_commit_and_keep_the_password_out_of_arguments(self):
+        profile = self.shared_profile()
+        def runner(command, **kwargs):
+            self.assertNotIn(profile['PGPASSWORD'], ' '.join(command))
+            self.assertTrue(kwargs['input'].startswith('BEGIN;'))
+            self.assertTrue(kwargs['input'].endswith('COMMIT;\n'))
+            self.assertIn('default_transaction_read_only=off', kwargs['env']['PGOPTIONS'])
+            return SimpleNamespace(returncode=0, stdout='', stderr='')
+        access.query(profile, REGISTRY, 'SELECT 1;', runner, 'psql-test', write=True)
+
+    def test_mcp_headers_use_only_the_selected_provider_key(self):
+        profile = self.shared_profile()
+        self.assertEqual(access.mcp_headers(profile, 'render'),
+                         {'Authorization': 'Bearer private-render-key'})
+        with self.assertRaises(access.AccessError):
+            access.mcp_headers(self.profile(), 'render')
+
+    def test_api_rejects_foreign_urls_before_sending_credentials(self):
+        for path in ('https://outside.example/', '//outside.example/'):
+            with self.subTest(path=path), self.assertRaises(access.AccessError):
+                access.provider_request(self.shared_profile(), 'render', path)
+
+    def test_api_uses_the_registered_origin_and_disables_redirects(self):
+        def opener(request, **kwargs):
+            self.assertEqual(request.full_url, 'https://api.render.com/v1/services')
+            self.assertEqual(request.get_header('Authorization'), 'Bearer private-render-key')
+            class Response:
+                status = 200
+                def __enter__(self): return self
+                def __exit__(self, *args): pass
+                def read(self, size): return b'{"ok":true}'
+            return Response()
+        result = access.provider_request(self.shared_profile(), 'render', '/services', opener=opener)
+        self.assertEqual(result, {'http': 200, 'data': {'ok': True}})
+        self.assertIsNone(access.NoRedirect().redirect_request(None, None, 302, '', {}, 'https://outside.example/'))
+
+    def test_api_output_hides_generated_secrets_and_secret_environment_values(self):
+        payload = {'role': {'password': 'new-password'}, 'key': 'new-api-key',
+                   'envVars': [{'key': 'DB_PASSWORD', 'value': 'production-password'},
+                               {'key': 'PORT', 'value': '8080'}]}
+        rendered = json.dumps(access.safe_payload(payload, self.shared_profile()))
+        for secret in ('new-password', 'new-api-key', 'production-password'):
+            self.assertNotIn(secret, rendered)
+        self.assertIn('8080', rendered)
+
 
 if __name__ == '__main__':
     unittest.main()
