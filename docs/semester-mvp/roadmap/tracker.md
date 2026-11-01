@@ -138,7 +138,8 @@
   Общий `app/build.gradle.kts` обновляется только для зависимостей/API-адреса поверх T01.
 - Реализация: `core/api` (DTO/decimal/PATCH/HTTP 10s/ошибки), `core/data`
   (auth/products/diary interfaces + adapters), Hilt, ReadState/ReadController,
-  маршруты и общий выбор с requestId. Потребители: [foundation 1.0.0](../../../android/foundation.md).
+  маршруты и общий выбор с requestId. Потребители: [foundation 1.0.0](../../android/foundation.md).
+- Проверенный код: `aa5539b`; совместимый merge свежей main `50d7f3b6565db53db44ef4dc7a97b083b852dd74`.
 - Проверки: 20 unit/MockWebServer тестов прошли (6 contract, 10 HTTP, 3 state, 1 navigation),
   `:app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:lintDebug` — BUILD SUCCESSFUL.
   Lint без ошибок; предупреждения о версиях библиотек/существующем icon/backup config.
