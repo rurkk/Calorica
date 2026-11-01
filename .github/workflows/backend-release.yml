@@ -1,6 +1,9 @@
 name: Backend container release and Render deploy
 on:
   workflow_call:
+    secrets:
+      RENDER_API_KEY:
+        required: true
 permissions:
   contents: read
 concurrency:
