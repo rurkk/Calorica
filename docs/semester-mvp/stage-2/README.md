@@ -47,7 +47,7 @@
 ## Сборка и проверка
 
 Сборщик [build_documents.py](build_documents.py) использует общий модуль оформления
-`scripts/build_stage2.py`, не изменяя его и не перезаписывая прежние документы.
+`scripts/document_builder.py`, не перезаписывая прежние документы.
 Запускать Python с зависимостями `python-docx` и `pypdf`:
 
 ```text
