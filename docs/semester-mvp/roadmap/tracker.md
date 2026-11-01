@@ -167,3 +167,34 @@ Txx — название
 Воспроизвести и исправить дефект, подтвердить результат регрессионной проверкой;
 ревью, новый выпуск и повторная приёмка. Межкомпонентный дефект связывается
 со всеми затронутыми карточками, причину исправляет владелец соответствующего кода.
+
+### T01 — подписанные Android-релизы (согласованная помощь)
+
+- Разработчик: Рауль, Android-чат `01a1980a-73e7-7322-930c-7d77a497f548`;
+  рабочая ветка `codex/android-releases`. Общая бронь владельца T01:
+  `4e3004500cf72f5db4abf7f7fe4db0963efe4be2`, не освобождалась.
+- Интеграция: [PR #3](https://github.com/rurkk/Calorica/pull/3),
+  [PR #4](https://github.com/rurkk/Calorica/pull/4),
+  [PR #7](https://github.com/rurkk/Calorica/pull/7).
+  Правила поручения теперь включают необходимый полный цикл без повторных разрешений.
+- Выпуск: [Android 0.1.2 (3)](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.2),
+  [APK](https://github.com/rurkk/Calorica/releases/download/android-v0.1.2/calorica.apk),
+  [успешный workflow](https://github.com/rurkk/Calorica/actions/runs/41332502598).
+  Source SHA `40386c1da532c944d19669da9ae175a98316237f`;
+  проверенная автоматика main `27f8732113a9def18364ae9ac9acc04a120162e4`.
+- Сертификат постоянный, signing secrets и pin добавлены через Chrome.
+  SHA-256 публичного APK `26326ac774ba78c9e1b14bde8b243ff04ed1c2af21b2cc850e2853810a8af615`
+  сверён с manifest и SHA256SUMS, подпись — с закреплённым сертификатом.
+- Проверки: 30 Python tests (22 Android), actionlint, Gradle debug/release успешно;
+  Android unit test-классов пока нет (`NO-SOURCE`). Исправлен реальный дефект
+  распознавания `V2 Signer:` в SDK37; ключи не менялись.
+- [Повтор опубликованного выпуска](https://github.com/rurkk/Calorica/actions/runs/41332724452)
+  успешен; ID/digest/size/updated_at assets не изменились.
+- Самостоятельная отладка: скачанный публичный APK установлен и запущен на отдельном
+  временном эмуляторе Android36; UIAutomator подтверждает Calorica, обновление
+  до локального 0.1.3 (4) с тем же ключом сохраняет firstInstallTime;
+  AndroidRuntime:E пуст. Пользовательские устройства/данные не затрагивались.
+- Android-доставка технически готова; ручная приёмка человеком не получена.
+  Живой rollback не выполнялся без более старого совместимого signed pipeline-релиза;
+  его политика покрыта тестами. Полная T01, включая оставшуюся инфраструктуру,
+  не закрывается этой записью. Подробности — `vibe/android-releases-plan-track.md`.
