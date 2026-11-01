@@ -168,7 +168,8 @@ def verify_apk(apk, plan, sdk, fingerprint):
     certs = re.findall(r'Signer #\d+ certificate SHA-256 digest: ([a-fA-F0-9]+)', result)
     expected = fingerprint.replace(':', '').lower()
     if not re.fullmatch('[a-f0-9]{64}', expected) or [c.lower() for c in certs] != [expected]:
-        raise ValueError('APK signer differs from the pinned permanent certificate')
+        raise ValueError(f'APK signer differs from the pinned permanent certificate: '
+                         f'expected={expected}, actual={certs}')
     badging = command(str(tools / 'aapt'), 'dump', 'badging', str(apk))
     package = badging.splitlines()[0]
     if (f"name='{PACKAGE}'" not in package

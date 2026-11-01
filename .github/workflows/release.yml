@@ -109,6 +109,8 @@ jobs:
           name: android-release-${{ steps.plan.outputs.version_name }}-${{ github.run_attempt }}
           path: |
             _release/assets/
+            source/app/build/outputs/apk/release/*.apk
+            source/app/build/outputs/apk/release/output-metadata.json
             source/app/build/reports/tests/
           if-no-files-found: ignore
           retention-days: 14
