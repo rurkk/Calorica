@@ -20,6 +20,26 @@ class ApiExceptionHandler(private val problems: ApiProblems) : ResponseEntityExc
     ): ResponseEntity<Any> = ResponseEntity.status(statusCode).headers(headers)
         .body(problems.problem(statusCode.value(), (request as ServletWebRequest).request))
 
+    @ExceptionHandler(ApiFailure::class)
+    fun expected(ex: ApiFailure, request: HttpServletRequest): ResponseEntity<Any> =
+        ResponseEntity.status(ex.status).headers(org.springframework.http.HttpHeaders().apply {
+            if (ex.status == 429) set("Retry-After", "1")
+        }).contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
+            .body(problems.problem(ex.status, request, ex.code, ex.errors))
+
+    @ExceptionHandler(org.springframework.dao.QueryTimeoutException::class,
+        org.springframework.dao.CannotAcquireLockException::class,
+        org.springframework.dao.DataAccessResourceFailureException::class,
+        org.springframework.transaction.TransactionTimedOutException::class)
+    fun unavailable(ex: Exception, request: HttpServletRequest): ResponseEntity<Any> =
+        ResponseEntity.status(503).contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
+            .body(problems.problem(503, request))
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException::class)
+    fun forbidden(ex: Exception, request: HttpServletRequest): ResponseEntity<Any> =
+        ResponseEntity.status(403).contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
+            .body(problems.problem(403, request))
+
     @ExceptionHandler(Exception::class)
     fun unexpected(ex: Exception, request: HttpServletRequest): ResponseEntity<Any> {
         // No exception message/SQL/parameters in logs or responses.
