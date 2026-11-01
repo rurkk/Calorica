@@ -119,6 +119,16 @@
   register, product create, composition write, diary create по OpenAPI/README;
   подтвердить границы и владельцев. Бронь сохраняется до явной приёмки.
 
+### T05 — каталог и личные продукты
+
+- Рауль / чат `01a19823-ff90-76b2-9655-baddaf1d2dd2`, агент 2; рецензент агент 3.
+- Ветка `codex/t05-catalog-01a19823`; worktree `/Users/raul/ItmoProjects/Calorica-agents/t05-catalog-01a19823`.
+- Claim `5598768f609c23a71e567d8b001b9e7bbfb6204b`, 2026-11-01 17:35:27 UTC.
+- Контракт 1.0.0 опубликован T00 в `db7ed5f`; своя миграция `020-products.sql`, include делегирован реестром. FK 025 и реальный Actor интегрирует T03/агент 1.
+- Исходная проверка `40386c1`: JDK 21, `./gradlew --no-daemon check bootJar`, отдельная PostgreSQL 17.11 — 3 integration tests, 0 failures/errors. Это только каркас, не проверка реализации T05.
+- Идёт реализация catalog, search, sourced seed, KEEP_REFERENCES и публичных интерфейсов. Пользовательский выпуск/SA-02/живая приёмка ждут T03 и FK 025; T09/T14 не реализуются.
+- Ревью, реализационные проверки, merge, релиз и ручная приёмка ещё не выполнены. Render Live не считается readiness: перед живой проверкой требуется диагностика наблюдавшихся HTTP timeout.
+
 ### Шаблон записи
 
 При начале работы скопировать блок ниже под отдельный заголовок Txx.
