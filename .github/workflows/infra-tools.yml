@@ -1,0 +1,23 @@
+name: Infrastructure tools
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/infra/**
+      - deploy/access/infrastructure.json
+      - .github/workflows/infra-tools.yml
+      - '!**/*.md'
+  pull_request:
+    paths:
+      - scripts/infra/**
+      - deploy/access/infrastructure.json
+      - .github/workflows/infra-tools.yml
+      - '!**/*.md'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 -m unittest discover -s scripts/infra -p 'test_*.py'

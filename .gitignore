@@ -13,3 +13,5 @@ local.properties
 docs/presentation/Calorica-stage-1.pptx
 docs/presentation/Calorica-stage-1-v*.pptx
 .neon
+__pycache__/
+*.pyc

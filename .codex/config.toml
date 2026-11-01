@@ -1,3 +1,13 @@
-[mcp_servers.Neon]
-type = "http"
+# Each developer copies the SAME private .env.infra to this repository root.
+# These helpers return credentials directly to Codex, never to the conversation.
+[mcp_servers.CaloricaNeon]
 url = "https://mcp.neon.tech/mcp?projectId=long-king-45707171"
+http_headers_helper = "python3 scripts/infra/access.py mcp-headers neon"
+
+[mcp_servers.CaloricaRender]
+url = "https://mcp.render.com/mcp"
+http_headers_helper = "python3 scripts/infra/access.py mcp-headers render"
+
+[mcp_servers.CaloricaLogs]
+url = "https://mcp.betterstack.com"
+http_headers_helper = "python3 scripts/infra/access.py mcp-headers betterstack"

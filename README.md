@@ -15,6 +15,8 @@
 - [Критерии приёмки SA-01–SA-17](docs/semester-mvp/acceptance.md).
 - [ТЗ и архитектура третьего этапа](docs/semester-mvp/stage-3/technical-specification.md) — актуальный комплект требований SM/SB/SN.
 - [Подробные доменные правила](docs/requirements/README.md).
+- [Доступ команды и агентов к инфраструктуре](deploy/access/README.md) — адреса,
+  общий административный набор, MCP/SQL/API, статусы, логи и локальная отладка.
 
 Семестровые требования определяют объём разработки. Наличие операции в серверном
 домене не означает, что для неё нужен отдельный Android-экран: границы клиента
@@ -67,11 +69,15 @@ Liquibase, закрытые по умолчанию маршруты, health/rea
 
 С 1 ноября 2026 года используется Render Free и Neon Free во Франкфурте.
 
+Разработчикам и агентам: [единая инструкция подключения](deploy/access/README.md).
+
 - API: [calorica-backend.onrender.com](https://calorica-backend.onrender.com).
 - [Readiness](https://calorica-backend.onrender.com/actuator/health/readiness) —
   приложение, БД и схема; [liveness](https://calorica-backend.onrender.com/actuator/health/liveness) — процесс.
 - [Render Dashboard](https://dashboard.render.com/web/srv-dbjk97vlk1mc739gja40),
   [Neon Console](https://console.neon.tech/app/projects/long-king-45707171/).
+- [Runtime-логи Better Stack](https://telemetry.betterstack.com/team/t627028/tail?s=l2819108)
+  — доступ по личным приглашениям; инструкция команды приведена выше.
 - Backend: Docker, 0.1 CPU / 512 MB RAM; JVM heap 16–96 MiB.
   PostgreSQL 17: Neon, compute 0.25 CU, база `neondb`.
 - HTTPS предоставляет Render. Обновления — Manual Deploy из `main`;
