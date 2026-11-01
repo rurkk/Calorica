@@ -1,0 +1,26 @@
+name: Render deploy existing image
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: 'Existing ghcr.io/rurkk/calorica-backend@sha256:… (repeat or compatible rollback)'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: backend-production
+    concurrency:
+      group: calorica-render-deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+      - name: Deploy an existing backend digest
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_IMAGE: ${{ inputs.image }}
+        run: python3 scripts/ci/render_deploy.py

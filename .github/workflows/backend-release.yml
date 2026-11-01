@@ -1,4 +1,4 @@
-name: Backend container release and deploy
+name: Backend container release and Render deploy
 on:
   workflow_call:
 permissions:
@@ -84,40 +84,30 @@ jobs:
           echo "Published backend: ${TAG%:*}@$DIGEST" >> "$GITHUB_STEP_SUMMARY"
   deploy:
     needs: publish
-    if: vars.BACKEND_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     environment: backend-production
-    env:
-      DEPLOY_HOST: ${{ vars.BACKEND_DEPLOY_HOST }}
-      DEPLOY_USER: ${{ vars.BACKEND_DEPLOY_USER }}
-      DEPLOY_PORT: ${{ vars.BACKEND_DEPLOY_PORT || '22' }}
-      DEPLOY_ROOT: ${{ vars.BACKEND_DEPLOY_ROOT }}
-      IMAGE: ${{ needs.publish.outputs.image }}
+    concurrency:
+      group: calorica-render-deploy
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v7
-      - name: Prepare pinned SSH connection
+        with:
+          fetch-depth: 0
+      - name: Skip a superseded backend deployment
+        id: source
+        run: |
+          git fetch origin main
+          current=$(git log -1 --format=%H "$GITHUB_SHA" -- backend deploy/backend ':(exclude)**/*.md')
+          latest=$(git log -1 --format=%H origin/main -- backend deploy/backend ':(exclude)**/*.md')
+          if [ "$current" = "$latest" ]; then
+            echo 'deploy=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'Skipped superseded backend deployment.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Deploy the published digest to Render
+        if: steps.source.outputs.deploy == 'true'
         env:
-          SSH_KEY: ${{ secrets.BACKEND_SSH_KEY }}
-          KNOWN_HOSTS: ${{ secrets.BACKEND_SSH_KNOWN_HOSTS }}
-        run: |
-          [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]+$ ]]
-          [[ "$DEPLOY_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
-          [[ "$DEPLOY_PORT" =~ ^[0-9]+$ ]]
-          [[ "$DEPLOY_ROOT" =~ ^/[a-zA-Z0-9_/-]+$ && "$DEPLOY_ROOT" != / ]]
-          test -n "$SSH_KEY" && test -n "$KNOWN_HOSTS"
-          install -d -m 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
-      - name: Deploy the verified digest to the isolated Compose project
-        run: |
-          release="$DEPLOY_ROOT/releases/$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          ssh -p "$DEPLOY_PORT" -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$release'"
-          scp -P "$DEPLOY_PORT" -o StrictHostKeyChecking=yes \
-            deploy/backend/compose.yml deploy/backend/deploy.sh "$DEPLOY_USER@$DEPLOY_HOST:$release/"
-          ssh -p "$DEPLOY_PORT" -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST" \
-            "bash '$release/deploy.sh' '$IMAGE' '$DEPLOY_ROOT'"
-      - name: Remove temporary SSH files
-        if: always()
-        run: rm -f ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_IMAGE: ${{ needs.publish.outputs.image }}
+        run: python3 scripts/ci/render_deploy.py
