@@ -188,7 +188,7 @@ owner; базовая мутация: exclusive base. Мутации испол�
 при чужих зависимостях отклоняется. CatalogMutationLock принадлежит агенту 2,
 T07 вызывает его, не создаёт свой порядок. После locks заново проверяются
 цикл, права, isDeleted, сумма и применимость режима. Unit/label мутации,
-влияющие на несколько чтений, используют тот же snapshot/порядок locks.
+влияющие на несколько чтений, используют тот же порядок locks и READ COMMITTED.
 
 Android T02 определяет интерфейсы AuthRepository (register/login/refresh/logout/me),
 ProductRepository (search/get/create/patch/writeComposition/delete),
