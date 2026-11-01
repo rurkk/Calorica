@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" compressed="false">
+  <diagram id="context" name="C4 Context">
+    <mxGraphModel dx="1200" dy="325" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1200" pageHeight="325" background="#FFFFFF" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="user" value="&lt;b&gt;Пользователь&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:18px'&gt;[Person]&lt;/font&gt;&lt;br&gt;Личные продукты&lt;br&gt;и дневник" style="html=1;fontFamily=Arial;fontSize=23;fontColor=#065F46;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="0" y="65" width="260" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="calorica" value="&lt;b&gt;Calorica&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:18px'&gt;[Software System]&lt;/font&gt;&lt;br&gt;Учёт питания&lt;br&gt;и расчёт КБЖУ" style="html=1;fontFamily=Arial;fontSize=24;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="430" y="45" width="340" height="190" as="geometry"/>
+        </mxCell>
+        <mxCell id="admin" value="&lt;b&gt;Администратор&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:18px'&gt;[Person]&lt;/font&gt;&lt;br&gt;Базовый каталог&lt;br&gt;и общие лейблы" style="html=1;fontFamily=Arial;fontSize=23;fontColor=#065F46;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="940" y="65" width="260" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-1" value="Учёт питания" style="html=1;fontFamily=Arial;fontSize=18;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;" edge="1" source="user" target="calorica" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-15" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-2" value="Каталог" style="html=1;fontFamily=Arial;fontSize=18;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;" edge="1" source="admin" target="calorica" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-15" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" compressed="false">
+  <diagram id="containers" name="C4 Container">
+    <mxGraphModel dx="1200" dy="480" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1200" pageHeight="480" background="#FFFFFF" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="user" value="&lt;b&gt;Пользователь&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:18px'&gt;[Person]&lt;/font&gt;&lt;br&gt;" style="html=1;fontFamily=Arial;fontSize=23;fontColor=#065F46;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="20" y="0" width="260" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="admin" value="&lt;b&gt;Администратор&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:18px'&gt;[Person]&lt;/font&gt;&lt;br&gt;" style="html=1;fontFamily=Arial;fontSize=23;fontColor=#065F46;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="460" y="0" width="300" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="system" value="" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;swimlane;startSize=40;horizontal=1;rounded=1;arcSize=8;fillColor=#F8FAFC;swimlaneFillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=1.5;fontStyle=1;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="0" y="160" width="1200" height="250" as="geometry"/>
+        </mxCell>
+        <mxCell id="system-title" value="&lt;b&gt;Calorica [Software System]&lt;/b&gt;" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#475569;spacing=0;" vertex="1" parent="system">
+          <mxGeometry x="800" y="0" width="380" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="android" value="&lt;b&gt;Android&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:18px'&gt;[Container · Kotlin]&lt;/font&gt;&lt;br&gt;Compose / Material 3" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="system">
+          <mxGeometry x="20" y="85" width="260" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="server" value="&lt;b&gt;Сервер&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:18px'&gt;[Container · Kotlin]&lt;/font&gt;&lt;br&gt;Spring Boot" style="html=1;fontFamily=Arial;fontSize=23;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="system">
+          <mxGeometry x="460" y="85" width="300" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:18px'&gt;[Container · Database]&lt;/font&gt;&lt;br&gt;Исходные данные" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#334155;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;align=center;verticalAlign=middle;shape=cylinder3;boundedLbl=1;size=16;" vertex="1" parent="system">
+          <mxGeometry x="940" y="85" width="240" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-1" value="UI · Android" style="html=1;fontFamily=Arial;fontSize=18;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;" edge="1" source="user" target="android" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-15" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-2" value="SYNC · HTTPS&lt;br&gt;REST / JSON" style="html=1;fontFamily=Arial;fontSize=18;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;" edge="1" source="admin" target="server" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-24" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-3" value="SYNC · HTTPS&lt;br&gt;REST / JSON" style="html=1;fontFamily=Arial;fontSize=18;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;" edge="1" source="android" target="server" parent="system">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-24" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-4" value="SYNC · JDBC&lt;br&gt;SQL" style="html=1;fontFamily=Arial;fontSize=18;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;" edge="1" source="server" target="db" parent="system">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-24" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

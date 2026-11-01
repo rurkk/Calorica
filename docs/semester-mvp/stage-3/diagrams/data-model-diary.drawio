@@ -1,0 +1,165 @@
+<mxfile host="Electron" compressed="false">
+  <diagram id="data-model-diary" name="ER · дневник и лейблы">
+    <mxGraphModel dx="1735" dy="1154" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1290" pageHeight="550" background="#FFFFFF" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="product_labels" parent="1" style="swimlane;html=1;horizontal=1;startSize=42;rounded=0;fillColor=#E2E8F0;swimlaneFillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;align=left;spacingLeft=12;verticalAlign=middle;fontFamily=Arial;fontColor=#334155;fontSize=24;fontStyle=1;container=1;collapsible=0;pointerEvents=0;" value="product_labels" vertex="1">
+          <mxGeometry height="102" width="430" x="-10" as="geometry" />
+        </mxCell>
+        <mxCell id="product_labels.id" parent="product_labels" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="product_labels.id.name" parent="product_labels.id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="id" vertex="1">
+          <mxGeometry height="30" width="134" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="product_labels.id.key" parent="product_labels.id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="PK" vertex="1">
+          <mxGeometry height="30" width="270" x="150" as="geometry" />
+        </mxCell>
+        <mxCell id="product_labels.name" parent="product_labels" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="product_labels.name.name" parent="product_labels.name" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="name" vertex="1">
+          <mxGeometry height="30" width="134" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="product_labels.name.key" parent="product_labels.name" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="UNIQUE" vertex="1">
+          <mxGeometry height="30" width="270" x="150" as="geometry" />
+        </mxCell>
+        <mxCell id="product_label_links" parent="1" style="swimlane;html=1;horizontal=1;startSize=42;rounded=0;fillColor=#E2E8F0;swimlaneFillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;align=left;spacingLeft=12;verticalAlign=middle;fontFamily=Arial;fontColor=#334155;fontSize=24;fontStyle=1;container=1;collapsible=0;pointerEvents=0;" value="product_label_links" vertex="1">
+          <mxGeometry height="102" width="430" x="820" as="geometry" />
+        </mxCell>
+        <mxCell id="product_label_links.product_id" parent="product_label_links" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="product_label_links.product_id.name" parent="product_label_links.product_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="product_id" vertex="1">
+          <mxGeometry height="30" width="134" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="product_label_links.product_id.key" parent="product_label_links.product_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="PK, FK &amp;lt;products.id&amp;gt;" vertex="1">
+          <mxGeometry height="30" width="270" x="150" as="geometry" />
+        </mxCell>
+        <mxCell id="product_label_links.label_id" parent="product_label_links" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="product_label_links.label_id.name" parent="product_label_links.label_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="label_id" vertex="1">
+          <mxGeometry height="30" width="134" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="product_label_links.label_id.key" parent="product_label_links.label_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="PK, FK &amp;lt;product_labels.id&amp;gt;" vertex="1">
+          <mxGeometry height="30" width="270" x="150" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries" parent="1" style="swimlane;html=1;horizontal=1;startSize=42;rounded=0;fillColor=#E2E8F0;swimlaneFillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;align=left;spacingLeft=12;verticalAlign=middle;fontFamily=Arial;fontColor=#334155;fontSize=24;fontStyle=1;container=1;collapsible=0;pointerEvents=0;" value="diary_entries" vertex="1">
+          <mxGeometry height="192" width="430" x="-10" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.id" parent="diary_entries" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.id.name" parent="diary_entries.id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="id" vertex="1">
+          <mxGeometry height="30" width="209" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.id.key" parent="diary_entries.id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="PK" vertex="1">
+          <mxGeometry height="30" width="195" x="225" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.owner_id" parent="diary_entries" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.owner_id.name" parent="diary_entries.owner_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="owner_id" vertex="1">
+          <mxGeometry height="30" width="209" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.owner_id.key" parent="diary_entries.owner_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="FK &amp;lt;users.id&amp;gt;" vertex="1">
+          <mxGeometry height="30" width="195" x="225" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.product_id" parent="diary_entries" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="102" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.product_id.name" parent="diary_entries.product_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="product_id" vertex="1">
+          <mxGeometry height="30" width="209" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.product_id.key" parent="diary_entries.product_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="FK &amp;lt;products.id&amp;gt;" vertex="1">
+          <mxGeometry height="30" width="195" x="225" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.consumed_at" parent="diary_entries" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="132" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.consumed_at.name" parent="diary_entries.consumed_at" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="consumed_at UTC" vertex="1">
+          <mxGeometry height="30" width="209" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.consumed_at.key" parent="diary_entries.consumed_at" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="" vertex="1">
+          <mxGeometry height="30" width="195" x="225" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.grams" parent="diary_entries" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="162" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.grams.name" parent="diary_entries.grams" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="grams" vertex="1">
+          <mxGeometry height="30" width="209" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entries.grams.key" parent="diary_entries.grams" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="" vertex="1">
+          <mxGeometry height="30" width="195" x="225" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels" parent="1" style="swimlane;html=1;horizontal=1;startSize=42;rounded=0;fillColor=#E2E8F0;swimlaneFillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;align=left;spacingLeft=12;verticalAlign=middle;fontFamily=Arial;fontColor=#334155;fontSize=24;fontStyle=1;container=1;collapsible=0;pointerEvents=0;" value="meal_labels" vertex="1">
+          <mxGeometry height="132" width="430" x="820" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels.id" parent="meal_labels" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels.id.name" parent="meal_labels.id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="id" vertex="1">
+          <mxGeometry height="30" width="134" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels.id.key" parent="meal_labels.id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="PK" vertex="1">
+          <mxGeometry height="30" width="270" x="150" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels.code" parent="meal_labels" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels.code.name" parent="meal_labels.code" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="code" vertex="1">
+          <mxGeometry height="30" width="134" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels.code.key" parent="meal_labels.code" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="UNIQUE" vertex="1">
+          <mxGeometry height="30" width="270" x="150" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels.name" parent="meal_labels" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="102" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels.name.name" parent="meal_labels.name" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="name" vertex="1">
+          <mxGeometry height="30" width="134" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="meal_labels.name.key" parent="meal_labels.name" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="" vertex="1">
+          <mxGeometry height="30" width="270" x="150" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entry_labels" parent="1" style="swimlane;html=1;horizontal=1;startSize=42;rounded=0;fillColor=#E2E8F0;swimlaneFillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;align=left;spacingLeft=12;verticalAlign=middle;fontFamily=Arial;fontColor=#334155;fontSize=24;fontStyle=1;container=1;collapsible=0;pointerEvents=0;" value="diary_entry_labels" vertex="1">
+          <mxGeometry height="102" width="430" x="820" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entry_labels.entry_id" parent="diary_entry_labels" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entry_labels.entry_id.name" parent="diary_entry_labels.entry_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="entry_id" vertex="1">
+          <mxGeometry height="30" width="134" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entry_labels.entry_id.key" parent="diary_entry_labels.entry_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="PK, FK &amp;lt;diary_entries.id&amp;gt;" vertex="1">
+          <mxGeometry height="30" width="270" x="150" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entry_labels.label_id" parent="diary_entry_labels" style="html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=0.5;container=1;pointerEvents=0;rounded=0;" value="" vertex="1">
+          <mxGeometry height="30" width="430" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entry_labels.label_id.name" parent="diary_entry_labels.label_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=23;" value="label_id" vertex="1">
+          <mxGeometry height="30" width="134" x="12" as="geometry" />
+        </mxCell>
+        <mxCell id="diary_entry_labels.label_id.key" parent="diary_entry_labels.label_id" style="text;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;spacing=0;fontFamily=Arial;fontColor=#334155;whiteSpace=nowrap;overflow=hidden;fontSize=22;" value="PK, FK &amp;lt;meal_labels.id&amp;gt;" vertex="1">
+          <mxGeometry height="30" width="270" x="150" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-1" edge="1" parent="1" source="product_labels.id" style="edgeStyle=entityRelationEdgeStyle;segment=20;html=1;rounded=0;strokeColor=#64748B;strokeWidth=1.8;fontColor=#475569;fontFamily=Arial;fontSize=21;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;jumpStyle=arc;jumpSize=6;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;startSize=12;endSize=14;" value="1:N">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-15" as="offset" />
+            <mxPoint x="810" y="60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="relation-2" edge="1" parent="1" source="diary_entries" style="edgeStyle=entityRelationEdgeStyle;segment=20;html=1;rounded=0;strokeColor=#64748B;strokeWidth=1.8;fontColor=#475569;fontFamily=Arial;fontSize=21;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;jumpStyle=arc;jumpSize=6;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;startSize=12;endSize=14;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="diary_entry_labels.entry_id" value="1:N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-3" edge="1" parent="1" source="meal_labels.id" style="edgeStyle=entityRelationEdgeStyle;segment=20;html=1;rounded=0;strokeColor=#64748B;strokeWidth=1.8;fontColor=#475569;fontFamily=Arial;fontSize=21;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;jumpStyle=arc;jumpSize=6;startArrow=ERmandOne;endArrow=ERzeroToMany;startFill=0;endFill=0;startSize=12;endSize=14;" target="diary_entry_labels.label_id" value="1:N">
+          <mxGeometry relative="1" x="0.0214" y="20" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
