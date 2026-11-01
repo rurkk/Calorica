@@ -22,7 +22,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | [T00](tasks/T00.md) | 1 | Рауль / чат t00-contracts-01a19823 | Ожидает ручной приёмки | Да; контракт 1.0.0 `e05b69b6` (полный SHA ниже), входы T02/T03/T05 | `codex/t00-contracts-01a19823` / `ad229bf4e3588b9534b732a753da443ac7c30a8f` | Контракт 1.0.0, независимое ревью, интеграция |
 | [T01](tasks/T01.md) | 8 | Рауль / чат render-autodeploy-2026-11-01 | В работе | Нет; выполняется только автодеплой Render | `codex/render-autodeploy` / `4e3004500cf72f5db4abf7f7fe4db0963efe4be2` | GHCR → Render по digest; Android-релизы согласованы с отдельным чатом; резервные копии вне текущей доработки |
-| [T02](tasks/T02.md) | 4 | Рауль / 01a19823-d56c-7291-a4d0-c3a21ad15809 | В работе | Нет | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | T00 1.0.0 в main db7ed5f; реализация API/DI/навигации и проверок |
+| [T02](tasks/T02.md) | 4 | Рауль / 01a19823-d56c-7291-a4d0-c3a21ad15809 | Ревью | Нет; реализация и проверки в ветке | `codex/t02-android-foundation-01a19823` / `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | T00 1.0.0 в main db7ed5f; реализация API/DI/навигации и проверок |
 | [T03](tasks/T03.md) | 1 | — | Ожидает зависимости | Нет | — | Нужны T00 |
 | [T04](tasks/T04.md) | 4 | — | Ожидает зависимости | Нет | — | Нужны T02 |
 | [T05](tasks/T05.md) | 2 | — | Ожидает зависимости | Нет | — | Нужны T00 |
@@ -130,8 +130,22 @@
   эмулятор API 26 `calorica_t02_api26`, запуск исходного APK успешен. Это baseline, не приёмка T02.
 - Доставка T01: используется принятая автоматика, ключ подписи не меняется.
   Общий `app/build.gradle.kts` обновляется только для зависимостей/API-адреса поверх T01.
-- Следующий шаг: реализация, unit/network проверки, независимое ревью агента 5,
-  PR/merge, автоматический signed APK, собственная проверка ADB/UIAutomator.
+- Реализация: `core/api` (DTO/decimal/PATCH/HTTP 10s/ошибки), `core/data`
+  (auth/products/diary interfaces + adapters), Hilt, ReadState/ReadController,
+  маршруты и общий выбор с requestId. Потребители: [foundation 1.0.0](../../../android/foundation.md).
+- Проверки: 20 unit/MockWebServer тестов прошли (6 contract, 10 HTTP, 3 state, 1 navigation),
+  `:app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:lintDebug` — BUILD SUCCESSFUL.
+  Lint без ошибок; предупреждения о версиях библиотек/существующем icon/backup config.
+  Реальный NO_RESPONSE завершился за 10 секунд; отмена закрыла HTTP call;
+  разрыв после записи не вызвал повторный POST; malformed decimal object/array — INVALID_RESPONSE.
+- Независимое ревью агента 5: исправлены обработка object/array decimal и layout
+  placeholder-экранов. Тест выявил потерю typealias serializer в generic PATCH — исправлено,
+  добавлены точные проверки Set(BigDecimal). Финальное ревью SHA ожидается.
+- API 26 debug self-check: запуск, Дневник → выбор → отмена, Продукты и системный Назад
+  через UIAutomator прошли. Live readiness в APK завершился timeout 10s, не пустым результатом.
+  Отключение сети через старый svc API26 не выполнено (exit137); будет проверено отдельным способом.
+- Следующий шаг: финальное ревью, PR/merge, автоматический signed APK и проверка
+  выпущенной версии на собственных эмуляторах API26/API36.
 - Живой backend и функциональные auth/products/diary пока не объявлены готовыми;
   физическое устройство не подключено. Ручная приёмка не выполнена, бронь сохраняется.
 
