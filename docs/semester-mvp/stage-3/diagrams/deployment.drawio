@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" compressed="false">
+  <diagram id="deployment" name="Целевое развёртывание">
+    <mxGraphModel dx="1200" dy="525" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1200" pageHeight="525" background="#FFFFFF" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="ci" value="&lt;b&gt;GitHub Actions&lt;/b&gt;&lt;br&gt;Проверки / main" style="html=1;fontFamily=Arial;fontSize=23;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="220" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="apk" value="&lt;b&gt;GitHub Release&lt;/b&gt;&lt;br&gt;Подписанный APK" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="250" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="device" value="&lt;b&gt;Android&lt;/b&gt;&lt;br&gt;Установленный APK" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#334155;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#F1F5F9;strokeColor=#64748B;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="930" y="20" width="240" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="ghcr" value="&lt;b&gt;GHCR&lt;/b&gt;&lt;br&gt;Docker-образ" style="html=1;fontFamily=Arial;fontSize=23;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="20" y="190" width="220" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="vps" value="" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;swimlane;startSize=40;horizontal=1;rounded=1;arcSize=8;fillColor=#F8FAFC;swimlaneFillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=1.5;fontStyle=1;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="380" y="145" width="820" height="325" as="geometry"/>
+        </mxCell>
+        <mxCell id="vps-title" value="&lt;b&gt;VPS&lt;/b&gt;" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontColor=#475569;spacing=0;" vertex="1" parent="vps">
+          <mxGeometry x="20" y="0" width="180" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="docker" value="&lt;b&gt;Docker Engine&lt;/b&gt;&lt;br&gt;Команды deploy" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#334155;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#F1F5F9;strokeColor=#64748B;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="vps">
+          <mxGeometry x="20" y="45" width="250" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="nginx" value="&lt;b&gt;Nginx&lt;/b&gt;&lt;br&gt;На хосте" style="html=1;fontFamily=Arial;fontSize=23;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="vps">
+          <mxGeometry x="550" y="45" width="240" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="compose" value="&lt;span style='font-size:21px'&gt;Docker Compose · приватная сеть&lt;/span&gt;" style="html=1;fontFamily=Arial;fontSize=21;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;swimlane;startSize=40;horizontal=1;rounded=1;arcSize=8;fillColor=#F8FAFC;swimlaneFillColor=#FFFFFF;strokeColor=#2563EB;strokeWidth=1.5;fontStyle=1;align=left;spacingLeft=16;" vertex="1" parent="vps">
+          <mxGeometry x="20" y="165" width="780" height="145" as="geometry"/>
+        </mxCell>
+        <mxCell id="db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;Постоянный том" style="html=1;fontFamily=Arial;fontSize=22;fontColor=#334155;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;align=center;verticalAlign=middle;shape=cylinder3;boundedLbl=1;size=16;" vertex="1" parent="compose">
+          <mxGeometry x="120" y="45" width="250" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="api" value="&lt;b&gt;Сервер&lt;/b&gt;&lt;br&gt;Spring Boot" style="html=1;fontFamily=Arial;fontSize=23;fontColor=#1E3A8A;whiteSpace=wrap;spacing=10;rounded=1;arcSize=10;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;align=center;verticalAlign=middle;" vertex="1" parent="compose">
+          <mxGeometry x="530" y="45" width="240" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-1" value="Android&lt;br&gt;HTTPS" style="html=1;fontFamily=Arial;fontSize=20;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;jumpStyle=arc;jumpSize=8;" edge="1" source="ci" target="apk" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-24" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-2" value="Установка · HTTPS" style="html=1;fontFamily=Arial;fontSize=20;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;jumpStyle=arc;jumpSize=8;" edge="1" source="apk" target="device" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-18" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-3" value="Push · HTTPS" style="html=1;fontFamily=Arial;fontSize=20;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;jumpStyle=arc;jumpSize=8;" edge="1" source="ci" target="ghcr" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-4" value="Deploy · SSH" style="html=1;fontFamily=Arial;fontSize=20;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=elbowEdgeStyle;jumpStyle=arc;jumpSize=8;elbow=horizontal;" edge="1" source="ci" target="vps" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-5" value="Pull · HTTPS&lt;br&gt;по digest" style="html=1;fontFamily=Arial;fontSize=18;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;jumpStyle=arc;jumpSize=8;" edge="1" source="docker" target="ghcr" parent="1">
+          <mxGeometry relative="1" as="geometry" x="0">
+            <mxPoint as="offset" x="0" y="36"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-6" value="compose up" style="html=1;fontFamily=Arial;fontSize=20;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;jumpStyle=arc;jumpSize=8;" edge="1" source="docker" target="compose" parent="vps">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-7" value="SYNC · HTTPS/443" style="html=1;fontFamily=Arial;fontSize=20;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;jumpStyle=arc;jumpSize=8;" edge="1" source="device" target="nginx" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-15" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-8" value="SYNC · HTTP" style="html=1;fontFamily=Arial;fontSize=20;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;jumpStyle=arc;jumpSize=8;" edge="1" source="nginx" target="api" parent="vps">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-20" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-9" value="SYNC · JDBC&lt;br&gt;SQL" style="html=1;fontFamily=Arial;fontSize=20;fontColor=#475569;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;rounded=1;arcSize=12;labelBackgroundColor=#FFFFFF;defaultLabelBackgroundColor=page;edgeStyle=orthogonalEdgeStyle;jumpStyle=arc;jumpSize=8;" edge="1" source="api" target="db" parent="compose">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
