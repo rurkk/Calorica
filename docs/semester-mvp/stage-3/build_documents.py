@@ -19,7 +19,7 @@ from pypdf import PdfReader
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "scripts"))
-from build_stage2 import Builder
+from document_builder import Builder
 
 REFERENCE = HERE.parent / "stage-2/Calorica-semester-MVP-TZ.docx"
 REFERENCE_SHA = "d7ade17b96562c0e3c3f32556346228019f9ccdb70dabaf0a725cbff4fca0ceb"
