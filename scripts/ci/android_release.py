@@ -165,9 +165,13 @@ def verify_apk(apk, plan, sdk, fingerprint):
         raise ValueError('Install a stable Android SDK Build-Tools version')
     tools = max(installed, key=lambda p: tuple(map(int, p.name.split('.'))))
     result = command(str(tools / 'apksigner'), 'verify', '--verbose', '--print-certs', str(apk))
-    certs = re.findall(r'Signer #\d+ certificate SHA-256 digest: ([a-fA-F0-9]+)', result)
+    # SDKs label signers by number, min/max SDK range, or signature scheme (SDK 37).
+    # Every reported signing certificate must match; a source stamp is not a signer.
+    certs = re.findall(
+        r'(?m)^(?:Signer [^\r\n]+|V[1-4](?:\.\d+)? Signer[^:\r\n]*:) '
+        r'certificate SHA-256 digest: ([a-fA-F0-9]{64})[ \t]*$', result)
     expected = fingerprint.replace(':', '').lower()
-    if not re.fullmatch('[a-f0-9]{64}', expected) or [c.lower() for c in certs] != [expected]:
+    if not re.fullmatch('[a-f0-9]{64}', expected) or {c.lower() for c in certs} != {expected}:
         raise ValueError(f'APK signer differs from the pinned permanent certificate: '
                          f'expected={expected}, actual={certs}, build_tools={tools.name}, '
                          f'certificate_lines={[line for line in result.splitlines() if "certificate" in line.lower()]}')
