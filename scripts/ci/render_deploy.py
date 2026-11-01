@@ -10,6 +10,8 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[2]
 IMAGE_PREFIX = 'ghcr.io/rurkk/calorica-backend@sha256:'
+READINESS_URL = 'https://calorica-backend.onrender.com/actuator/health/readiness'
+READINESS_TIMEOUT = 90
 
 
 class DeployError(Exception):
@@ -19,6 +21,41 @@ class DeployError(Exception):
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
+
+
+def probe_readiness(url, timeout, opener=None):
+    # Public endpoint: never attach the administrative Render API key.
+    req = urllib.request.Request(url, headers={'Accept': 'application/json'})
+    open_request = opener or urllib.request.build_opener(NoRedirect()).open
+    try:
+        with open_request(req, timeout=timeout) as response:
+            data = response.read(65_537)
+            if response.status != 200 or len(data) > 65_536:
+                return False
+            body = json.loads(data)
+            return isinstance(body, dict) and body.get('status') == 'UP'
+    except urllib.error.HTTPError as error:
+        if error.code in {401, 403, 404}:
+            raise DeployError(f'Public readiness returns HTTP {error.code}; inspect server configuration.') from None
+        return False
+    except (urllib.error.URLError, OSError, ValueError):
+        return False
+
+
+def wait_for_readiness(check=probe_readiness, sleep=time.sleep, clock=time.monotonic):
+    deadline = clock() + READINESS_TIMEOUT
+    while True:
+        remaining = deadline - clock()
+        if remaining <= 0:
+            break
+        ready = check(READINESS_URL, timeout=min(10, remaining))
+        if ready and clock() <= deadline:
+            print('Public readiness: UP', flush=True)
+            return
+        remaining = deadline - clock()
+        if remaining > 0:
+            sleep(min(2, remaining))
+    raise DeployError('Public readiness is not UP after 90 seconds; the deploy is not ready.')
 
 
 def request(token, path, method='GET', payload=None):
@@ -39,7 +76,8 @@ def request(token, path, method='GET', payload=None):
         raise DeployError('Render API request fails; inspect the Render dashboard before retrying.') from None
 
 
-def deploy(token, image, service_id, call=request, sleep=time.sleep, clock=time.monotonic):
+def deploy(token, image, service_id, call=request, sleep=time.sleep, clock=time.monotonic,
+           wait_ready=wait_for_readiness):
     if not re.fullmatch(re.escape(IMAGE_PREFIX) + '[a-f0-9]{64}', image):
         raise DeployError('Expected an immutable Calorica GHCR image digest.')
     if not token or any(char.isspace() for char in token):
@@ -70,6 +108,7 @@ def deploy(token, image, service_id, call=request, sleep=time.sleep, clock=time.
         if status == 'live':
             if current.get('image', {}).get('ref') != image:
                 raise DeployError(f'Render reports a different image for this deploy: {url}')
+            wait_ready()
             # Persist only a successful digest for future restarts/manual deploys.
             saved = call(token, path, 'PATCH', {'autoDeployTrigger': 'off', 'image': {
                 'ownerId': service['ownerId'], 'imagePath': image,
@@ -95,6 +134,7 @@ def main():
     if summary:
         with open(summary, 'a') as output:
             output.write(f'### Backend deployed\n\nImage: `{image}`\n\n'
+                         f'[Readiness: UP]({READINESS_URL})\n\n'
                          f'[Render deploy]({url}) · '
                          f'[API]({registry["api_base_url"]}) · '
                          f'[Runtime logs]({registry["shared_logs_url"]})\n\n'
