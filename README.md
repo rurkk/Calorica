@@ -51,7 +51,7 @@ Calorica — мобильное приложение для учёта пита�
 - Kotlin, Jetpack Compose и Material 3;
 - Hilt и KSP;
 - Gradle Wrapper и каталог версий зависимостей;
-- GitHub Actions для проверки сборки и ручной публикации debug APK.
+- GitHub Actions для проверки сборки и автоматической публикации подписанного release APK.
 
 При запуске приложение показывает только название Calorica. Продуктовые экраны,
 локальная база и расчёты старого прототипа удалены. Бизнес-API и клиентское взаимодействие
@@ -151,7 +151,10 @@ APK будет в `app/build/outputs/apk/debug/app-debug.apk`.
 
 `Android CI` запускает unit-тесты и debug-сборку для pull request и изменений Android-кода в `main`.
 
-`Android manual prerelease` запускается вручную, создаёт prerelease в GitHub и прикладывает debug APK.
+`Android release` после успешного CI на `main` автоматически назначает версию,
+подписывает APK постоянным ключом и публикует `calorica.apk` в GitHub Releases.
+Настройка ключа, ручной повтор, откат совместимой версии и ссылки для отладки —
+в [инструкции Android-релизов](docs/android-releases.md).
 
 `Backend CI` независимо проверяет сервер и инфраструктуру и выпускает контейнер
 в GHCR после успешных проверок изменений backend в `main`, затем передаёт
