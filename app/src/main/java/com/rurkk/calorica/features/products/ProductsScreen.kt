@@ -29,13 +29,13 @@ class ProductsFeatureScreens(private val repository: ProductRepository, private 
   @Composable override fun Diary(picker: ProductPickerHost) { DiaryRoute(diary,repository,picker) }
   @Composable override fun Products(picker: ProductPickerHost) {
     val accountId = (session.state.value as? SessionState.SignedIn)?.account?.id ?: return
-    ProductsRoute(repository,accountId)
+    ProductsRoute(repository,accountId,picker=picker)
   }
-  @Composable override fun ProductPicker(request: ProductSelectionRequest, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit) {
+  @Composable override fun ProductPicker(request: ProductSelectionRequest, picker: ProductPickerHost, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit) {
     val accountId = (session.state.value as? SessionState.SignedIn)?.account?.id ?: return
     val delivery = remember(request.requestId) { ProductSelectionDelivery(request) }
     ProductsRoute(repository,accountId,
-        selectionPurpose=request.purpose,
+        selectionPurpose=request.purpose,picker=picker,
         onSelect={ product -> delivery.select(product)?.let(onSelected) },
         onCancel={ if (delivery.cancel()) onCancel() })
   }
@@ -43,27 +43,31 @@ class ProductsFeatureScreens(private val repository: ProductRepository, private 
 
 @Composable
 fun ProductsRoute(repository: ProductRepository, accountId: String, selectionPurpose: ProductSelectionPurpose? = null,
-    onSelect: ((Product) -> Unit)? = null, onCancel: (() -> Unit)? = null) {
+    onSelect: ((Product) -> Unit)? = null, onCancel: (() -> Unit)? = null, picker: ProductPickerHost? = null) {
   val factory = remember(repository,accountId) { ProductsViewModel.Factory(repository,accountId) }
   val model: ProductsViewModel = viewModel(factory=factory)
   LaunchedEffect(model) { model.enter() }
   DisposableEffect(model) { onDispose { model.leave() } }
-  ProductsScreen(model,selectionPurpose,onSelect,onCancel)
+  LaunchedEffect(picker?.result) { picker?.result?.let { model.acceptComponent(it); picker.consume() } }
+  ProductsScreen(model,selectionPurpose,onSelect,onCancel,picker)
 }
 
 @Composable
 fun ProductsScreen(model: ProductsViewModel, selectionPurpose: ProductSelectionPurpose? = null,
-    onSelect: ((Product) -> Unit)? = null, onCancel: (() -> Unit)? = null) {
+    onSelect: ((Product) -> Unit)? = null, onCancel: (() -> Unit)? = null, picker: ProductPickerHost? = null) {
   val catalog by model.catalog.collectAsStateWithLifecycle()
   val detail by model.detail.collectAsStateWithLifecycle()
+  val componentNames by model.componentNames.collectAsStateWithLifecycle()
   val draft by model.draft.collectAsStateWithLifecycle()
   val mutation by model.mutation.collectAsStateWithLifecycle()
+  val composition by model.composition.collectAsStateWithLifecycle()
+  val resolvingComponent by model.resolvingComponent.collectAsStateWithLifecycle()
   val busy = mutation == ProductMutation.Busy || mutation == ProductMutation.Rechecking
   val canWrite = model.canWrite
   val selected = (detail as? ReadState.Data<Product>)?.value
   var confirmDelete by remember(selected?.id) { mutableStateOf(false) }
-  BackHandler(enabled = draft != null || detail != ReadState.Idle) { model.back() }
-  Column(Modifier.fillMaxSize(),verticalArrangement=Arrangement.spacedBy(10.dp)) {
+  BackHandler(enabled = draft != null || composition != null || detail != ReadState.Idle) { model.back() }
+  Column(Modifier.fillMaxSize().imePadding(),verticalArrangement=Arrangement.spacedBy(10.dp)) {
     Text(when(selectionPurpose) {
       ProductSelectionPurpose.DIARY -> "Продукт для дневника"
       ProductSelectionPurpose.COMPOSITION -> "Ингредиент для состава"
@@ -81,6 +85,8 @@ fun ProductsScreen(model: ProductsViewModel, selectionPurpose: ProductSelectionP
       }
     }
     when {
+      composition != null -> CompositionForm(requireNotNull(composition),model,canWrite,resolvingComponent,
+          onChoose={ model.chooseComponent()?.let { picker?.launch?.invoke(it) } })
       draft != null -> ProductForm(requireNotNull(draft),canWrite,model::change,model::save,model::back)
       detail != ReadState.Idle -> {
         TextButton(onClick=model::back,enabled=!busy) { Text("К списку") }
@@ -90,8 +96,8 @@ fun ProductsScreen(model: ProductsViewModel, selectionPurpose: ProductSelectionP
             ErrorText(read.error)
             OutlinedButton(onClick=model::retryDetail,enabled=!busy) { Text("Повторить загрузку") }
           }
-          is ReadState.Data -> ProductCard(read.value,model.accountId,canWrite,
-              onEdit={ model.edit(read.value) },onDelete={ confirmDelete=true },onSelect=onSelect?.takeIf { !busy && canWrite })
+          is ReadState.Data -> ProductCard(read.value,componentNames,model.accountId,canWrite,
+              onEdit={ model.edit(read.value) },onComposition={ model.editComposition(read.value) },onDelete={ confirmDelete=true },onSelect=onSelect?.takeIf { !busy && canWrite })
           else -> Unit
         }
       }
@@ -103,6 +109,7 @@ fun ProductsScreen(model: ProductsViewModel, selectionPurpose: ProductSelectionP
           OutlinedButton(onClick=model::reload,enabled=catalog.phase!=CatalogPhase.LOADING && !busy) { Text("Обновить") }
           Button(onClick=model::newProduct,enabled=canWrite) { Text("Создать продукт") }
         }
+        OutlinedButton(onClick=model::newComposition,enabled=canWrite && picker!=null) { Text("Создать состав") }
         when(catalog.phase) {
           CatalogPhase.IDLE -> Unit
           CatalogPhase.LOADING -> CircularProgressIndicator()
@@ -146,9 +153,9 @@ fun ProductsScreen(model: ProductsViewModel, selectionPurpose: ProductSelectionP
 private fun ColumnScope.ProductForm(draft: ProductDraft,enabled:Boolean,onChange:(String,String)->Unit,onSave:()->Unit,onBack:()->Unit) {
   Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)) {
     Text(if(draft.original==null) "Новый личный продукт" else "Изменить продукт",style=MaterialTheme.typography.titleLarge)
-    Text("КБЖУ на 100 г. Допускается десятичная точка или запятая.")
+    if(draft.editsNutrition) Text("КБЖУ на 100 г. Допускается десятичная точка или запятая.")
     for((field,label,value) in listOf(Triple("name","Название",draft.name),Triple("calories","Калории, ккал",draft.calories),
-        Triple("protein","Белки, г",draft.protein),Triple("fat","Жиры, г",draft.fat),Triple("carbs","Углеводы, г",draft.carbs))) {
+        Triple("protein","Белки, г",draft.protein),Triple("fat","Жиры, г",draft.fat),Triple("carbs","Углеводы, г",draft.carbs)).filter { draft.editsNutrition || it.first=="name" }) {
       OutlinedTextField(value=value,onValueChange={ onChange(field,it) },label={ Text(label) },
           singleLine=true,enabled=enabled,isError=draft.errors.containsKey(field),
           supportingText={ draft.errors[field]?.let { Text(it) } },modifier=Modifier.fillMaxWidth(),
@@ -160,7 +167,7 @@ private fun ColumnScope.ProductForm(draft: ProductDraft,enabled:Boolean,onChange
 }
 
 @Composable
-private fun ColumnScope.ProductCard(product:Product,accountId:String,canWrite:Boolean,onEdit:()->Unit,onDelete:()->Unit,onSelect:((Product)->Unit)?) {
+private fun ColumnScope.ProductCard(product:Product,componentNames:Map<String,String>,accountId:String,canWrite:Boolean,onEdit:()->Unit,onComposition:()->Unit,onDelete:()->Unit,onSelect:((Product)->Unit)?) {
   Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)) {
     Text(product.name,style=MaterialTheme.typography.titleLarge)
     Text(if(product.kind=="COMPOSITE") "Составной продукт" else "Конечный продукт")
@@ -171,7 +178,17 @@ private fun ColumnScope.ProductCard(product:Product,accountId:String,canWrite:Bo
     Text("Жиры: ${DisplayNumbers.nutrition(product.nutritionPer100g.fat)} г")
     Text("Углеводы: ${DisplayNumbers.nutrition(product.nutritionPer100g.carbs)} г")
     if(onSelect!=null && !product.isDeleted) Button(onClick={ onSelect(product) }) { Text("Выбрать продукт") }
-    if(product.canEditLeaf(accountId)) OutlinedButton(onClick=onEdit,enabled=canWrite) { Text("Изменить") }
+    YieldSummary(product)
+    if(product.components.isNotEmpty()) {
+      Text("Состав: ${product.components.size} ингредиентов",style=MaterialTheme.typography.titleMedium)
+      product.components.forEach { component ->
+        Text("${componentNames[component.productId] ?: "Ингредиент ${component.productId}"}: ${component.fraction.toExactPercent().stripTrailingZeros().toPlainString()}%")
+      }
+    }
+    if(product.canEdit(accountId)) {
+      OutlinedButton(onClick=onEdit,enabled=canWrite) { Text(if(product.kind=="COMPOSITE") "Изменить название" else "Изменить") }
+      OutlinedButton(onClick=onComposition,enabled=canWrite) { Text("Состав и выход") }
+    }
     if(product.canDelete(accountId)) TextButton(onClick=onDelete,enabled=canWrite) { Text("Удалить из каталога") }
   }
 }

@@ -25,7 +25,7 @@ interface FeatureScreens {
   @Composable fun Auth(onAuthenticated: () -> Unit)
   @Composable fun Products(picker: ProductPickerHost)
   @Composable fun Diary(picker: ProductPickerHost)
-  @Composable fun ProductPicker(request: ProductSelectionRequest, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit)
+  @Composable fun ProductPicker(request: ProductSelectionRequest, picker: ProductPickerHost, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit)
 }
 
 object FoundationScreens : FeatureScreens {
@@ -42,7 +42,7 @@ object FoundationScreens : FeatureScreens {
       }
     }
   }
-  @Composable override fun ProductPicker(request: ProductSelectionRequest, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit) {
+  @Composable override fun ProductPicker(request: ProductSelectionRequest, picker: ProductPickerHost, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit) {
     FoundationSection("Выбор продукта", "Выбор продуктов готовится.") {
       OutlinedButton(onClick = onCancel) { Text("Отмена") }
     }
@@ -124,7 +124,7 @@ private fun AuthenticatedNavigation(connection: ConnectionViewModel, screens: Fe
             requireNotNull(entry.arguments?.getString("requestId")),
             ProductSelectionPurpose.valueOf(requireNotNull(entry.arguments?.getString("purpose"))),
         )
-        screens.ProductPicker(request, onSelected = { result ->
+        screens.ProductPicker(request, rememberProductPickerHost(nav, entry), onSelected = { result ->
           nav.previousBackStackEntry?.savedStateHandle?.set(ProductSelectionResult.STATE_KEY, ProductSelectionResult(request, result).encode())
           nav.popBackStack()
         }, onCancel = { nav.popBackStack() })
