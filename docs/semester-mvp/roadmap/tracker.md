@@ -627,3 +627,17 @@ t11_recipe_mass_yield и t15_analytics. Брони из строк выше по
 worktree, тесты и при необходимости отдельную PostgreSQL; общая БД не меняется.
 T15 начинает независимую календарную часть; реальные продуктовые лейблы и окончательная
 приёмка ждут T13. T13 начнётся после готовности T11; T14 после интеграции общего каталога.
+
+Согласования общих интерфейсов root для T10/T11/T15:
+- T10 разрешено узко добавить ProductPickerHost в FeatureScreens.ProductPicker,
+  FoundationScreens и PRODUCT_PICKER route с rememberProductPickerHost(nav, entry),
+  чтобы редактор состава внутри picker мог вызвать вложенный выбор. Остальные shared
+  navigation/DI изменения согласуются отдельно; нужны проверки возврата и отмены.
+- T11 сохраняет CatalogCalculation.allocateLeaves(actor, portions, snapshot) и
+  LeafAllocation(rootOrdinal, leafId, allocatedGrams), включая write-overloads PR43.
+  Нормализация входных масс BigDecimal не дублирует серверные формулы КБЖУ; её
+  largest-remainder/UUID order и HALF_UP12 выход из масс проверяются отдельно.
+- Согласован публичный ProductLabelRead.distribution(actor, portions, snapshot):
+  List<ProductLabelGrams(labelId, grams)>. T15 добавляет только interface/data class,
+  T13 реализует его через allocateLeaves и SQL NUMERIC группировку в том же snapshot.
+  Production-заглушки запрещены; полная интеграция T15 ждёт реального T13.
