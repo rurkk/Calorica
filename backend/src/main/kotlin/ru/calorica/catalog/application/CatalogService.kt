@@ -14,6 +14,7 @@ import ru.calorica.catalog.persistence.CatalogRepository
 import ru.calorica.catalog.domain.LeafAllocation
 import ru.calorica.catalog.persistence.SearchKey
 import ru.calorica.catalog.persistence.CompositionRepository
+import ru.calorica.catalog.persistence.labels.ProductLabelsRepository
 import ru.calorica.catalog.domain.CompositionWrite
 import ru.calorica.catalog.domain.ProductComponent
 import java.math.BigDecimal
@@ -42,15 +43,17 @@ class CatalogService(
     private val locks: CatalogMutationLock,
     private val mapper: ObjectMapper,
     private val compositions: CompositionRepository,
+    private val labels: ProductLabelsRepository,
 ) : CatalogRead, CatalogCalculation {
     private fun calculated(actor: Actor, products: List<Product>): List<Product> {
         val ids = products.map { it.id }
         val values = compositions.calculate(actor.id, ids)
         val components = compositions.components(ids)
+        val labelIds = labels.forProducts(ids)
         return products.map { p ->
             val result = values[p.id] ?: CatalogFailure.notFound()
             val children = components[p.id].orEmpty()
-            p.copy(nutritionPer100g = result.nutritionPer100g, components = children,
+            p.copy(nutritionPer100g = result.nutritionPer100g, components = children, productLabelIds = labelIds[p.id].orEmpty(),
                 kind = if (children.isEmpty()) "LEAF" else "COMPOSITE",
                 effectiveYieldFactor = result.effectiveYieldFactor.stripTrailingZeros().toPlainString(), yieldSource = result.yieldSource)
         }
@@ -103,6 +106,16 @@ class CatalogService(
         return compositions.allocate(actor.id, portions)
     }
     fun get(actor: Actor, id: UUID): Product = getVisible(actor, listOf(id), true).single()
+    internal fun getForLabelAssignment(actor: Actor, id: UUID, tx: CatalogWriteTransaction, base: Boolean): Product {
+        transactions.requireWrite(tx)
+        if (base) {
+            check(tx.baseExclusive && !tx.baseShared && tx.owner == null)
+            if (actor.role.name != "ADMIN") CatalogFailure.forbidden()
+        } else requireLockedRead(actor, tx)
+        val product = rows(actor, listOf(id), false).single()
+        if (if (base) product.ownerId != null else product.ownerId != actor.id) CatalogFailure.notFound()
+        return product
+    }
     private fun fingerprint(actor: Actor, q: String): String = MessageDigest.getInstance("SHA-256")
         .digest("${actor.id}\n$q".toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
     private fun decode(cursor: String?, fingerprint: String): SearchKey? {
