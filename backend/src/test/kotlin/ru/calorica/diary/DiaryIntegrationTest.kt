@@ -96,6 +96,53 @@ class DiaryIntegrationTest @Autowired constructor(private val http: TestRestTemp
         assertThat(catalog.get(a.actor,product).isDeleted).isFalse()
         assertThat(jdbc.sql("SELECT count(*) FROM calorica.diary_entry_labels WHERE entry_id=CAST(:id AS uuid)").param("id",id).query(Int::class.java).single()).isZero()
     }
+    private fun largeProduct(): UUID {
+        var id = product(c="1")
+        repeat(8) {
+            val created = request(a,HttpMethod.POST,"/products",mapper.writeValueAsString(mapOf(
+                "name" to "Atomic-${UUID.randomUUID()}",
+                "composition" to mapOf("inputMode" to "PERCENT", "manualYieldFactor" to "0.000000000001",
+                    "components" to listOf(mapOf("productId" to id, "percent" to "100"))))))
+            assertThat(created.statusCode.value()).isEqualTo(201)
+            id = UUID.fromString(json(created)["id"].asText())
+        }
+        assertThat(catalog.get(a.actor,id).nutritionPer100g.calories).isEqualByComparingTo("1e96")
+        return id
+    }
+    @Test fun `HTTP create rolls back entry and labels when its portion exceeds calculation limits`() {
+        val product = largeProduct()
+        val before = diary.day(a.actor,"2026-05-01","UTC")
+        try {
+            problem(request(a,HttpMethod.POST,"/diary/entries",body(product,"1000000",labels.take(2))),422,"CALCULATION_LIMIT")
+            assertThat(jdbc.sql("SELECT count(*) FROM calorica.diary_entries WHERE product_id=:product")
+                .param("product",product).query(Int::class.java).single()).isZero()
+            assertThat(jdbc.sql("""SELECT count(*) FROM calorica.diary_entry_labels l
+                JOIN calorica.diary_entries e ON e.id=l.entry_id WHERE e.product_id=:product""")
+                .param("product",product).query(Int::class.java).single()).isZero()
+            assertThat(diary.day(a.actor,"2026-05-01","UTC")).isEqualTo(before)
+        } finally {
+            jdbc.sql("DELETE FROM calorica.diary_entries WHERE product_id=:product").param("product",product).update()
+        }
+    }
+    @Test fun `HTTP patch rolls back product quantity time and labels when its portion exceeds calculation limits`() {
+        val product = largeProduct()
+        val entry = diary.create(a.actor,write(product(),tags=labels.take(1)))
+        val before = diary.get(a.actor,entry.id)
+        val patch = mapper.writeValueAsString(mapOf("productId" to product, "quantity" to "1000000", "unit" to "g",
+            "occurredAt" to at.plusSeconds(3600).toString(), "mealLabelIds" to labels.drop(1).take(2)))
+        try {
+            problem(request(a,HttpMethod.PATCH,"/diary/entries/${entry.id}",patch),422,"CALCULATION_LIMIT")
+            assertThat(diary.get(a.actor,entry.id)).isEqualTo(before)
+            val persisted = diaryRepository.get(a.actor.id,entry.id)!!
+            assertThat(persisted.productId).isEqualTo(before.productId)
+            assertThat(persisted.consumedGrams).isEqualByComparingTo(before.consumedGrams)
+            assertThat(persisted.occurredAt).isEqualTo(before.occurredAt)
+            assertThat(persisted.mealLabelIds).containsExactlyElementsOf(before.mealLabelIds)
+            assertThat(request(a,HttpMethod.GET,"/diary?date=2026-05-01&zone=UTC").statusCode.value()).isEqualTo(200)
+        } finally {
+            jdbc.sql("DELETE FROM calorica.diary_entries WHERE id=:id").param("id",entry.id).update()
+        }
+    }
     @Test fun `ownership comes from session and foreign entries cannot be read changed or deleted`() {
         val entry = diary.create(a.actor,write(product()))
         for (method in listOf(HttpMethod.GET,HttpMethod.PATCH,HttpMethod.DELETE))
@@ -185,20 +232,45 @@ class DiaryIntegrationTest @Autowired constructor(private val http: TestRestTemp
             assertThat(jdbc.sql("SELECT count(*) FROM calorica.diary_entries WHERE product_id=:id").param("id",product).query(Int::class.java).single()).isZero()
         } finally { release.countDown(); executor.shutdownNow() }
     }
-    @Test fun `post commit materialization failure reports unknown outcome while retaining the successful write`() {
+    @Test fun `calculation failure inside mutation rolls back entry and label changes`() {
         val product = product()
         val failingCalculation = object : CatalogCalculation by catalog {
-            override fun nutrition(actor: Actor, productIds: Collection<UUID>, snapshot: CatalogSnapshot): Map<UUID,CalculatedNutrition> =
+            override fun nutrition(actor: Actor, productIds: Collection<UUID>, tx: CatalogWriteTransaction): Map<UUID,CalculatedNutrition> =
                 throw CatalogFailure(422,"CALCULATION_LIMIT")
         }
         val failingRead = DiaryService(diaryRepository,catalog,failingCalculation,transactions,locks,units)
-        assertThatThrownBy { failingRead.create(a.actor,write(product,"10")) }
-            .isInstanceOfSatisfying(ApiFailure::class.java) { assertThat(it.status).isEqualTo(503); assertThat(it.code).isEqualTo("SERVICE_UNAVAILABLE") }
-        val id = jdbc.sql("SELECT id FROM calorica.diary_entries WHERE product_id=:id").param("id",product).query(UUID::class.java).single()
-        assertThat(diary.get(a.actor,id).consumedGrams).isEqualByComparingTo("10")
-        assertThatThrownBy { failingRead.patch(a.actor,id,DiaryPatch(quantity=BigDecimal("20"),unit="g")) }
-            .isInstanceOfSatisfying(ApiFailure::class.java) { assertThat(it.status).isEqualTo(503) }
-        assertThat(diary.get(a.actor,id).consumedGrams).isEqualByComparingTo("20")
+        assertThatThrownBy { failingRead.create(a.actor,write(product,"10",tags=labels.take(2))) }
+            .isInstanceOfSatisfying(CatalogFailure::class.java) { assertThat(it.status).isEqualTo(422); assertThat(it.code).isEqualTo("CALCULATION_LIMIT") }
+        assertThat(jdbc.sql("SELECT count(*) FROM calorica.diary_entries WHERE product_id=:id")
+            .param("id",product).query(Int::class.java).single()).isZero()
+        val entry = diary.create(a.actor,write(product,"10",tags=labels.take(1)))
+        assertThatThrownBy { failingRead.patch(a.actor,entry.id,
+            DiaryPatch(quantity=BigDecimal("20"),unit="g",mealLabelIds=labels.drop(1).take(2))) }
+            .isInstanceOfSatisfying(CatalogFailure::class.java) { assertThat(it.status).isEqualTo(422) }
+        assertThat(diary.get(a.actor,entry.id)).isEqualTo(entry)
+    }
+    @Test fun `catalog mutation reads require live capabilities and matching owner locks`() {
+        val product = product()
+        fun rejected(tx: CatalogWriteTransaction, actor: Actor = a.actor) {
+            assertThatThrownBy { catalog.getVisible(actor,listOf(product),true,tx) }
+                .isInstanceOf(IllegalStateException::class.java)
+            assertThatThrownBy { catalog.nutrition(actor,listOf(product),tx) }
+                .isInstanceOf(IllegalStateException::class.java)
+        }
+        val stale = transactions.mutation { tx ->
+            rejected(tx)
+            locks.personal(a.actor,tx)
+            rejected(tx,b.actor)
+            assertThat(catalog.getVisible(a.actor,listOf(product),true,tx).single().id).isEqualTo(product)
+            assertThat(catalog.nutrition(a.actor,listOf(product),tx)).containsKey(product)
+            tx
+        }
+        rejected(stale)
+        transactions.mutation { current ->
+            locks.personal(a.actor,current)
+            rejected(stale)
+            Unit
+        }
     }
     @Test fun `calculation guards cover both scaled portions and the final unrounded day sum`() {
         val product = product()

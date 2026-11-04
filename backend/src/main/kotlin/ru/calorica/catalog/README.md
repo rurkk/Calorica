@@ -23,6 +23,12 @@ CASCADE — T14; неподдерживаемый запрос завершае�
   сохраняют удалённые листья. catalog_nutrition обходит узлы снизу вверх и считает
   SUM(w * childNutrition) / Y; деление после суммы сохраняет контрольное 240/0.75=320.
   Распределение готовых граммов использует q, а общий ручной выход q не меняет.
+- CatalogRead.getVisible и CatalogCalculation.nutrition также принимают
+  CatalogWriteTransaction для материализации ответа до commit. Эти перегрузки
+  требуют активный capability текущего соединения и уже захваченные shared base +
+  exclusive owner locks именно для actor; они не открывают вложенный snapshot.
+  Историческая видимость и единый SQL-расчёт сохранены. Ошибка расчёта откатывает
+  вызывающую мутацию. allocateLeaves по-прежнему использует read-only snapshot.
 - CatalogMutationLock: personal / base — единый порядок advisory locks по T00,
   не допускающий повышения shared в exclusive либо второго owner в одной транзакции.
 

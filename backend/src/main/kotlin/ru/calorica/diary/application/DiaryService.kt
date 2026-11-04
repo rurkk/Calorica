@@ -6,12 +6,14 @@ import ru.calorica.catalog.application.CatalogMutationLock
 import ru.calorica.catalog.application.CatalogRead
 import ru.calorica.catalog.application.CatalogSnapshot
 import ru.calorica.catalog.application.CatalogTransactions
+import ru.calorica.catalog.application.CatalogWriteTransaction
+import ru.calorica.catalog.application.CalculatedNutrition
 import ru.calorica.catalog.application.units.CatalogUnits
+import ru.calorica.catalog.domain.Product
 import ru.calorica.diary.domain.*
 import ru.calorica.diary.persistence.DiaryRepository
 import ru.calorica.diary.persistence.DiaryRow
 import ru.calorica.platform.security.Actor
-import ru.calorica.platform.api.ApiFailure
 import java.util.UUID
 
 @Service
@@ -21,8 +23,16 @@ class DiaryService(private val repository: DiaryRepository, private val catalog:
     fun labels(): List<MealLabel> = transactions.snapshot { repository.labels() }
     private fun render(actor: Actor, rows: List<DiaryRow>, snapshot: CatalogSnapshot): Pair<List<DiaryEntry>, ru.calorica.catalog.domain.Nutrition> {
         val ids = rows.map { it.productId }.toSet()
-        val products = catalog.getVisible(actor, ids, true).associateBy { it.id }
-        val nutrition = repository.nutrition(rows, calculation.nutrition(actor, ids, snapshot))
+        return render(rows, catalog.getVisible(actor, ids, true), calculation.nutrition(actor, ids, snapshot))
+    }
+    private fun writtenEntry(actor: Actor, id: UUID, tx: CatalogWriteTransaction): DiaryEntry {
+        val row = repository.get(actor.id, id) ?: DiaryValues.notFound()
+        return render(listOf(row), catalog.getVisible(actor, listOf(row.productId), true, tx),
+            calculation.nutrition(actor, listOf(row.productId), tx)).first.single()
+    }
+    private fun render(rows: List<DiaryRow>, visible: List<Product>, calculated: Map<UUID, CalculatedNutrition>): Pair<List<DiaryEntry>, ru.calorica.catalog.domain.Nutrition> {
+        val products = visible.associateBy { it.id }
+        val nutrition = repository.nutrition(rows, calculated)
         return rows.mapIndexed { index, row ->
             val product = products.getValue(row.productId)
             DiaryEntry(row.id, row.productId, product.name, product.isDeleted, row.consumedGrams,
@@ -44,11 +54,8 @@ class DiaryService(private val repository: DiaryRepository, private val catalog:
         val row = repository.get(actor.id, id) ?: DiaryValues.notFound()
         render(actor, listOf(row), snapshot).first.single()
     }
-    /** The write has already committed. A failed response read cannot promise that no mutation happened. */
-    private fun committedResult(actor: Actor, id: UUID): DiaryEntry = try { get(actor, id) }
-        catch (_: Exception) { throw ApiFailure(503, "SERVICE_UNAVAILABLE") }
-    fun create(actor: Actor, input: DiaryWrite): DiaryEntry {
-        val id = transactions.mutation { tx ->
+    fun create(actor: Actor, input: DiaryWrite): DiaryEntry =
+        transactions.mutation { tx ->
             locks.personal(actor, tx)
             catalog.requireSelectable(actor, input.productId, tx)
             val labels = DiaryValues.labels(input.mealLabelIds)
@@ -56,11 +63,11 @@ class DiaryService(private val repository: DiaryRepository, private val catalog:
             val grams = units.convert(actor, input.productId, input.quantity, input.unit, tx)
             val row = DiaryRow(UUID.randomUUID(), input.productId, grams, input.occurredAt, labels)
             repository.insert(actor.id, row)
-            row.id
+            // Materialize while the same transaction and catalog locks still protect the write.
+            // Validation/calculation failure rolls back the entry and its label links together.
+            writtenEntry(actor, row.id, tx)
         }
-        return committedResult(actor, id)
-    }
-    fun patch(actor: Actor, id: UUID, input: DiaryPatch): DiaryEntry {
+    fun patch(actor: Actor, id: UUID, input: DiaryPatch): DiaryEntry =
         transactions.mutation { tx ->
             locks.personal(actor, tx)
             val old = repository.get(actor.id, id) ?: DiaryValues.notFound()
@@ -70,11 +77,10 @@ class DiaryService(private val repository: DiaryRepository, private val catalog:
             val grams = input.quantity?.let { units.convert(actor, productId, it, checkNotNull(input.unit), tx) } ?: old.consumedGrams
             val labels = input.mealLabelIds?.let(DiaryValues::labels) ?: old.mealLabelIds
             repository.requireLabels(labels)
-            repository.update(actor.id, DiaryRow(id, productId, grams, input.occurredAt ?: old.occurredAt, labels))
-            Unit
+            val row = DiaryRow(id, productId, grams, input.occurredAt ?: old.occurredAt, labels)
+            repository.update(actor.id, row)
+            writtenEntry(actor, id, tx)
         }
-        return committedResult(actor, id)
-    }
     fun delete(actor: Actor, id: UUID) { transactions.mutation { tx ->
         locks.personal(actor, tx)
         repository.delete(actor.id, id)

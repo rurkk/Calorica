@@ -23,12 +23,15 @@ import java.util.UUID
 
 interface CatalogRead {
     fun getVisible(actor: Actor, ids: Collection<UUID>, includeDeletedForHistory: Boolean = false): List<Product>
+    fun getVisible(actor: Actor, ids: Collection<UUID>, includeDeletedForHistory: Boolean,
+        tx: CatalogWriteTransaction): List<Product>
     fun requireSelectable(actor: Actor, id: UUID, tx: CatalogWriteTransaction): Product
 }
 data class CalculatedNutrition(val nutritionPer100g: Nutrition, val effectiveYieldFactor: BigDecimal,
     val yieldSource: String)
 interface CatalogCalculation {
     fun nutrition(actor: Actor, productIds: Collection<UUID>, snapshot: CatalogSnapshot): Map<UUID, CalculatedNutrition>
+    fun nutrition(actor: Actor, productIds: Collection<UUID>, tx: CatalogWriteTransaction): Map<UUID, CalculatedNutrition>
     fun allocateLeaves(actor: Actor, portions: List<CatalogPortion>, snapshot: CatalogSnapshot): List<LeafAllocation>
 }
 
@@ -62,12 +65,28 @@ class CatalogService(
     }
     override fun getVisible(actor: Actor, ids: Collection<UUID>, includeDeletedForHistory: Boolean): List<Product> =
         transactions.snapshot { rows(actor, ids, includeDeletedForHistory) }
+    private fun requireLockedRead(actor: Actor, tx: CatalogWriteTransaction) {
+        transactions.requireWrite(tx)
+        check(tx.baseShared && tx.owner == actor.id && !tx.baseExclusive) {
+            "Hold the actor's shared base and owner locks before reading inside a mutation"
+        }
+    }
+    override fun getVisible(actor: Actor, ids: Collection<UUID>, includeDeletedForHistory: Boolean,
+        tx: CatalogWriteTransaction): List<Product> {
+        requireLockedRead(actor, tx)
+        return rows(actor, ids, includeDeletedForHistory)
+    }
     override fun requireSelectable(actor: Actor, id: UUID, tx: CatalogWriteTransaction): Product {
         locks.personal(actor, tx)
         return rows(actor, listOf(id), false).single()
     }
     override fun nutrition(actor: Actor, productIds: Collection<UUID>, snapshot: CatalogSnapshot): Map<UUID, CalculatedNutrition> {
         transactions.requireSnapshot(snapshot)
+        return rows(actor, productIds, true).associate { it.id to CalculatedNutrition(it.nutritionPer100g,
+            it.effectiveYieldFactor.toBigDecimal(), it.yieldSource) }
+    }
+    override fun nutrition(actor: Actor, productIds: Collection<UUID>, tx: CatalogWriteTransaction): Map<UUID, CalculatedNutrition> {
+        requireLockedRead(actor, tx)
         return rows(actor, productIds, true).associate { it.id to CalculatedNutrition(it.nutritionPer100g,
             it.effectiveYieldFactor.toBigDecimal(), it.yieldSource) }
     }
