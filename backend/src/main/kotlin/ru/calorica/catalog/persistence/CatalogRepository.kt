@@ -4,6 +4,8 @@ import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
 import ru.calorica.catalog.domain.Nutrition
 import ru.calorica.catalog.domain.Product
+import ru.calorica.catalog.domain.DeletionCandidate
+import ru.calorica.catalog.domain.CatalogFailure
 import java.math.BigDecimal
 import java.sql.ResultSet
 import java.util.UUID
@@ -70,9 +72,29 @@ class CatalogRepository(private val jdbc: JdbcClient) {
             .param("id", id).param("owner", owner, java.sql.Types.OTHER).param("name", name)
             .param("calories", nutrition?.calories, java.sql.Types.NUMERIC).param("protein", nutrition?.protein, java.sql.Types.NUMERIC)
             .param("fat", nutrition?.fat, java.sql.Types.NUMERIC).param("carbs", nutrition?.carbs, java.sql.Types.NUMERIC).update()
-    fun softDelete(id: UUID, owner: UUID?): Int =
+    /** Traverse toward parents, including deleted intermediate nodes. UNION visits a shared
+     * ancestor once and terminates even if an out-of-band write corrupted the graph. This is
+     * reachability, not the UNION ALL path projection used for nutrition and allocation. */
+    fun deletionCandidates(id: UUID): List<DeletionCandidate> {
+        val rows = jdbc.sql("""
+            WITH RECURSIVE ancestors(id) AS (
+                SELECT id FROM calorica.products WHERE id = :id
+                UNION
+                SELECT c.parent_id FROM calorica.product_components c JOIN ancestors a ON c.child_id = a.id
+            )
+            SELECT p.id, p.owner_id, p.is_deleted FROM ancestors a JOIN calorica.products p ON p.id = a.id
+            LIMIT 10001
+        """).param("id", id).query { rs, _ -> DeletionCandidate(rs.getObject("id", UUID::class.java),
+            rs.getObject("owner_id", UUID::class.java), rs.getBoolean("is_deleted")) }.list()
+        if (rows.size > 10000) CatalogFailure.invalid("productIds", "CALCULATION_LIMIT")
+        return rows
+    }
+
+    fun softDelete(id: UUID, owner: UUID?): Int = softDelete(listOf(id), owner)
+
+    fun softDelete(ids: List<UUID>, owner: UUID?): Int =
         jdbc.sql("""UPDATE calorica.products SET is_deleted = true
-            WHERE id = :id AND owner_id IS NOT DISTINCT FROM CAST(:owner AS uuid) AND NOT is_deleted""")
-            .param("id", id).param("owner", owner, java.sql.Types.OTHER).update()
+            WHERE id IN (:ids) AND owner_id IS NOT DISTINCT FROM CAST(:owner AS uuid) AND NOT is_deleted""")
+            .param("ids", ids).param("owner", owner, java.sql.Types.OTHER).update()
 
 }

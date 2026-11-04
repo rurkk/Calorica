@@ -17,6 +17,10 @@ import ru.calorica.catalog.persistence.CompositionRepository
 import ru.calorica.catalog.persistence.labels.ProductLabelsRepository
 import ru.calorica.catalog.domain.CompositionWrite
 import ru.calorica.catalog.domain.ProductComponent
+import ru.calorica.catalog.domain.DeletionCandidate
+import ru.calorica.catalog.domain.DeletionMode
+import ru.calorica.catalog.domain.DeletionPolicy
+import ru.calorica.catalog.domain.DeletionPreview
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.util.Base64
@@ -224,12 +228,27 @@ class CatalogService(
         // rolls the complete composition and manual settings back, including a composite POST.
         return rows(actor, listOf(current.id), false).single()
     }
+    private fun deletionTarget(actor: Actor, id: UUID, base: Boolean): DeletionCandidate {
+        if (base && actor.role.name != "ADMIN") CatalogFailure.forbidden()
+        val current = repository.visible(actor.id, listOf(id), false).singleOrNull() ?: CatalogFailure.notFound()
+        if (current.ownerId != if (base) null else actor.id) CatalogFailure.notFound()
+        return DeletionCandidate(current.id, current.ownerId, current.isDeleted)
+    }
+
+    fun deletionPreview(actor: Actor, id: UUID, base: Boolean = false): DeletionPreview = transactions.snapshot {
+        val target = deletionTarget(actor, id, base)
+        DeletionPolicy.preview(id, target.ownerId, repository.deletionCandidates(id))
+    }
+
     fun delete(actor: Actor, id: UUID, mode: String, base: Boolean = false) { transactions.mutation { tx ->
+        val selectedMode = DeletionMode.parse(mode)
         if (base) locks.base(actor, tx) else locks.personal(actor, tx)
-        if (mode != "KEEP_REFERENCES") CatalogFailure.invalid("mode")
-        val current = rows(actor, listOf(id), false).single()
-        if (if (base) current.ownerId != null else current.ownerId != actor.id) CatalogFailure.notFound()
-        if (repository.softDelete(id, if (base) null else actor.id) != 1) CatalogFailure.notFound()
+        // Never trust a previous preview. Separate statements after the advisory locks see
+        // the latest committed target and parents. No calculation or history is rewritten.
+        val target = deletionTarget(actor, id, base)
+        val candidates = if (selectedMode == DeletionMode.CASCADE) repository.deletionCandidates(id) else listOf(target)
+        val ids = DeletionPolicy.targets(id, target.ownerId, selectedMode, candidates)
+        if (repository.softDelete(ids, target.ownerId) != ids.size) throw CatalogFailure(409, "DEPENDENCY_CONFLICT")
         Unit
     } }
 }

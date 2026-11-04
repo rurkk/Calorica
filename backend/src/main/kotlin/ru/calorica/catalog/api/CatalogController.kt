@@ -101,6 +101,10 @@ class CatalogController(private val catalog: CatalogService) {
         catalog.delete(actor(current), CatalogIds.parse(productId), mode, request.servletPath.startsWith("/api/v1/admin/"))
         return ResponseEntity.noContent().build()
     }
+    @GetMapping("/products/{productId}/deletion-preview", "/admin/products/{productId}/deletion-preview")
+    fun deletionPreview(@AuthenticationPrincipal current: Actor?, @PathVariable productId: String,
+        request: HttpServletRequest) = catalog.deletionPreview(actor(current), CatalogIds.parse(productId),
+        request.servletPath.startsWith("/api/v1/admin/"))
 }
 
 @Order(Ordered.HIGHEST_PRECEDENCE)

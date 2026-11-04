@@ -105,7 +105,7 @@ class CatalogIntegrationTest @Autowired constructor(
         code(request(b, HttpMethod.GET, "/products/$id"),404,"NOT_FOUND")
         code(request(b, HttpMethod.PATCH, "/products/$id", "{}"),404,"NOT_FOUND")
         code(request(b, HttpMethod.DELETE, "/products/$id?mode=KEEP_REFERENCES"),404,"NOT_FOUND")
-        code(request(a, HttpMethod.DELETE, "/products/$id?mode=CASCADE"),422,"VALIDATION_FAILED")
+        code(request(a, HttpMethod.DELETE, "/products/$id?mode=UNKNOWN"),400,"BAD_REQUEST")
         assertThat(request(a, HttpMethod.DELETE, "/products/$id?mode=KEEP_REFERENCES").statusCode.value()).isEqualTo(204)
         assertThat(json(request(a, HttpMethod.GET, "/products/$id"))["isDeleted"].asBoolean()).isTrue()
         assertThat(jdbc.sql("SELECT manual_calories FROM calorica.products WHERE id=:id AND is_deleted")
