@@ -82,9 +82,9 @@ class DiaryController(private val diary: DiaryService) {
     }
 }
 
-/** Catalog capabilities preserve their protocol failures when consumed by diary controllers. */
+/** Catalog capabilities preserve their protocol failures when consumed by diary and analytics controllers. */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(basePackages = ["ru.calorica.diary.api"])
+@RestControllerAdvice(basePackages = ["ru.calorica.diary.api", "ru.calorica.analytics.api"])
 class DiaryExceptionHandler(private val problems: ApiProblems) {
     @ExceptionHandler(CatalogFailure::class)
     fun catalog(error: CatalogFailure, request: HttpServletRequest): ResponseEntity<Any> =

@@ -39,12 +39,13 @@ class DiaryRepository(private val jdbc: JdbcClient, private val mapper: ObjectMa
     }
     fun get(owner: UUID, id: UUID): DiaryRow? = jdbc.sql("SELECT $columns FROM calorica.diary_entries e WHERE e.owner_id=:owner AND e.id=:id")
         .param("owner", owner).param("id", id).query { rs, _ -> row(rs) }.optional().orElse(null)
-    fun day(owner: UUID, start: Instant, end: Instant): List<DiaryRow> {
+    fun day(owner: UUID, start: Instant, end: Instant): List<DiaryRow> = period(owner, start, end)
+    fun period(owner: UUID, start: Instant, end: Instant): List<DiaryRow> {
         val rows = jdbc.sql("""SELECT $columns FROM calorica.diary_entries e WHERE e.owner_id=:owner
             AND e.occurred_at>=:start AND e.occurred_at<:end ORDER BY e.occurred_at,e.id LIMIT 10001""")
             .param("owner", owner).param("start", start.atOffset(ZoneOffset.UTC)).param("end", end.atOffset(ZoneOffset.UTC))
             .query { rs, _ -> row(rs) }.list()
-        // A sentinel is only a guard; never return a truncated day or total.
+        // A sentinel is only a guard; never return a truncated day, period or total.
         if (rows.size > 10000) DiaryValues.invalid("entries", "CALCULATION_LIMIT")
         return rows
     }
