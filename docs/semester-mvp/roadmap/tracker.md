@@ -689,3 +689,10 @@ T14 `bc889eb1` интегрирован как `2755b70`: авторские29un
 Admin не получает личные IDs; финальная сквозная QA остаётся в T16.
 T13 review выявил P2: старые runtime fixtures без060 зависели от порядка тестов.
 Автор исправляет только runtime overrides, historical migration fixtures сохранены.
+
+T13 P2 исправлен `4685cfac` → integration `efd214d`: runtime classes используют master.
+На отдельных чистых БД: Composition11/11, Diary14/14, полный29unit+89PG PASS.
+T16 сетевой defect исправлен `3b57df5` → `76c8970`: idle connections не сохраняются,
+повтор мутаций по-прежнему запрещён; meaningful regression падает до fix.
+108 Android tests, APK/lint PASS у автора; реальный idle12s×2 и сохранение скрытых
+коэффициентов T10/T11 PASS. Fault-proxy сценарии и независимое ревью продолжаются.
