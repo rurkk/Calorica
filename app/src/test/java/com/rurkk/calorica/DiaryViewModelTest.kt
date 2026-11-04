@@ -7,6 +7,7 @@ import com.rurkk.calorica.core.ui.ReadState
 import com.rurkk.calorica.features.diary.*
 import java.math.BigDecimal
 import java.time.*
+import java.util.TimeZone
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.*
 import org.junit.Assert.*
@@ -54,6 +55,11 @@ class DiaryViewModelTest {
     Dispatchers.setMain(StandardTestDispatcher(testScheduler))
     try { block() } finally { Dispatchers.resetMain() }
   }
+  private fun withDeviceZone(block: suspend TestScope.() -> Unit)=onMain {
+    val previous=TimeZone.getDefault()
+    TimeZone.setDefault(TimeZone.getTimeZone(zone))
+    try { block() } finally { TimeZone.setDefault(previous) }
+  }
   @Test fun todayUsesLocalCalendarAndEmptyDiffersFromFailure()=onMain {
     val repo=Repo(); val vm=DiaryViewModel(repo,products,clock,zone)
     vm.start(); runCurrent()
@@ -61,6 +67,108 @@ class DiaryViewModelTest {
     assertTrue(vm.state.value.day is ReadState.Empty)
     repo.readResult=ApiResult.Failure(ApiError(ApiError.Kind.NETWORK))
     vm.reload(); runCurrent(); assertTrue(vm.state.value.day is ReadState.Error)
+  }
+  @Test fun resumeUsesCurrentSystemZoneForSelectedDayAndNewEntry()=onMain {
+    val previous=TimeZone.getDefault()
+    try {
+      TimeZone.setDefault(TimeZone.getTimeZone(zone))
+      val requests=mutableListOf<Pair<String,String>>()
+      val base=Repo()
+      val repo=object : DiaryRepository by base {
+        override suspend fun day(date:String,zone:String):ApiResult<DiaryDay> {
+          requests += date to zone
+          return base.day(date,zone)
+        }
+      }
+      val vm=DiaryViewModel(repo,products,clock)
+      vm.resumeReads(); runCurrent()
+      vm.selectDate(LocalDate.parse("2026-11-01")); runCurrent()
+      vm.pauseReads()
+      TimeZone.setDefault(TimeZone.getTimeZone("Asia/Tokyo"))
+      vm.resumeReads(); runCurrent()
+      assertEquals(ZoneId.of("Asia/Tokyo"),vm.state.value.zone)
+      assertEquals("2026-11-01" to "Asia/Tokyo",requests.last())
+      assertEquals("Asia/Tokyo",(vm.state.value.day as ReadState.Empty<DiaryDay>).value.zone)
+      vm.newEntry()
+      assertEquals("2026-11-01",vm.state.value.form!!.date)
+      assertEquals("17:00",vm.state.value.form!!.time)
+    } finally { TimeZone.setDefault(previous) }
+  }
+  @Test fun changingZoneDuringEditKeepsTheEntryInstantAndOtherDraftFields()=withDeviceZone {
+    val repo=Repo(); val vm=DiaryViewModel(repo,products,clock)
+    vm.resumeReads(); runCurrent()
+    vm.edit(entry()); vm.update { it.copy(grams="50",mealLabelIds=emptySet()) }
+    vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Honolulu"))
+    vm.resumeReads(); runCurrent()
+    val form=vm.state.value.form!!
+    assertEquals("2026-11-02",form.date); assertEquals("22:00",form.time)
+    assertEquals("50",form.grams); assertTrue(form.mealLabelIds.isEmpty())
+    assertEquals(LocalDate.parse("2026-11-03"),vm.state.value.date)
+    vm.save(); runCurrent()
+    assertEquals("\"2026-11-03T08:00:00Z\"",repo.patched!!.json()["occurredAt"].toString())
+    assertEquals(LocalDate.parse("2026-11-02"),vm.state.value.date)
+  }
+  @Test fun newDraftKeepsItsInstantWhenRebasedIntoSecondDstOccurrence()=withDeviceZone {
+    val repo=Repo(); val vm=DiaryViewModel(repo,products,clock)
+    vm.resumeReads(); runCurrent(); fill(vm)
+    vm.update { it.copy(date="2026-10-25",time="04:30") }
+    vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Europe/Berlin"))
+    vm.resumeReads(); runCurrent()
+    val form=vm.state.value.form!!
+    assertNull(form.id); assertEquals("2026-10-25",form.date); assertEquals("02:30",form.time)
+    assertEquals("200",form.grams); assertEquals(id,form.productId)
+    vm.save(); runCurrent()
+    assertEquals("2026-10-25T01:30:00Z",repo.received!!.occurredAt)
+  }
+  @Test fun invalidOldZoneTimeCannotSilentlyBecomeValidAfterZoneChange()=withDeviceZone {
+    TimeZone.setDefault(TimeZone.getTimeZone("Europe/Berlin"))
+    val repo=Repo(); val vm=DiaryViewModel(repo,products,clock)
+    vm.resumeReads(); runCurrent(); fill(vm)
+    vm.update { it.copy(date="2026-03-29",time="02:30") }
+    vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Asia/Tokyo"))
+    vm.resumeReads(); runCurrent()
+    assertEquals("02:30",vm.state.value.form!!.time)
+    assertTrue(vm.state.value.form!!.timeNeedsReview)
+    vm.update { it.copy(grams="50") }; vm.save(); runCurrent()
+    assertEquals(0,repo.writes)
+    assertTrue(vm.state.value.form!!.error!!.contains("Часовой пояс изменился"))
+    vm.update { it.copy(time="03:30") }; vm.save(); runCurrent()
+    assertEquals(1,repo.writes)
+    assertEquals("2026-03-28T18:30:00Z",repo.received!!.occurredAt)
+  }
+  @Test fun pendingWriteUsesItsInstantInTheNewZoneWhenCheckingUncertainResult()=withDeviceZone {
+    val repo=Repo().apply { gate=CompletableDeferred(); result=ApiResult.Failure(ApiError(ApiError.Kind.TIMEOUT)) }
+    val vm=DiaryViewModel(repo,products,clock)
+    vm.resumeReads(); runCurrent(); fill(vm); vm.save(); runCurrent()
+    vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Honolulu"))
+    vm.resumeReads(); runCurrent()
+    repo.gate!!.complete(Unit); runCurrent()
+    assertEquals(1,repo.writes); assertEquals("2026-11-03T08:00:00Z",repo.received!!.occurredAt)
+    assertTrue(vm.state.value.uncertain)
+    assertEquals(LocalDate.parse("2026-11-02"),vm.state.value.date)
+    val day=(vm.state.value.day as ReadState.Empty<DiaryDay>).value
+    assertEquals("2026-11-02",day.date); assertEquals("Pacific/Honolulu",day.zone)
+    vm.resumeReads(); runCurrent(); assertEquals(1,repo.writes)
+  }
+  @Test fun lateOldZoneResponseCannotReplaceDayLoadedAfterResume()=withDeviceZone {
+    val old=CompletableDeferred<Unit>()
+    val base=Repo()
+    val repo=object : DiaryRepository by base {
+      override suspend fun day(date:String,zone:String):ApiResult<DiaryDay> {
+        if(zone=="Europe/Moscow") withContext(NonCancellable) { old.await() }
+        return ApiResult.Success(DiaryDay(date,zone,emptyList(),zero))
+      }
+    }
+    val vm=DiaryViewModel(repo,products,clock)
+    vm.resumeReads(); runCurrent(); vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Asia/Tokyo"))
+    vm.resumeReads(); runCurrent()
+    old.complete(Unit); runCurrent()
+    assertEquals("Asia/Tokyo",(vm.state.value.day as ReadState.Empty<DiaryDay>).value.zone)
   }
   @Test fun validationUsesExactGramsAndConvertsLocalTimeToUtc() {
     val form=DiaryForm(productId=id,grams="12.345",date="2026-11-03",time="11:00")

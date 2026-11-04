@@ -21,6 +21,7 @@ data class DiaryForm(
     val grams: String = "", val date: String, val time: String,
     val mealLabelIds: Set<String> = emptySet(), val pickerRequest: ProductSelectionRequest? = null,
     val error: String? = null, val originalOccurredAt: String? = null, val offsetSeconds: Int? = null,
+    val timeNeedsReview: Boolean = false,
 )
 data class DiaryState(
     val date: LocalDate, val zone: ZoneId, val day: ReadState<DiaryDay> = ReadState.Idle,
@@ -31,8 +32,11 @@ data class DiaryState(
 
 /** All totals are server values. Local arithmetic is limited to input validation and calendar conversion. */
 class DiaryViewModel(private val repository: DiaryRepository, private val products: ProductRepository,
-    private val clock: Clock = Clock.systemDefaultZone(), zone: ZoneId = ZoneId.systemDefault()) : ViewModel() {
-  private val mutable = MutableStateFlow(DiaryState(LocalDate.now(clock.withZone(zone)), zone))
+    private val clock: Clock = Clock.systemDefaultZone(), zone: ZoneId? = null) : ViewModel() {
+  // An explicitly supplied zone is a fixed test input; production resolves the device zone on resume.
+  private val currentZone = { zone ?: ZoneId.systemDefault() }
+  private val initialZone = currentZone()
+  private val mutable = MutableStateFlow(DiaryState(LocalDate.now(clock.withZone(initialZone)), initialZone))
   val state = mutable.asStateFlow()
   private var dayJob: Job? = null
   private var labelsJob: Job? = null
@@ -45,7 +49,13 @@ class DiaryViewModel(private val repository: DiaryRepository, private val produc
   private var initialized = false
 
   fun resumeReads() {
-    if (visible) return
+    val input = state.value
+    val nextZone = currentZone()
+    if (visible && nextZone == input.zone) return
+    if (nextZone != input.zone) {
+      // A selected calendar date stays selected; draft instants are displayed in the new zone.
+      mutable.value = input.copy(zone = nextZone, form = input.form?.inZone(input.zone, nextZone))
+    }
     visible = true
     readsPaused = false
     if (!initialized) start() else { reload(); loadLabels() }
@@ -118,7 +128,11 @@ class DiaryViewModel(private val repository: DiaryRepository, private val produc
   }
   fun update(transform: (DiaryForm) -> DiaryForm) {
     val current=state.value
-    if (!current.busy && !current.uncertain) current.form?.let { mutable.value=current.copy(form=transform(it).copy(error=null)) }
+    if (!current.busy && !current.uncertain) current.form?.let { previous ->
+      val changed = transform(previous)
+      val needsReview = previous.timeNeedsReview && changed.date == previous.date && changed.time == previous.time
+      mutable.value=current.copy(form=changed.copy(timeNeedsReview=needsReview,error=if(needsReview) previous.error else null))
+    }
   }
   fun closeForm() {
     if (state.value.busy) return
@@ -165,7 +179,8 @@ class DiaryViewModel(private val repository: DiaryRepository, private val produc
         val result=if (form.id == null) repository.create(write) else repository.patch(form.id,DiaryPatch(
             productId=PatchField.Set(write.productId),quantity=PatchField.Set(write.quantity),unit=PatchField.Set("g"),
             occurredAt=PatchField.Set(write.occurredAt),mealLabelIds=PatchField.Set(write.mealLabelIds)))
-        mutable.value=state.value.copy(date=LocalDate.parse(form.date))
+        // A write can finish after a pause and a device-zone change. Follow its original UTC instant.
+        mutable.value=state.value.copy(date=Instant.parse(write.occurredAt).atZone(state.value.zone).toLocalDate())
         mutationResult(result)
       } finally { mutable.value=state.value.copy(busy=false) }
     }
@@ -195,6 +210,29 @@ class DiaryViewModel(private val repository: DiaryRepository, private val produc
   }
 
   companion object {
+    private fun DiaryForm.inZone(previousZone: ZoneId, nextZone: ZoneId): DiaryForm {
+      if (timeNeedsReview) return this
+      val instant = try { occurredAt(this, previousZone) } catch (_: IllegalArgumentException) {
+        return copy(timeNeedsReview=true,error="Часовой пояс изменился. Проверьте и исправьте дату или время.")
+      }
+      val local = instant.atZone(nextZone)
+      return copy(date=local.toLocalDate().toString(),time=local.toLocalTime().toString(),
+          // Anchor the displayed draft instant, including the second occurrence of a DST overlap.
+          originalOccurredAt=instant.toString(),offsetSeconds=local.offset.totalSeconds)
+    }
+
+    private fun occurredAt(form: DiaryForm, zone: ZoneId): Instant {
+      val local=try { LocalDateTime.of(LocalDate.parse(form.date),LocalTime.parse(form.time)) }
+        catch (_: DateTimeException) { throw IllegalArgumentException("Введите дату ГГГГ-ММ-ДД и время ЧЧ:ММ.") }
+      val offsets=zone.rules.getValidOffsets(local)
+      require(offsets.isNotEmpty()) { "Это время отсутствует из-за перехода на летнее время. Выберите другое." }
+      val previous=form.originalOccurredAt?.let(Instant::parse)
+      val originalLocal=previous?.atZone(zone)?.toLocalDateTime()
+      return if (previous != null && originalLocal == local) previous else {
+        ZonedDateTime.ofLocal(local,zone,offsets.first()).toInstant()
+      }
+    }
+
     fun validated(form: DiaryForm, zone: ZoneId): DiaryWrite {
       val productId=form.productId ?: throw IllegalArgumentException("Выберите продукт.")
       require(Regex("(0|[1-9][0-9]*)(\\.[0-9]{1,3})?").matches(form.grams) && form.grams.length<=11) {
@@ -202,15 +240,8 @@ class DiaryViewModel(private val repository: DiaryRepository, private val produc
       }
       val grams=form.grams.toBigDecimal()
       require(grams>BigDecimal.ZERO && grams<=BigDecimal("9999999.999")) { "Масса должна быть больше нуля и не больше 9999999.999 г." }
-      val local=try { LocalDateTime.of(LocalDate.parse(form.date),LocalTime.parse(form.time)) }
-        catch (_: DateTimeException) { throw IllegalArgumentException("Введите дату ГГГГ-ММ-ДД и время ЧЧ:ММ.") }
-      val offsets=zone.rules.getValidOffsets(local)
-      require(offsets.isNotEmpty()) { "Это время отсутствует из-за перехода на летнее время. Выберите другое." }
-      val previous=form.originalOccurredAt?.let(Instant::parse)
-      val originalLocal=previous?.atZone(zone)?.toLocalDateTime()
-      val instant=if (previous != null && originalLocal == local) previous else {
-        ZonedDateTime.ofLocal(local,zone,offsets.first()).toInstant()
-      }
+      require(!form.timeNeedsReview) { "Часовой пояс изменился. Проверьте и исправьте дату или время." }
+      val instant=occurredAt(form,zone)
       require(form.mealLabelIds.size<=4) { "Можно выбрать не более четырёх пищевых лейблов." }
       return DiaryWrite(productId,grams,"g",instant.toString(),form.mealLabelIds.sorted())
     }
