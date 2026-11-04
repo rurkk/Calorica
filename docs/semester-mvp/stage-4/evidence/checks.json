@@ -1,0 +1,154 @@
+[
+  {
+    "id": "UI-01",
+    "scenario": "Регистрация email/password",
+    "result": "PASS",
+    "actual": "Новый аккаунт зарегистрирован в Android, открыт пустой дневник",
+    "evidence": "02-registration.png;03-empty-diary.png",
+    "checked_at": "2026-11-04T22:18:08.876277+03:00"
+  },
+  {
+    "id": "UI-02",
+    "scenario": "Каталог и базовая карточка",
+    "result": "PASS",
+    "actual": "Авокадо:160 ккал/100г, Б2 Ж14.7 У8.53, нет кнопок правки базовой карточки",
+    "evidence": "04-catalog.png;05-base-product.png",
+    "checked_at": "2026-11-04T22:18:08.876589+03:00"
+  },
+  {
+    "id": "UI-03",
+    "scenario": "Создание личных продуктов",
+    "result": "PASS",
+    "actual": "DEMO A=400/10/2/3 и DEMO B=80/10/2/3 созданы через Android; API подтверждает",
+    "evidence": "06-personal-product.png;api-initial.json",
+    "checked_at": "2026-11-04T22:18:08.876706+03:00"
+  },
+  {
+    "id": "UI-04",
+    "scenario": "Поиск личного продукта",
+    "result": "PASS",
+    "actual": "По запросу DEMO B найден и выбран личный ингредиент",
+    "evidence": "UI dump 2026-11-04",
+    "checked_at": "2026-11-04T22:18:08.876792+03:00"
+  },
+  {
+    "id": "UI-05",
+    "scenario": "Неверная сумма состава",
+    "result": "PASS",
+    "actual": "50+40=90%, сохранение оставляет редактор и сообщение Сумма должна быть ровно100%",
+    "evidence": "07-invalid-composition-90.png",
+    "checked_at": "2026-11-04T22:18:08.876880+03:00"
+  },
+  {
+    "id": "UI-06",
+    "scenario": "Состав и общий выход",
+    "result": "PASS",
+    "actual": "DEMO Inner:50/50, Y=0.8, 300 ккал, Б12.5 Ж2.5 У3.75 на100г",
+    "evidence": "08-inner-product.png;api-inner.json",
+    "checked_at": "2026-11-04T22:18:49.061595+03:00"
+  },
+  {
+    "id": "UI-07",
+    "scenario": "Вложенный состав и отмена выбора",
+    "result": "PASS",
+    "actual": "Outer содержит100%Inner, 300ккал/100г; отмена picker сохранила имя черновика",
+    "evidence": "09-outer-editor.png;10-outer-product.png;api-outer.json",
+    "checked_at": "2026-11-04T22:19:57.861449+03:00"
+  },
+  {
+    "id": "UI-08",
+    "scenario": "Порция200г и несколько меток",
+    "result": "PASS",
+    "actual": "Одна запись Outer200г:600ккал Б25 Ж5 У7.5, завтрак+перекус без удвоения; время предзаполнено",
+    "evidence": "11-diary-editor.png;12-diary-600.png;api-diary-600.json",
+    "checked_at": "2026-11-04T22:21:55.347846+03:00"
+  },
+  {
+    "id": "UI-09",
+    "scenario": "Проверка положительной массы",
+    "result": "PASS",
+    "actual": "Нулевая масса отклонена с явным сообщением, запись не создана",
+    "evidence": "UI dump before 11-diary-editor.png",
+    "checked_at": "2026-11-04T22:21:55.348007+03:00"
+  },
+  {
+    "id": "UI-10",
+    "scenario": "Правка массы дневника",
+    "result": "PASS",
+    "actual": "Порция изменена с200г на100г: итог300ккал; ингредиенты не менялись",
+    "evidence": "13-diary-100g.png;api-diary-100g.json",
+    "checked_at": "2026-11-04T22:22:08.252729+03:00"
+  },
+  {
+    "id": "UI-11",
+    "scenario": "Правка даты и времени",
+    "result": "PASS",
+    "actual": "Запись перенесена на3ноября23:50Europe/Moscow; прошлый день показывает600ккал",
+    "evidence": "14-past-day.png;api-past-day.json",
+    "checked_at": "2026-11-04T22:24:20.760957+03:00"
+  },
+  {
+    "id": "UI-12",
+    "scenario": "Пересчёт истории по ингредиенту",
+    "result": "PASS",
+    "actual": "Калорийность A изменена400→500; существующая порция Outer200г после обновления стала725ккал",
+    "evidence": "15-diary-725.png;api-diary-725.json",
+    "checked_at": "2026-11-04T22:27:17.784894+03:00"
+  },
+  {
+    "id": "UI-13",
+    "scenario": "Мягкое удаление карточки",
+    "result": "PASS",
+    "actual": "Outer исключён из поиска; история сохранила запись200г725ккал; A,B,Inner остаются",
+    "evidence": "16-deleted-product-search.png;17-history-after-product-delete.png;api-soft-delete.json",
+    "checked_at": "2026-11-04T22:28:22.291476+03:00"
+  },
+  {
+    "id": "UI-14",
+    "scenario": "Сетевая ошибка и повтор",
+    "result": "PASS",
+    "actual": "Без wifi/data показана сетевая ошибка; после восстановления повтор вернул725ккал и запись",
+    "evidence": "18-network-error.png;19-network-restored.png",
+    "checked_at": "2026-11-04T22:29:00.489182+03:00"
+  },
+  {
+    "id": "UI-15",
+    "scenario": "Восстановление сессии",
+    "result": "PASS",
+    "actual": "После force-stop и повторного запуска без ввода пароля открыт дневник725ккал",
+    "evidence": "20-session-restored.png",
+    "checked_at": "2026-11-04T22:29:05.197167+03:00"
+  },
+  {
+    "id": "UI-16",
+    "scenario": "Удаление записи дневника",
+    "result": "PASS",
+    "actual": "Запись удалена, день пуст, итог0; A/B/Inner сохранились",
+    "evidence": "22-entry-deleted.png;api-entry-deleted.json",
+    "checked_at": "2026-11-04T22:29:51.070189+03:00"
+  },
+  {
+    "id": "UI-17",
+    "scenario": "Выход из аккаунта",
+    "result": "PASS",
+    "actual": "Экран входа, дневник и каталог больше не отображаются",
+    "evidence": "21-logout.png",
+    "checked_at": "2026-11-04T22:29:57.144144+03:00"
+  },
+  {
+    "id": "UI-18",
+    "scenario": "Повторный вход",
+    "result": "PASS",
+    "actual": "Тот же демонстрационный аккаунт вошёл; сохранён пустой день после удаления записи",
+    "evidence": "API and UI after login",
+    "checked_at": "2026-11-04T22:30:10.715429+03:00"
+  },
+  {
+    "id": "UI-19",
+    "scenario": "Переходы типов продукта",
+    "result": "PASS",
+    "actual": "DEMO A превращён в состав100% B с80ккал; удаление ингредиента вернуло конечный продукт с исходными500ккал",
+    "evidence": "23-leaf-to-composite.png;24-composite-to-leaf.png",
+    "checked_at": "2026-11-04T22:36:24.771066+03:00"
+  }
+]

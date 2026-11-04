@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "purpose": "Historical local suite counts and separately verified PR44 CI metadata. Not a fresh local suite execution or release acceptance.",
+  "historical_local_runs": {
+    "checked_at": "2026-11-04",
+    "product_source": "0219a3567d64202791523408b8230ee9567932dd",
+    "source_evidence": {
+      "repository_path": "docs/semester-mvp/roadmap/reports/evidence/mvp-candidate-20261104.json",
+      "url": "https://github.com/rurkk/Calorica/blob/9130aaa517e020e1cd43e0790de645343a57e01e/docs/semester-mvp/roadmap/reports/evidence/mvp-candidate-20261104.json",
+      "matrix_path": "docs/semester-mvp/roadmap/reports/mvp-acceptance-20261104.md",
+      "matrix_url": "https://github.com/rurkk/Calorica/blob/9130aaa517e020e1cd43e0790de645343a57e01e/docs/semester-mvp/roadmap/reports/mvp-acceptance-20261104.md",
+      "method": "Read committed evidence and its recorded JUnit counts/hashes; no suites rerun during this stage-4 research.",
+      "file_sha256": "26b46b57fbc51bd9b44f370ad6b1b489c7196bf428543c97f432b701d8d1b869"
+    },
+    "suites": [
+      {
+        "name": "android_unit_robolectric",
+        "source": "2f148a05a293a61de0888067767cff6783efaafb",
+        "command": "./gradlew :app:testDebugUnitTest",
+        "tests": 113,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "result": "PASS",
+        "scope": "Full Android unit suite after test-only API26/35 extension. Not a physical-device test."
+      },
+      {
+        "name": "backend_unit",
+        "source": "0219a3567d64202791523408b8230ee9567932dd",
+        "command": "./gradlew -p backend check bootJar",
+        "tests": 37,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "result": "PASS"
+      },
+      {
+        "name": "backend_postgresql_integration",
+        "source": "0219a3567d64202791523408b8230ee9567932dd",
+        "command": "./gradlew -p backend check bootJar",
+        "tests": 111,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "result": "PASS",
+        "scope": "Fresh isolated PostgreSQL; not the shared database."
+      }
+    ],
+    "prior_android_product_checks": {
+      "source": "0219a3567d64202791523408b8230ee9567932dd",
+      "command": "./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug",
+      "tests": 108,
+      "result": "PASS",
+      "counting_note": "108 and 113 are successive runs, not 221 unique tests."
+    }
+  },
+  "late_pr_ci": {
+    "observed_at_utc": "2026-11-04T19:20:37Z",
+    "verification_method": "T18 read gh run view JSON independently; count totals above were not derived from these CI jobs.",
+    "runs": [
+      {
+        "url": "https://github.com/rurkk/Calorica/actions/runs/41888546740",
+        "head_sha": "9130aaa517e020e1cd43e0790de645343a57e01e",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-04T18:34:51Z",
+        "updated_at": "2026-11-04T18:38:32Z",
+        "jobs": [
+          {
+            "name": "changes",
+            "conclusion": "success",
+            "url": "https://github.com/rurkk/Calorica/actions/runs/41888546740/job/126779451707"
+          },
+          {
+            "name": "verify",
+            "conclusion": "success",
+            "url": "https://github.com/rurkk/Calorica/actions/runs/41888546740/job/126779520184"
+          },
+          {
+            "name": "release",
+            "conclusion": "skipped",
+            "url": "https://github.com/rurkk/Calorica/actions/runs/41888546740/job/126781570200"
+          }
+        ]
+      },
+      {
+        "url": "https://github.com/rurkk/Calorica/actions/runs/41888546753",
+        "head_sha": "9130aaa517e020e1cd43e0790de645343a57e01e",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-11-04T18:34:51Z",
+        "updated_at": "2026-11-04T18:41:57Z",
+        "jobs": [
+          {
+            "name": "changes",
+            "conclusion": "success",
+            "url": "https://github.com/rurkk/Calorica/actions/runs/41888546753/job/126779452674"
+          },
+          {
+            "name": "automation",
+            "conclusion": "success",
+            "url": "https://github.com/rurkk/Calorica/actions/runs/41888546753/job/126779526788"
+          },
+          {
+            "name": "verify / verify",
+            "conclusion": "success",
+            "url": "https://github.com/rurkk/Calorica/actions/runs/41888546753/job/126779527688"
+          },
+          {
+            "name": "required",
+            "conclusion": "success",
+            "url": "https://github.com/rurkk/Calorica/actions/runs/41888546753/job/126783432606"
+          },
+          {
+            "name": "release",
+            "conclusion": "skipped",
+            "url": "https://github.com/rurkk/Calorica/actions/runs/41888546753/job/126783502446"
+          }
+        ]
+      }
+    ]
+  },
+  "fresh_stage4_live_qa": {
+    "status": "PASS",
+    "scenario_count": 19,
+    "artifact": "checks.json and ../test-protocol.md",
+    "note": "Fresh emulator UI checks; historical suite counts above are separate. Screenshot capture timestamps are in screenshots.json."
+  },
+  "limitations": [
+    "No fresh local 113/37/111 suite execution by T18 for stage-4 preparation.",
+    "PR CI success does not imply release: both release jobs were skipped.",
+    "Physical Android unavailable; the new demonstration uses an emulator.",
+    "Merge and release deferred by the user.",
+    "Published OLD rollback remains incompatible with new composites; local prospective PR43 success is not a published rollback digest."
+  ]
+}

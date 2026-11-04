@@ -1,0 +1,140 @@
+{
+  "products": {
+    "items": [
+      {
+        "id": "a540a690-3d2d-4a11-92f4-564c5f2b1684",
+        "ownerId": "57097049-e7d4-4009-9cff-5277e0a27648",
+        "name": "DEMO A",
+        "isDeleted": false,
+        "manualNutrition": {
+          "calories": "500.00",
+          "protein": "10.00",
+          "fat": "2.00",
+          "carbs": "3.00"
+        },
+        "nutritionPer100g": {
+          "calories": "500.00",
+          "protein": "10.00",
+          "fat": "2.00",
+          "carbs": "3.00"
+        },
+        "kind": "LEAF",
+        "components": [],
+        "manualYieldFactor": null,
+        "effectiveYieldFactor": "1",
+        "yieldSource": "DEFAULT",
+        "productLabelIds": []
+      },
+      {
+        "id": "842dd302-6db1-4848-b70d-29720c4c7c81",
+        "ownerId": "57097049-e7d4-4009-9cff-5277e0a27648",
+        "name": "DEMO B",
+        "isDeleted": false,
+        "manualNutrition": {
+          "calories": "80.00",
+          "protein": "10.00",
+          "fat": "2.00",
+          "carbs": "3.00"
+        },
+        "nutritionPer100g": {
+          "calories": "80.00",
+          "protein": "10.00",
+          "fat": "2.00",
+          "carbs": "3.00"
+        },
+        "kind": "LEAF",
+        "components": [],
+        "manualYieldFactor": null,
+        "effectiveYieldFactor": "1",
+        "yieldSource": "DEFAULT",
+        "productLabelIds": []
+      },
+      {
+        "id": "50c3ffc7-99c5-4f3b-acc9-fba7b323ebd1",
+        "ownerId": "57097049-e7d4-4009-9cff-5277e0a27648",
+        "name": "DEMO Inner",
+        "isDeleted": false,
+        "manualNutrition": null,
+        "nutritionPer100g": {
+          "calories": "362.5000000000000000",
+          "protein": "12.5000000000000000",
+          "fat": "2.5000000000000000",
+          "carbs": "3.7500000000000000"
+        },
+        "kind": "COMPOSITE",
+        "components": [
+          {
+            "productId": "842dd302-6db1-4848-b70d-29720c4c7c81",
+            "fraction": "0.500000000000",
+            "yieldFactor": null
+          },
+          {
+            "productId": "a540a690-3d2d-4a11-92f4-564c5f2b1684",
+            "fraction": "0.500000000000",
+            "yieldFactor": null
+          }
+        ],
+        "manualYieldFactor": "0.800000000000",
+        "effectiveYieldFactor": "0.8",
+        "yieldSource": "MANUAL",
+        "productLabelIds": []
+      },
+      {
+        "id": "a24ef0e4-5acf-4f20-a300-4a4887beddd8",
+        "ownerId": "57097049-e7d4-4009-9cff-5277e0a27648",
+        "name": "DEMO Outer",
+        "isDeleted": false,
+        "manualNutrition": null,
+        "nutritionPer100g": {
+          "calories": "362.5000000000000000000000000000",
+          "protein": "12.5000000000000000000000000000",
+          "fat": "2.5000000000000000000000000000",
+          "carbs": "3.7500000000000000000000000000"
+        },
+        "kind": "COMPOSITE",
+        "components": [
+          {
+            "productId": "50c3ffc7-99c5-4f3b-acc9-fba7b323ebd1",
+            "fraction": "1.000000000000",
+            "yieldFactor": null
+          }
+        ],
+        "manualYieldFactor": null,
+        "effectiveYieldFactor": "1",
+        "yieldSource": "DEFAULT",
+        "productLabelIds": []
+      }
+    ],
+    "nextCursor": null
+  },
+  "diary": {
+    "date": "2026-11-04",
+    "zone": "Europe/Moscow",
+    "entries": [
+      {
+        "id": "64502904-a9f6-40de-ab44-a3ac71582d3f",
+        "productId": "a24ef0e4-5acf-4f20-a300-4a4887beddd8",
+        "productName": "DEMO Outer",
+        "productDeleted": false,
+        "consumedGrams": "200.000",
+        "occurredAt": "2026-11-04T19:38:00Z",
+        "mealLabelIds": [
+          "00000000-0000-4000-8000-000000000006",
+          "00000000-0000-4000-8000-000000000009"
+        ],
+        "nutrition": {
+          "calories": "725.0000000000000000000000000000000",
+          "protein": "25.0000000000000000000000000000000",
+          "fat": "5.0000000000000000000000000000000",
+          "carbs": "7.5000000000000000000000000000000"
+        }
+      }
+    ],
+    "total": {
+      "calories": "725.0000000000000000000000000000000",
+      "protein": "25.0000000000000000000000000000000",
+      "fat": "5.0000000000000000000000000000000",
+      "carbs": "7.5000000000000000000000000000000"
+    }
+  }
+}
