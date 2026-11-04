@@ -6,10 +6,7 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Import
 import org.springframework.http.*
 import org.springframework.jdbc.core.simple.JdbcClient
 import ru.calorica.accounts.application.AccountsService
@@ -19,14 +16,15 @@ import ru.calorica.analytics.domain.CalendarWindow
 import ru.calorica.analytics.persistence.AnalyticsRepository
 import ru.calorica.catalog.application.*
 import ru.calorica.catalog.application.labels.ProductLabelRead
+import ru.calorica.catalog.application.labels.ProductLabels
 import ru.calorica.catalog.domain.*
-import ru.calorica.catalog.domain.labels.ProductLabelGrams
 import ru.calorica.diary.application.DiaryAnalyticsRead
 import ru.calorica.diary.application.DiaryService
 import ru.calorica.diary.domain.DiaryPatch
 import ru.calorica.diary.domain.DiaryWrite
 import ru.calorica.diary.persistence.DiaryRepository
 import ru.calorica.platform.security.Actor
+import ru.calorica.platform.security.Role
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -34,30 +32,23 @@ import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-/** Temporary test-only port until T13 is integrated. These tests certify calendar/meal behavior only. */
-@TestConfiguration(proxyBeanMethods = false)
-class PendingProductLabels {
-    @Bean fun productLabelRead(): ProductLabelRead = object : ProductLabelRead {
-        override fun distribution(actor: Actor, portions: List<CatalogPortion>, snapshot: CatalogSnapshot): List<ProductLabelGrams> = emptyList()
-    }
-}
-
 @Tag("integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(PendingProductLabels::class)
 class AnalyticsIntegrationTest @Autowired constructor(private val http: TestRestTemplate, private val mapper: ObjectMapper,
     private val jdbc: JdbcClient, private val accounts: AccountsService, private val catalog: CatalogService,
     private val diary: DiaryService, private val analytics: AnalyticsService, private val transactions: CatalogTransactions,
     private val diaryRepository: DiaryRepository, private val repository: AnalyticsRepository,
-    private val productLabels: ProductLabelRead) {
+    private val productLabels: ProductLabelRead, private val labelService: ProductLabels) {
     data class User(val actor: Actor, val token: String)
     private lateinit var user: User
     private lateinit var meals: List<UUID>
-    private fun register(): User {
+    private fun register(role: Role = Role.USER): User {
         val tokens = accounts.register(Credentials("t15-${UUID.randomUUID()}@example.org", "analytics test password8"))
+        if (role == Role.ADMIN) jdbc.sql("UPDATE calorica.accounts SET role='ADMIN' WHERE id=:id")
+            .param("id", tokens.account.id).update()
         val session = jdbc.sql("SELECT id FROM calorica.sessions WHERE account_id=:id")
             .param("id", tokens.account.id).query(UUID::class.java).single()
-        return User(Actor(tokens.account.id, tokens.account.role, session), tokens.accessToken)
+        return User(Actor(tokens.account.id, role, session), tokens.accessToken)
     }
     @BeforeEach fun setup() { user = register(); meals = diary.labels().map { it.id } }
     private fun nutrition(calories: String) = Nutrition(BigDecimal(calories), BigDecimal("2"), BigDecimal("3"), BigDecimal("4"))
@@ -71,6 +62,22 @@ class AnalyticsIntegrationTest @Autowired constructor(private val http: TestRest
         return http.exchange("/api/v1/analytics?$query", HttpMethod.GET, HttpEntity<Void>(headers), String::class.java)
     }
     private fun json(response: ResponseEntity<String>): JsonNode = mapper.readTree(response.body)
+    private fun api(current: User, method: HttpMethod, path: String, body: Any? = null, status: Int = 200): JsonNode {
+        val headers = HttpHeaders().apply { contentType = MediaType.APPLICATION_JSON; setBearerAuth(current.token) }
+        val response = http.exchange("/api/v1$path", method,
+            HttpEntity(body?.let(mapper::writeValueAsString), headers), String::class.java)
+        assertThat(response.statusCode.value()).describedAs("%s %s: %s", method, path, response.body).isEqualTo(status)
+        return if (status == 204) mapper.nullNode() else json(response)
+    }
+    private fun label(admin: User): UUID = UUID.fromString(api(admin, HttpMethod.POST, "/admin/product-labels",
+        mapOf("name" to "Analytics group-${UUID.randomUUID()}"), 201)["id"].asText())
+    private fun assign(product: UUID, vararg labels: UUID) {
+        api(user, HttpMethod.PUT, "/products/$product/labels", mapOf("labelIds" to labels.toList()))
+    }
+    private fun groups(response: JsonNode): Map<UUID, BigDecimal> = response["productLabels"].associate {
+        assertThat(it["grams"].isTextual).isTrue()
+        UUID.fromString(it["labelId"].asText()) to it["grams"].asText().toBigDecimal()
+    }
     private fun problem(response: ResponseEntity<String>, status: Int, code: String) {
         assertThat(response.statusCode.value()).isEqualTo(status)
         assertThat(json(response)["code"].asText()).isEqualTo(code)
@@ -172,6 +179,9 @@ class AnalyticsIntegrationTest @Autowired constructor(private val http: TestRest
     @Test fun `whole response retains one snapshot when concurrent writer edits graph and diary labels`() {
         val product = product()
         val original = entry(product, labels = meals.take(1))
+        val admin = register(Role.ADMIN)
+        val oldLabel = label(admin); val newLabel = label(admin)
+        assign(product, oldLabel)
         val executor = Executors.newSingleThreadExecutor()
         try {
             val interleavingCalculation = object : CatalogCalculation by catalog {
@@ -180,6 +190,8 @@ class AnalyticsIntegrationTest @Autowired constructor(private val http: TestRest
                     executor.submit(Callable {
                         catalog.patch(user.actor, product, null, nutrition("200"))
                         diary.patch(user.actor, original.id, DiaryPatch(quantity = BigDecimal("200"), unit = "g", mealLabelIds = meals.drop(1).take(1)))
+                        labelService.assign(user.actor, product, listOf(newLabel))
+                        labelService.delete(admin.actor, oldLabel)
                     }).get(4, TimeUnit.SECONDS)
                     return old
                 }
@@ -190,9 +202,13 @@ class AnalyticsIntegrationTest @Autowired constructor(private val http: TestRest
             assertThat(interleaved.days.single().total.calories).isEqualByComparingTo("100")
             assertThat(interleaved.mealLabels.single().labelId).isEqualTo(meals.first())
             assertThat(interleaved.mealLabels.single().total.calories).isEqualByComparingTo("100")
+            assertThat(interleaved.productLabels.single().labelId).isEqualTo(oldLabel)
+            assertThat(interleaved.productLabels.single().grams).isEqualByComparingTo("100")
             val next = summary()
             assertThat(next.total.calories).isEqualByComparingTo("400")
             assertThat(next.mealLabels.single().labelId).isEqualTo(meals[1])
+            assertThat(next.productLabels.single().labelId).isEqualTo(newLabel)
+            assertThat(next.productLabels.single().grams).isEqualByComparingTo("200")
         } finally { executor.shutdownNow() }
     }
     @Test fun `period guard rejects 10001 rows across days without a truncated summary`() {
@@ -213,4 +229,80 @@ class AnalyticsIntegrationTest @Autowired constructor(private val http: TestRest
         assertThat(week.dailyAverage.calories).isEqualByComparingTo("0.0001")
         assertThat(week.mealLabels.map { it.total.calories }).allSatisfy { assertThat(it).isEqualByComparingTo("0.0007") }
     }
+    @Test fun `HTTP product groups allocate ingredient yield and repeat overlaps without inflating nutrition`() {
+        val admin = register(Role.ADMIN)
+        val shared = label(admin); val aGroup = label(admin); val bGroup = label(admin); val parentGroup = label(admin)
+        val a = product("400"); val b = product("80"); val unlabelled = product("50")
+        assign(a, shared, aGroup); assign(b, shared, bGroup)
+        val recipe = catalog.createComposition(user.actor, "Ingredient yield", CompositionWrite(listOf(
+            ComponentWrite(a, BigDecimal("0.5"), OptionalFactor(true, BigDecimal("0.5"))),
+            ComponentWrite(b, BigDecimal("0.5"), OptionalFactor(true, BigDecimal("1.5")))), OptionalFactor())).id
+        assign(recipe, parentGroup)
+        entry(recipe, grams = "200", labels = meals.take(2))
+        entry(recipe, grams = "100", labels = meals.take(2))
+        entry(unlabelled)
+        for (period in listOf("DAY", "WEEK", "MONTH")) {
+            val response = request("date=2026-05-06&zone=UTC&period=$period")
+            assertThat(response.statusCode.value()).isEqualTo(200)
+            val body = json(response)
+            val actual = groups(body)
+            assertThat(actual.keys).containsExactlyElementsOf(listOf(shared, aGroup, bGroup).sortedBy { it.toString() })
+            assertThat(actual.getValue(shared)).isEqualByComparingTo("300")
+            assertThat(actual.getValue(aGroup)).isEqualByComparingTo("75")
+            assertThat(actual.getValue(bGroup)).isEqualByComparingTo("225")
+            assertThat(actual).doesNotContainKey(parentGroup)
+            assertThat(body["total"]["calories"].asText().toBigDecimal()).isEqualByComparingTo("770")
+            assertThat(body["mealLabels"].map { it["total"]["calories"].asText().toBigDecimal() })
+                .allSatisfy { assertThat(it).isEqualByComparingTo("720") }
+        }
+    }
+    @Test fun `manual yield preserves ready grams and product groups follow shared paths after cascade deletion`() {
+        val admin = register(Role.ADMIN)
+        val aGroup = label(admin); val bGroup = label(admin)
+        val a = product("400"); val b = product("80")
+        assign(a, aGroup); assign(b, bGroup)
+        val child = catalog.createComposition(user.actor, "Shared child", composition(listOf(a to "1"))).id
+        val root = catalog.createComposition(user.actor, "Manual yield", composition(
+            listOf(child to "0.3", a to "0.3", b to "0.4"), "0.8")).id
+        entry(root, grams = "200")
+        fun verify(calories: String) {
+            val response = request("date=2026-05-06&zone=UTC&period=DAY")
+            assertThat(response.statusCode.value()).isEqualTo(200)
+            val body = json(response)
+            assertThat(body["total"]["calories"].asText().toBigDecimal()).isEqualByComparingTo(calories)
+            val actual = groups(body)
+            assertThat(actual.getValue(aGroup)).isEqualByComparingTo("120")
+            assertThat(actual.getValue(bGroup)).isEqualByComparingTo("80")
+        }
+        verify("680")
+        catalog.writeComposition(user.actor, root, composition(listOf(child to "0.3", a to "0.3", b to "0.4"), "0.4"))
+        verify("1360")
+        catalog.delete(user.actor, a, "CASCADE")
+        assertThat(catalog.get(user.actor, root).isDeleted).isTrue()
+        verify("1360")
+    }
+    @Test fun `product labels track type transitions reassignment and deletion retroactively through HTTP`() {
+        val admin = register(Role.ADMIN)
+        val parentGroup = label(admin); val childGroup = label(admin); val replacement = label(admin)
+        val parent = product(); val child = product("200")
+        assign(parent, parentGroup); assign(child, childGroup)
+        entry(parent)
+        fun currentGroups() = groups(json(request("date=2026-05-06&zone=UTC&period=DAY")))
+        assertThat(currentGroups().keys).containsExactly(parentGroup)
+        api(user, HttpMethod.PUT, "/products/$parent/composition", mapOf("inputMode" to "PERCENT",
+            "components" to listOf(mapOf("productId" to child, "percent" to "100"))))
+        assertThat(currentGroups().keys).containsExactly(childGroup)
+        assertThat(summary().total.calories).isEqualByComparingTo("200")
+        assign(child, replacement)
+        assertThat(currentGroups().keys).containsExactly(replacement)
+        api(admin, HttpMethod.PATCH, "/admin/product-labels/$replacement", mapOf("name" to "Renamed"))
+        assertThat(currentGroups().getValue(replacement)).isEqualByComparingTo("100")
+        api(admin, HttpMethod.DELETE, "/admin/product-labels/$replacement", status = 204)
+        assertThat(currentGroups()).isEmpty()
+        assertThat(summary().total.calories).isEqualByComparingTo("200")
+        api(user, HttpMethod.PUT, "/products/$parent/composition", mapOf("inputMode" to "PERCENT", "components" to emptyList<Any>()))
+        assertThat(currentGroups().keys).containsExactly(parentGroup)
+        assertThat(summary().total.calories).isEqualByComparingTo("100")
+    }
+
 }
