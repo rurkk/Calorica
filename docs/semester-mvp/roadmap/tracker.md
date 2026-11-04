@@ -30,10 +30,10 @@
 | [T07](tasks/T07.md) | 3 | NiKLaYDM / чат 01a1a741 / исправление PR43 | Ожидает решения о слиянии | Код исправлен и проверен; опубликованный выпуск ожидается | `codex/pr43-fix-atomic-diary-01a1a741` / `18b4e38efc909eadfaa6cbac1b22ad964e9282a7` | PR43: замечания исправлены, unit/integration/APK/lint и ревью успешны; ожидаются CI и согласие merge/deploy |
 | [T08](tasks/T08.md) | 6 | NiKLaYDM / чат 01a1a741 / исправление PR43 | Ожидает решения о слиянии | Код исправлен и проверен; опубликованный выпуск ожидается | `codex/pr43-fix-timezone-01a1a741` / `6fe1675151e3efb940fba8de5423821c2b6e7183` | PR43: замечания исправлены, unit/integration/APK/lint и ревью успешны; ожидаются CI и согласие merge/deploy |
 | [T09](tasks/T09.md) | 2 | TheDenFire / чат p2-d14678b2 / T09 | Ревью | Нет; локальная разработка | `codex/p2-implementation-20261104` / без общей брони по решению пользователя | Граф составов и рекурсивный SQL; исполнитель t09_graph; push разрешён 4 ноября; без merge и деплоя |
-| [T10](tasks/T10.md) | 5 | NiKLaYDM / чат 01a1a741 / T10 | В работе | Нет; реализация и проверки | `codex/t10-android-composition-01a1a741` / `c5a41be7dee4002279489af27a340486a4b29a4b` | Редактор состава и выхода Android; живая проверка с T11 |
-| [T11](tasks/T11.md) | 2 | NiKLaYDM / чат 01a1a741 / T11 | В работе | Нет; реализация и проверки | `codex/t11-recipe-mass-yield-01a1a741` / `281a0ba8b6ccbb2e89514bfa68ca852cb848ebf3` | GRAMS/outputGrams, режимы выхода и проекция готовых долей |
+| [T10](tasks/T10.md) | 5 | NiKLaYDM / чат 01a1a741 / T10 | Ревью | Код и целевые проверки готовы; общая QA ожидается | `codex/t10-android-composition-01a1a741` / `c5a41be7dee4002279489af27a340486a4b29a4b` | Редактор состава и выхода Android; живая проверка с T11 |
+| [T11](tasks/T11.md) | 2 | NiKLaYDM / чат 01a1a741 / T11 | Ревью | Код и целевые проверки готовы; общая QA ожидается | `codex/t11-recipe-mass-yield-01a1a741` / `281a0ba8b6ccbb2e89514bfa68ca852cb848ebf3` | GRAMS/outputGrams, режимы выхода и проекция готовых долей |
 | [T12](tasks/T12.md) | 7 | TheDenFire / чат p2-d14678b2 / T12 | Ревью | Нет; локальная разработка | `codex/p2-implementation-20261104` / без общей брони по решению пользователя | Конвертация г/мл; координатор root; push разрешён 4 ноября; без merge и деплоя |
-| [T13](tasks/T13.md) | 7 | — | Ожидает зависимости | Нет | — | Начало ждёт T11; живая приёмка — T07 |
+| [T13](tasks/T13.md) | 7 | NiKLaYDM / чат 01a1a741 / T13 | В работе | Нет; реализация и PostgreSQL проверки | `codex/t13-product-labels-01a1a741` / `b11d5f51983c840a992b8be9a666c6299336d2ab` | t13_product_labels: сначала review T11, затем labels/API/distribution |
 | [T14](tasks/T14.md) | 2 | — | Ожидает зависимости | Нет | — | Начало ждёт T09, T07; живая приёмка — T11 |
 | [T15](tasks/T15.md) | 3 | NiKLaYDM / чат 01a1a741 / T15 | В работе | Нет; реализация и проверки | `codex/t15-analytics-01a1a741` / `e365b64c1a829a4010b56ecaabb9ec6424f681dc` | Календарные сводки; полная приёмка после T13 |
 | [T16](tasks/T16.md) | 4 | — | Ожидает зависимости | Нет | — | Начало ждёт T04, T06, T08, T10; живая приёмка — T11–T15 |
@@ -652,3 +652,18 @@ GitHub CI PR43 `2df83f4` завершился успешно: [Android](https://
 ответ пока ожидается, новые карточки продолжаются в отдельных рабочих ветках.
 Доступы Neon/Render/BetterStack проверены штатным API helper, все успешны.
 Общая БД проверена READ ONLY/ROLLBACK: 4 применённых changesets; изменений не было.
+
+Решение пользователя 4 ноября 2026 по PR43 `2df83f4`: **«Пока без слияния и выпуска»**.
+Main и общий стенд не меняются. Поручение продолжить независимые карточки сохраняется;
+подготовка к ревью и локальные проверки продолжаются, выпуск/закрытие не заявляются.
+
+T10 `bd01a609` интегрирован в кандидат как `e6a993e`: 107 Android tests, APK/lint PASS;
+независимое ревью и живая проверка совместимости T11 продолжаются.
+T11 `4b2e86d7` интегрирован как `e08376d`: 25 unit + 75 PostgreSQL integration,
+bootJar PASS; назначенный рецензент T13/агент7 проверяет изменения перед продолжением.
+
+T13 бронь подтверждена, отдельный исполнитель t13_product_labels. Согласована узкая
+правка CatalogService: productLabelIds через простой ProductLabelsRepository в том
+же transaction/snapshot; internal getForLabelAssignment с requireWrite/lock/ownership
+проверками. Протокол блокировок и write-overloads неизменны; service cycle запрещён.
+Автор пишет 060-product-labels.sql и test changelog; root интегрирует master include.
