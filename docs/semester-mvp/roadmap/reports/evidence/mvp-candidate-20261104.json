@@ -1,0 +1,585 @@
+{
+  "source": "0219a3567d64202791523408b8230ee9567932dd",
+  "checked_at": "2026-11-04",
+  "evidence_type": "Inspected local JUnit results from coordinator execution; not a release acceptance",
+  "suites": {
+    "android": {
+      "command": "./gradlew :app:testDebugUnitTest",
+      "totals": {
+        "tests": 113,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "classes": [
+        {
+          "class": "com.rurkk.calorica.ApiNetworkTest",
+          "tests": 15,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "48c6a0fdbcc7707dfba0021f389264ad23a3b8ad55789e690c9127205ad55b65"
+        },
+        {
+          "class": "com.rurkk.calorica.CompositionFeatureTest",
+          "tests": 15,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "86ab005c61c99a8cb332ae7d94fc81c16487f6ca6729dbeb47a0719dbebd0aad"
+        },
+        {
+          "class": "com.rurkk.calorica.CompositionUiTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "7aff6dbaac6a759a55392e27f40b0166cb9ca80243787d2ce2c93dc0b0fe4e4e"
+        },
+        {
+          "class": "com.rurkk.calorica.ContractTest",
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "29b49305ba97d812d1464ff0f677c9f15a9db29ca41e49bcede4f7f32873e7e0"
+        },
+        {
+          "class": "com.rurkk.calorica.DiaryViewModelTest",
+          "tests": 25,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "b7458b00d79148b55da4eeb5eaaf7988ba06230e72dc8c507ad141bff1eea0b9"
+        },
+        {
+          "class": "com.rurkk.calorica.DisplayNumbersTest",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "c835a985e4c11ddf6e8ffc2b8a4ebd0744e6b84efd712285a6c48f4d368c0726"
+        },
+        {
+          "class": "com.rurkk.calorica.NavigationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "982993eed81d6ac4043827cc1bb83278031433cb7dfd311d925518ad209b44e4"
+        },
+        {
+          "class": "com.rurkk.calorica.ProductsFeatureTest",
+          "tests": 12,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "e286e07e73c1db8ae004a38e32212ba04a0b8abc8d399e5852e4dc926966adf9"
+        },
+        {
+          "class": "com.rurkk.calorica.ReadControllerTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "7c5daf44e65409c7dcf48c3222ea348fa53843dada10b0cb6f8b2edf11287583"
+        },
+        {
+          "class": "com.rurkk.calorica.ServerWarmupTest",
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "94da012f1877dc01111e0f4903a66e781ad69bdbb4bf74117bad43e088836006"
+        },
+        {
+          "class": "com.rurkk.calorica.SessionCoordinatorTest",
+          "tests": 12,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "ceb7544aa5559d90e15424ed48bcb9991317dc9d6abea4e13660d187950c8558"
+        },
+        {
+          "class": "com.rurkk.calorica.SessionUiScopeTest",
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "5a6cf90ab462ef02b6239e39b715092e653d3686b7f609b6c5ef3924003daf72"
+        }
+      ],
+      "source": "2f148a05a293a61de0888067767cff6783efaafb",
+      "prior_product_checks": {
+        "source": "0219a3567d64202791523408b8230ee9567932dd",
+        "command": "./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug",
+        "tests": 108,
+        "result": "PASS; no production change after this run"
+      }
+    },
+    "backend_unit": {
+      "command": "./gradlew -p backend check bootJar",
+      "totals": {
+        "tests": 37,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "classes": [
+        {
+          "class": "ru.calorica.accounts.AccessTokensTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "8dcea8a1352e0d2472e090515bae5968227328aeba6170b4c82811d54dbee7a4"
+        },
+        {
+          "class": "ru.calorica.accounts.AuthPolicyTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "1f2e2d40d6b039be8a9f9cff047b602e3444c124a9136a4e669959265283fee5"
+        },
+        {
+          "class": "ru.calorica.accounts.ClientAddressTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "0ef5ab438b59e577a4046eeb30739ee6c4a45f9a51686a840d1857adb3dc5eec"
+        },
+        {
+          "class": "ru.calorica.analytics.CalendarWindowTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "a0d47ba9471bd3e3699206fece39fd709702d5ae4fa3345eebc14946fa3dac30"
+        },
+        {
+          "class": "ru.calorica.catalog.CatalogValidationTest",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "9a40250b0c179c2e54dcab9e9539b15e961bc14e399144443210955d689eef22"
+        },
+        {
+          "class": "ru.calorica.catalog.CompositionValidationTest",
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "f807885d57c284ed411ecfd3cdfb4a3f5d6de5e2d203f9279401eda3a8ca37d3"
+        },
+        {
+          "class": "ru.calorica.catalog.DeletionPolicyTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "04a70727ad133665bb88fc425ff364c8721fa2d54c1768b9c102186891cd8fff"
+        },
+        {
+          "class": "ru.calorica.catalog.UnitValuesTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "caa4b4afa059f62a850b2027a46a7f3b983dfdada800d5b14198bc5a433fd730"
+        },
+        {
+          "class": "ru.calorica.catalog.labels.ProductLabelValidationTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "46933bb761bd863024ba36181e102a3dffdcd2913b8d70e502c8c82029682635"
+        },
+        {
+          "class": "ru.calorica.diary.DiaryInputTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "509ded03ebc9eeb2a134afc5937beb3da1b7851d17545f4c624e4adc5734813f"
+        }
+      ]
+    },
+    "backend_postgresql": {
+      "command": "./gradlew -p backend check bootJar",
+      "totals": {
+        "tests": 111,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "classes": [
+        {
+          "class": "ru.calorica.FoundationIntegrationTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "d3b8d7b4fdf4f22a0976109929623f5980a2150a4377b03783c3e68500b32acf"
+        },
+        {
+          "class": "ru.calorica.accounts.AccountsIntegrationTest",
+          "tests": 13,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "bd32c179597eb6109ad0b0d73445e59439cf3152a7ce611aaf389b9241bb656c"
+        },
+        {
+          "class": "ru.calorica.accounts.DeadlineIntegrationTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "e933098b687cd4c3b7b0570fc206d0ca00d4628b987ccf0b09e3aa97cd69dab8"
+        },
+        {
+          "class": "ru.calorica.analytics.AnalyticsIntegrationTest",
+          "tests": 12,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "b3384b9f6d81629abede6fe66d7453aea5aee34012dd2149264dbda1c29f9461"
+        },
+        {
+          "class": "ru.calorica.catalog.CatalogIntegrationTest",
+          "tests": 13,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "0604554a79581aece818387ce0c805ff76225b393b8245376d39160acf352dd7"
+        },
+        {
+          "class": "ru.calorica.catalog.CatalogMigrationIntegrationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "2f2ca8a2abd582eb4928fd2b0ced52bb332387ccf21b4575a28225a31bc64d6f"
+        },
+        {
+          "class": "ru.calorica.catalog.CompositionIntegrationTest",
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "cbaa54a304285db5fc74dacde8b1a3929d941fd28679cbdc4e210f5104cd3639"
+        },
+        {
+          "class": "ru.calorica.catalog.CompositionMigrationIntegrationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "9b34d57193f69da2cef1a396b043f73284fbb181261678ac951ea9763e84d209"
+        },
+        {
+          "class": "ru.calorica.catalog.DeletionIntegrationTest",
+          "tests": 10,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "742d4fdb3b79f8036abf51da178bde4fa2be27b0e6bb7b8ad21136221f27ca19"
+        },
+        {
+          "class": "ru.calorica.catalog.MvpDiaryCatalogIntegrationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "e1e863afaa7d318971f90dc1968ae50029263e33669746cba2b70c7d32fd47b9"
+        },
+        {
+          "class": "ru.calorica.catalog.RecipeMassYieldIntegrationTest",
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "8b644386819cb11d0d5bbcdbc6ff600cf13409ada82107872af0c5ddcc9db70e"
+        },
+        {
+          "class": "ru.calorica.catalog.UnitsIntegrationTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "544166e6ebafd285318e45737b81414eeda91522ede538424509b50b3f6bef03"
+        },
+        {
+          "class": "ru.calorica.catalog.labels.ProductLabelsIntegrationTest",
+          "tests": 13,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "ca95dacee3d7487ab00cce6d8e6fa75d0dee2329c5fa94f84441d0bd872b1244"
+        },
+        {
+          "class": "ru.calorica.catalog.labels.ProductLabelsMigrationIntegrationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "707b4fd1a3272beb2c4ceb99817a016cd63d8148ef2006951402e7d52ed3d559"
+        },
+        {
+          "class": "ru.calorica.diary.DiaryIntegrationTest",
+          "tests": 14,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "d5c866f7bd559412796dd2286e4d3ac010d0b15f8ce28cf4a267954575792435"
+        },
+        {
+          "class": "ru.calorica.diary.DiaryMigrationIntegrationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "xml_sha256": "2d683043d85e1c5f6eefad8675de3f0a88c803a4f6bacb5737ad6e3d4132a740"
+        }
+      ]
+    }
+  },
+  "persistence_exact_live": {
+    "status": "FAIL",
+    "phase": "full",
+    "previous_source": "fb97cef7ade7015450328fd3dc2902792648df0e",
+    "current_source": "0219a3567d64202791523408b8230ee9567932dd",
+    "jars": {
+      "previous": {
+        "sha256": "56f9294fd6c8123936c0e1e5249563747237753557fedd9316f0e872b8a80cc2"
+      },
+      "current": {
+        "sha256": "19641e19a4f8cfa29a6c243b6c07a12971574bbb67ae5a80ebcd081960dc319b"
+      }
+    },
+    "java": "openjdk version \"21.0.12.1\" 2026-08-18 LTS",
+    "postgres": "PostgreSQL 17.11 (Debian 17.11-1.pgdg12+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+    "schema": [
+      {
+        "id": "001-foundation",
+        "author": "calorica",
+        "filename": "db/changelog/changes/001-foundation.sql",
+        "md5sum": "9:7cb393e0a28e33bbd3738cf61a7c8497",
+        "orderexecuted": 1
+      },
+      {
+        "id": "010-accounts-profile",
+        "author": "calorica",
+        "filename": "db/changelog/changes/010-accounts-profile.sql",
+        "md5sum": "9:06564dc6913f179390c626941d3949af",
+        "orderexecuted": 2
+      },
+      {
+        "id": "020-products",
+        "author": "calorica",
+        "filename": "db/changelog/changes/020-products.sql",
+        "md5sum": "9:b248415e5b2c233c0d5300c711cfe315",
+        "orderexecuted": 3
+      },
+      {
+        "id": "025-products-owner-fk",
+        "author": "calorica",
+        "filename": "db/changelog/changes/025-products-owner-fk.sql",
+        "md5sum": "9:6d722b19019a61391f60779bcdfcbddd",
+        "orderexecuted": 4
+      },
+      {
+        "id": "030-diary",
+        "author": "calorica",
+        "filename": "db/changelog/changes/030-diary.sql",
+        "md5sum": "9:9a21a5a12f8fd23e9adbd855f08d08fe",
+        "orderexecuted": 5
+      },
+      {
+        "id": "040-composition",
+        "author": "calorica",
+        "filename": "db/changelog/changes/040-composition.sql",
+        "md5sum": "9:653b202efb06db06c679ef4e6922f5dd",
+        "orderexecuted": 6
+      },
+      {
+        "id": "050-units",
+        "author": "calorica",
+        "filename": "db/changelog/changes/050-units.sql",
+        "md5sum": "9:307f8650562bb1b1a169903750906b84",
+        "orderexecuted": 7
+      },
+      {
+        "id": "060-product-labels",
+        "author": "calorica",
+        "filename": "db/changelog/changes/060-product-labels.sql",
+        "md5sum": "9:007b9b2bd55e4f7ed01d654adefba817",
+        "orderexecuted": 8
+      }
+    ],
+    "limitations": [
+      "Local JAR lifecycle drill; not a deployment or APK acceptance.",
+      "External backups and restore drills are not performed."
+    ],
+    "checks": [
+      {
+        "name": "fresh_schema",
+        "status": "PASS"
+      },
+      {
+        "name": "upgrade_preserves_released_data_and_checksums",
+        "status": "PASS"
+      },
+      {
+        "name": "final_domains_grams_output_labels_cascade_analytics",
+        "status": "PASS"
+      },
+      {
+        "name": "actual_jvm_restart_preserves_accounts_products_composition_diary_units",
+        "status": "PASS"
+      },
+      {
+        "name": "database_failure_readiness_503_liveness_200",
+        "status": "PASS"
+      },
+      {
+        "name": "actual_postgres_restart_preserves_all_rows_links_and_calculations",
+        "status": "PASS"
+      },
+      {
+        "name": "failed_release_never_ready_transactional_migration_preserves_data",
+        "status": "PASS"
+      },
+      {
+        "name": "previous_backend_functional_rollback",
+        "status": "FAIL",
+        "reason": "Previous released backend returns HTTP 500 for a new composite"
+      },
+      {
+        "name": "return_to_candidate_preserves_data_after_rollback_attempt",
+        "status": "PASS"
+      },
+      {
+        "name": "released_refresh_session_survives_upgrade_and_restarts",
+        "status": "PASS"
+      }
+    ]
+  },
+  "limitations": [
+    "No release APK or deployed candidate digest is verified by this evidence.",
+    "Physical Android unavailable; API26/35 Robolectric navigation/session tests passed, but no live API26 device/emulator check.",
+    "Exact-live rollback failed; candidate recovery and data preservation passed.",
+    "Android live QA details are recorded separately by T16."
+  ],
+  "android_validation_source": "2f148a05a293a61de0888067767cff6783efaafb",
+  "android_production_source": "0219a3567d64202791523408b8230ee9567932dd",
+  "persistence_prospective_pr43": {
+    "status": "PASS",
+    "phase": "full",
+    "previous_source": "prospective-unreleased-PR43:2df83f43265cdfaebcf44dc8280fb75110053065",
+    "current_source": "0219a3567d64202791523408b8230ee9567932dd",
+    "jars": {
+      "previous": {
+        "sha256": "0f903f9d0d612f93bbc557324c7b0c91c8539751b3b7f12382fc10e8cc93dd41"
+      },
+      "current": {
+        "sha256": "19641e19a4f8cfa29a6c243b6c07a12971574bbb67ae5a80ebcd081960dc319b"
+      }
+    },
+    "checks": [
+      {
+        "name": "fresh_schema",
+        "status": "PASS"
+      },
+      {
+        "name": "upgrade_preserves_released_data_and_checksums",
+        "status": "PASS"
+      },
+      {
+        "name": "final_domains_grams_output_labels_cascade_analytics",
+        "status": "PASS"
+      },
+      {
+        "name": "actual_jvm_restart_preserves_accounts_products_composition_diary_units",
+        "status": "PASS"
+      },
+      {
+        "name": "database_failure_readiness_503_liveness_200",
+        "status": "PASS"
+      },
+      {
+        "name": "actual_postgres_restart_preserves_all_rows_links_and_calculations",
+        "status": "PASS"
+      },
+      {
+        "name": "failed_release_never_ready_transactional_migration_preserves_data",
+        "status": "PASS"
+      },
+      {
+        "name": "previous_backend_functional_rollback",
+        "status": "PASS"
+      },
+      {
+        "name": "return_to_candidate_preserves_data_after_rollback_attempt",
+        "status": "PASS"
+      },
+      {
+        "name": "released_refresh_session_survives_upgrade_and_restarts",
+        "status": "PASS"
+      }
+    ],
+    "scope": "Unpublished local PR43 JAR; compatibility of previous core APIs/data, not new T13/T15 endpoints or production rollback digest"
+  },
+  "qa_apks": {
+    "A1_fault_series": {
+      "sha256": "20577f29c933b745c1f0551ca16f1866b7d6720c1fbe3b1b595b1b03edf604b4",
+      "package": "com.rurkk.calorica.qa01a1a741",
+      "versionName": "0.1.3",
+      "versionCode": 4,
+      "minSdk": 26,
+      "targetSdk": 37,
+      "runtime": "Android 16 / API 36 emulator; debug-only CA/package/API endpoint",
+      "configuration": "QA HTTPS endpoint through controlled fault proxy; fault-series artifact"
+    },
+    "A2_final_direct": {
+      "sha256": "3645a203541b5a1329f76dbbd2a99ad04f22c5800c83ca2c3904239dfad98132",
+      "package": "com.rurkk.calorica.qa01a1a741",
+      "versionName": "0.1.3",
+      "versionCode": 4,
+      "minSdk": 26,
+      "targetSdk": 37,
+      "runtime": "Android 16 / API 36 emulator; debug-only CA/package/API endpoint",
+      "configuration": "Direct QA HTTPS endpoint, no fault proxy",
+      "verified_scope": "Update over A1, restored session, empty day, deleted product absent from search; not a repeated full fault series"
+    }
+  },
+  "live_evidence": {
+    "report": "docs/android/t16-local-qa-20261104.md",
+    "report_commit": "780e8d091e04e7248dbfca97ab0f1827509e166d",
+    "early_backend_source": "e6a993eab26ea9542e39004a69eb092b82a713b4",
+    "early_scope": [
+      "idle TLS",
+      "50/50 to75/25 retains hidden0.5/1.5",
+      "composite rename"
+    ],
+    "full_backend_source": "0219a3567d64202791523408b8230ee9567932dd",
+    "full_scope": [
+      "fault series",
+      "diary create/edit/delete",
+      "personal product create/edit",
+      "nested picker/composition/yield",
+      "exact thirds",
+      "hidden labels/manual nutrition/explicit1 preservation",
+      "timezone at midnight",
+      "account isolation and session restore",
+      "soft-delete history"
+    ],
+    "final_direct_scope": "Update over A1, restored session, empty day, deleted product absent from search; not a repeated full fault series",
+    "physical_device": "not available",
+    "qa_environment_after_checks": "stopped by coordinator"
+  }
+}
