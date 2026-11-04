@@ -33,6 +33,7 @@ import kotlinx.serialization.Serializable
     val consumedGrams: Decimal, val occurredAt: String, val mealLabelIds: List<String>, val nutrition: Nutrition,
 )
 @Serializable data class DiaryDay(val date: String, val zone: String, val entries: List<DiaryEntry>, val total: Nutrition)
+@Serializable data class MealLabel(val id: String, val name: String)
 @Serializable data class FieldError(val field: String, val code: String)
 @Serializable data class Problem(
     val type: String, val title: String, val status: Int, val detail: String, val code: String,

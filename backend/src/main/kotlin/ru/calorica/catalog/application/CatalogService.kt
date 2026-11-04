@@ -13,6 +13,9 @@ import ru.calorica.catalog.domain.CatalogPortion
 import ru.calorica.catalog.persistence.CatalogRepository
 import ru.calorica.catalog.domain.LeafAllocation
 import ru.calorica.catalog.persistence.SearchKey
+import ru.calorica.catalog.persistence.CompositionRepository
+import ru.calorica.catalog.domain.CompositionWrite
+import ru.calorica.catalog.domain.ProductComponent
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.util.Base64
@@ -35,14 +38,27 @@ class CatalogService(
     private val transactions: CatalogTransactions,
     private val locks: CatalogMutationLock,
     private val mapper: ObjectMapper,
+    private val compositions: CompositionRepository,
 ) : CatalogRead, CatalogCalculation {
+    private fun calculated(actor: Actor, products: List<Product>): List<Product> {
+        val ids = products.map { it.id }
+        val values = compositions.calculate(actor.id, ids)
+        val components = compositions.components(ids)
+        return products.map { p ->
+            val result = values[p.id] ?: CatalogFailure.notFound()
+            val children = components[p.id].orEmpty()
+            p.copy(nutritionPer100g = result.nutritionPer100g, components = children,
+                kind = if (children.isEmpty()) "LEAF" else "COMPOSITE",
+                effectiveYieldFactor = result.effectiveYieldFactor.stripTrailingZeros().toPlainString(), yieldSource = result.yieldSource)
+        }
+    }
     private fun rows(actor: Actor, ids: Collection<UUID>, history: Boolean): List<Product> {
         if (ids.size > 10000) CatalogFailure.invalid("productIds", "CALCULATION_LIMIT")
         val unique = ids.toSet()
         val products = repository.visible(actor.id, unique, history)
         if (products.size != unique.size) CatalogFailure.notFound()
         val byId = products.associateBy { it.id }
-        return unique.map { byId.getValue(it) }
+        return calculated(actor, unique.map { byId.getValue(it) })
     }
     override fun getVisible(actor: Actor, ids: Collection<UUID>, includeDeletedForHistory: Boolean): List<Product> =
         transactions.snapshot { rows(actor, ids, includeDeletedForHistory) }
@@ -52,7 +68,8 @@ class CatalogService(
     }
     override fun nutrition(actor: Actor, productIds: Collection<UUID>, snapshot: CatalogSnapshot): Map<UUID, CalculatedNutrition> {
         transactions.requireSnapshot(snapshot)
-        return rows(actor, productIds, true).associate { it.id to CalculatedNutrition(it.nutritionPer100g, BigDecimal.ONE, "DEFAULT") }
+        return rows(actor, productIds, true).associate { it.id to CalculatedNutrition(it.nutritionPer100g,
+            it.effectiveYieldFactor.toBigDecimal(), it.yieldSource) }
     }
     override fun allocateLeaves(actor: Actor, portions: List<CatalogPortion>, snapshot: CatalogSnapshot): List<LeafAllocation> {
         transactions.requireSnapshot(snapshot)
@@ -62,8 +79,9 @@ class CatalogService(
             if (it.consumedGrams.signum() <= 0 || it.consumedGrams.scale() > 3 ||
                 it.consumedGrams > BigDecimal("9999999.999")) CatalogFailure.invalid("consumedGrams")
         }
-        rows(actor, portions.map { it.productId }, true)
-        return repository.allocate(actor.id, portions)
+        if (repository.visible(actor.id, portions.map { it.productId }.toSet(), true).size != portions.map { it.productId }.toSet().size)
+            CatalogFailure.notFound()
+        return compositions.allocate(actor.id, portions)
     }
     fun get(actor: Actor, id: UUID): Product = getVisible(actor, listOf(id), true).single()
     private fun fingerprint(actor: Actor, q: String): String = MessageDigest.getInstance("SHA-256")
@@ -93,7 +111,7 @@ class CatalogService(
         val fingerprint = fingerprint(actor, q)
         val hits = repository.search(actor.id, q, limit + 1, decode(cursor, fingerprint))
         val page = hits.take(limit)
-        ProductPage(page.map { it.product }, if (hits.size > limit) encode(page.last().key, fingerprint) else null)
+        ProductPage(calculated(actor, page.map { it.product }), if (hits.size > limit) encode(page.last().key, fingerprint) else null)
     }
     private fun validateManual(nutrition: Nutrition) {
         listOf("calories" to nutrition.calories, "protein" to nutrition.protein,
@@ -117,6 +135,62 @@ class CatalogService(
         if (repository.update(id, if (base) null else actor.id, name?.let(ProductNames::name) ?: current.name,
                 nutrition ?: current.manualNutrition) != 1) CatalogFailure.notFound()
         rows(actor, listOf(id), false).single()
+    }
+    fun createComposition(actor: Actor, name: String, composition: CompositionWrite, base: Boolean = false): Product =
+        transactions.mutation { tx ->
+            if (base) locks.base(actor, tx) else locks.personal(actor, tx)
+            if (composition.components.isEmpty()) CatalogFailure.invalid("components", "INVALID_COMPOSITION")
+            val id = UUID.randomUUID()
+            repository.insert(id, if (base) null else actor.id, ProductNames.name(name), null)
+            val current = repository.visible(actor.id, listOf(id), false).single()
+            replaceComposition(actor, current, composition, base)
+        }
+    fun writeComposition(actor: Actor, id: UUID, composition: CompositionWrite, base: Boolean = false): Product =
+        transactions.mutation { tx ->
+            if (base) locks.base(actor, tx) else locks.personal(actor, tx)
+            val current = repository.visible(actor.id, listOf(id), false).singleOrNull() ?: CatalogFailure.notFound()
+            if (if (base) current.ownerId != null else current.ownerId != actor.id) CatalogFailure.notFound()
+            replaceComposition(actor, current, composition, base)
+        }
+    private fun replaceComposition(actor: Actor, current: Product, input: CompositionWrite, base: Boolean): Product {
+        // All validation queries run after the mutation advisory locks, in READ COMMITTED.
+        if (input.components.size > 100) CatalogFailure.invalid("components", "CALCULATION_LIMIT")
+        if (input.components.map { it.productId }.toSet().size != input.components.size ||
+            (input.components.isNotEmpty() && input.components.fold(BigDecimal.ZERO) { sum,c -> sum + c.fraction }.compareTo(BigDecimal.ONE) != 0))
+            CatalogFailure.invalid("components", "INVALID_COMPOSITION")
+        input.components.forEachIndexed { i,child ->
+            if (child.fraction.scale() > 12) CatalogFailure.invalid("components[$i].percent", "PRECISION_EXCEEDED")
+            if (child.fraction.signum() <= 0 || child.fraction > BigDecimal.ONE) CatalogFailure.invalid("components[$i].percent")
+        }
+        (input.components.map { it.yieldFactor.value } + input.manualYieldFactor.value).filterNotNull().forEach { factor ->
+            if (factor.scale() > 12) CatalogFailure.invalid("yieldFactor", "PRECISION_EXCEEDED")
+            if (factor.signum() <= 0 || factor > BigDecimal("9999.999999999999")) CatalogFailure.invalid("yieldFactor")
+        }
+        val old = compositions.components(listOf(current.id))[current.id].orEmpty().associateBy { it.productId }
+        val children = input.components.map { child ->
+            if (child.productId == current.id) throw CatalogFailure(409, "CYCLE_DETECTED")
+            val product = repository.visible(actor.id, listOf(child.productId), old.containsKey(child.productId)).singleOrNull()
+                ?: CatalogFailure.notFound()
+            if (base && product.ownerId != null) CatalogFailure.notFound()
+            ProductComponent(child.productId, child.fraction, if (child.yieldFactor.present) child.yieldFactor.value else old[child.productId]?.yieldFactor)
+        }
+        val nutrition = input.manualNutrition ?: current.manualNutrition
+        nutrition?.let(::validateManual)
+        if (children.isEmpty() && nutrition == null) CatalogFailure.invalid("manualNutrition", "INVALID_COMPOSITION")
+        val ingredients = children.any { it.yieldFactor != null }
+        if (ingredients && input.manualYieldFactor.present && input.manualYieldFactor.value != null)
+            throw CatalogFailure(409, "YIELD_MODE_CONFLICT")
+        if (children.isEmpty() && input.manualYieldFactor.value != null) CatalogFailure.invalid("manualYieldFactor", "INVALID_COMPOSITION")
+        val manual = when {
+            children.isEmpty() || ingredients -> null
+            input.manualYieldFactor.present -> input.manualYieldFactor.value
+            else -> current.manualYieldFactor?.toBigDecimal()
+        }
+        repository.update(current.id, current.ownerId, current.name, nutrition)
+        compositions.replace(current.id, children, manual)
+        // The guarded SQL rejects indirect/corrupt cycles and excessive path expansion. Any error
+        // rolls the complete composition and manual settings back, including a composite POST.
+        return rows(actor, listOf(current.id), false).single()
     }
     fun delete(actor: Actor, id: UUID, mode: String, base: Boolean = false) { transactions.mutation { tx ->
         if (base) locks.base(actor, tx) else locks.personal(actor, tx)

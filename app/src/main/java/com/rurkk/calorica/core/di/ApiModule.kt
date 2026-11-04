@@ -3,6 +3,7 @@ package com.rurkk.calorica.core.di
 import com.rurkk.calorica.BuildConfig
 import com.rurkk.calorica.core.api.*
 import com.rurkk.calorica.core.data.*
+import com.rurkk.calorica.core.session.*
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -18,8 +19,9 @@ object ApiModule {
 }
 @Module @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+  @Binds abstract fun refreshStore(store: KeystoreRefreshTokenStore): RefreshTokenStore
   @Binds abstract fun auth(repository: HttpAuthRepository): AuthRepository
-  @Binds abstract fun products(repository: HttpProductRepository): ProductRepository
-  @Binds abstract fun diary(repository: HttpDiaryRepository): DiaryRepository
+  @Binds abstract fun products(repository: SessionProductRepository): ProductRepository
+  @Binds abstract fun diary(repository: SessionDiaryRepository): DiaryRepository
   @Binds abstract fun connection(repository: HttpConnectionRepository): ConnectionRepository
 }

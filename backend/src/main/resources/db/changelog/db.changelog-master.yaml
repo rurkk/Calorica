@@ -11,3 +11,12 @@ databaseChangeLog:
   - include:
       file: changes/025-products-owner-fk.sql
       relativeToChangelogFile: true
+  - include:
+      file: changes/030-diary.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/040-composition.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/050-units.sql
+      relativeToChangelogFile: true

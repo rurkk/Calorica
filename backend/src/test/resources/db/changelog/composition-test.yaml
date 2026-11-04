@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001-foundation.sql
+  - include:
+      file: db/changelog/changes/010-accounts-profile.sql
+  - include:
+      file: db/changelog/changes/020-products.sql
+  - include:
+      file: db/changelog/changes/025-products-owner-fk.sql
+  - include:
+      file: db/changelog/changes/040-composition.sql

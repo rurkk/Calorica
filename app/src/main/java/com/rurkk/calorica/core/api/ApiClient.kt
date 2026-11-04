@@ -26,7 +26,7 @@ const val REQUEST_TIMEOUT_MILLIS = 10_000L
 }
 
 object ApiClient {
-  fun http(session: InMemorySession, baseUrl: String): OkHttpClient {
+  fun http(@Suppress("UNUSED_PARAMETER") session: InMemorySession, baseUrl: String): OkHttpClient {
     val origin = baseUrl.toHttpUrl()
     val anonymous = setOf("/api/v1/accounts/register", "/api/v1/accounts/login", "/api/v1/accounts/refresh")
     return OkHttpClient.Builder()
@@ -39,9 +39,11 @@ object ApiClient {
       .addInterceptor { chain ->
         val request = chain.request().newBuilder().header("Accept", "application/json, application/problem+json")
         val url = chain.request().url
-        if (url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port &&
-            url.encodedPath.startsWith("/api/v1/") && url.encodedPath !in anonymous) {
-          session.accessToken()?.let { request.header("Authorization", "Bearer $it") }
+        // Authentication was bound to the operation before enqueueing. Never replace it
+        // with a mutable token here: an old request could otherwise execute as a new account.
+        if (!(url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port &&
+            url.encodedPath.startsWith("/api/v1/") && url.encodedPath !in anonymous)) {
+          request.removeHeader("Authorization")
         }
         chain.proceed(request.build())
       }.build()

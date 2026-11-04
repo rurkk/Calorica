@@ -1,9 +1,10 @@
-# catalog — T05
+# catalog — T05/T09
 
-Конечные базовые и личные продукты, точные ручные КБЖУ на 100 г, поиск и
-KEEP_REFERENCES. Контракт — `docs/semester-mvp/contracts/v1`, версия 1.0.0.
-Граф/выход/каскад/единицы/лейблы добавляются соответствующими последующими задачами.
-Не реализованные composition/CASCADE запросы не сохраняют частичный результат.
+Конечные и вложенные составные базовые/личные продукты, точные ручные КБЖУ,
+поиск, PERCENT-составы и выход, KEEP_REFERENCES. Контракт —
+`docs/semester-mvp/contracts/v1`, версия 1.0.0. GRAMS/outputGrams остаются T11,
+CASCADE — T14; неподдерживаемый запрос завершается ошибкой без частичной записи.
+Эта локальная реализация не подтверждает опубликованный API или завершение живой приёмки.
 
 Слои: HTTP/строгий разбор в api, транзакции и права в application, decimal и типы
 в domain, параметризованный SQL в persistence. Единственная таблица products
@@ -17,8 +18,11 @@ KEEP_REFERENCES. Контракт — `docs/semester-mvp/contracts/v1`, верс
 - CatalogRead.requireSelectable: внутри CatalogTransactions.mutation, с его tx.
   Берёт shared base + exclusive owner и затем отдельным statement читает доступность.
 - CatalogCalculation.nutrition / allocateLeaves: внутри CatalogTransactions.snapshot
-  с переданным snapshot. Проекция конечных листьев исполняется SQL; T09 расширяет
-  тот же интерфейс рекурсией. Расчёт/чтение истории сохраняют удалённые листья.
+  с переданным snapshot. Миграция040 добавляет единую SQL-проекцию catalog_paths:
+  UNION ALL сохраняет пути и rootOrdinal каждой порции. Расчёт/чтение истории
+  сохраняют удалённые листья. catalog_nutrition обходит узлы снизу вверх и считает
+  SUM(w * childNutrition) / Y; деление после суммы сохраняет контрольное 240/0.75=320.
+  Распределение готовых граммов использует q, а общий ручной выход q не меняет.
 - CatalogMutationLock: personal / base — единый порядок advisory locks по T00,
   не допускающий повышения shared в exclusive либо второго owner в одной транзакции.
 
@@ -27,6 +31,19 @@ Capability связано с физическим Spring ConnectionHolder и и�
 Read-only ответы используют REPEATABLE READ; мутации READ COMMITTED и свежие
 проверки после ожидания блокировки. SQL timeout 5с, lock timeout 2с, transaction 8с.
 Общий HTTP deadline задаёт platform/security T03.
+
+POST products принимает name+composition без фиктивных ручных значений. PUT composition
+атомарно заменяет рёбра; при возврате к листу нужны прежние или переданные ручные
+КБЖУ. Сохранённые manualNutrition и скрытые коэффициенты не теряются: absent
+сохраняет, NULL очищает. Любой non-NULL коэффициент ребра включает INGREDIENTS и
+очищает manualYieldFactor; конфликт явных режимов даёт409. Проверки прав, удаления
+и цикла выполняются после advisory locks; исключение откатывает и POST, и PUT.
+
+catalog_paths потоково проверяет 100001-ю строку путей и 10001-й уникальный узел
+до агрегации; повторный productId в разных порциях входит в общий лимит путей.
+Повреждённый цикл возвращает CYCLE_DETECTED, превышение NUMERIC/scale/размера —
+CALCULATION_LIMIT, SQL timeout — CALCULATION_TIMEOUT. Частичный результат не выдаётся.
+Нет ограниченной глубины вложенности и сохранённых рассчитанных итогов.
 
 Поиск нормализует имя и q одной SQL-функцией; lower/ё→е/удаление ъь/пробелы.
 Порядок exact, prefix, trigram >=0.3; внутри similarity DESC/name COLLATE C/UUID.
