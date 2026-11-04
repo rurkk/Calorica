@@ -34,6 +34,7 @@ class DiaryViewModelTest {
     var patched: DiaryPatch?=null
     var gate: CompletableDeferred<Unit>?=null
     var result: ApiResult<DiaryEntry> = ApiResult.Success(entry())
+    var deleteResult: ApiResult<Unit> = ApiResult.Success(Unit)
     var readResult: ApiResult<DiaryDay>?=null
     override suspend fun mealLabels()=ApiResult.Success(listOf(MealLabel(id,"Завтрак")))
     override suspend fun day(date: String,zone: String): ApiResult<DiaryDay> {
@@ -45,7 +46,7 @@ class DiaryViewModelTest {
     override suspend fun patch(id: String,request: DiaryPatch): ApiResult<DiaryEntry> {
       writes++; patched=request; gate?.await(); return result
     }
-    override suspend fun delete(id: String): ApiResult<Unit> { deletes++; return ApiResult.Success(Unit) }
+    override suspend fun delete(id: String): ApiResult<Unit> { deletes++; gate?.await(); return deleteResult }
   }
   private fun entry()=DiaryEntry(id,id,"Молоко",false,BigDecimal("200"),"2026-11-03T08:00:00Z",listOf(id),zero)
   private fun fill(vm: DiaryViewModel) {
@@ -153,6 +154,79 @@ class DiaryViewModelTest {
     val day=(vm.state.value.day as ReadState.Empty<DiaryDay>).value
     assertEquals("2026-11-02",day.date); assertEquals("Pacific/Honolulu",day.zone)
     vm.resumeReads(); runCurrent(); assertEquals(1,repo.writes)
+  }
+  @Test fun completedUncertainWriteFollowsItsUtcDayUntilAcknowledged()=withDeviceZone {
+    val repo=Repo().apply { result=ApiResult.Failure(ApiError(ApiError.Kind.TIMEOUT)) }
+    val vm=DiaryViewModel(repo,products,clock)
+    vm.resumeReads(); runCurrent(); fill(vm); vm.save(); runCurrent()
+    assertTrue(vm.state.value.uncertain); assertNull(vm.state.value.form)
+    vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Honolulu"))
+    vm.resumeReads()
+    vm.acknowledgeUncertain(); assertTrue(vm.state.value.uncertain)
+    runCurrent()
+    assertEquals(LocalDate.parse("2026-11-02"),vm.state.value.date)
+    assertEquals("2026-11-02",(vm.state.value.day as ReadState.Empty<DiaryDay>).value.date)
+    vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Asia/Tokyo"))
+    vm.resumeReads(); runCurrent()
+    assertEquals(LocalDate.parse("2026-11-03"),vm.state.value.date)
+    vm.acknowledgeUncertain(); assertFalse(vm.state.value.uncertain)
+    vm.selectDate(LocalDate.parse("2026-10-01")); runCurrent(); vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Honolulu"))
+    vm.resumeReads(); runCurrent()
+    assertEquals(LocalDate.parse("2026-10-01"),vm.state.value.date)
+    assertEquals(1,repo.writes)
+  }
+  @Test fun patchBecomingUncertainWhilePausedIsCheckedInCurrentZoneOnReturn()=withDeviceZone {
+    val repo=Repo().apply { gate=CompletableDeferred(); result=ApiResult.Failure(ApiError(ApiError.Kind.TIMEOUT)) }
+    val vm=DiaryViewModel(repo,products,clock)
+    vm.resumeReads(); runCurrent(); vm.edit(entry())
+    vm.update { it.copy(grams="50") }; vm.save(); runCurrent(); vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Honolulu"))
+    repo.gate!!.complete(Unit); runCurrent()
+    assertTrue(vm.state.value.uncertain); assertEquals(ReadState.Idle,vm.state.value.day)
+    vm.resumeReads(); runCurrent()
+    assertEquals(LocalDate.parse("2026-11-02"),vm.state.value.date)
+    val day=(vm.state.value.day as ReadState.Empty<DiaryDay>).value
+    assertEquals("2026-11-02",day.date); assertEquals("Pacific/Honolulu",day.zone)
+    assertEquals("\"2026-11-03T08:00:00Z\"",repo.patched!!.json()["occurredAt"].toString())
+    vm.save(); runCurrent(); assertEquals(1,repo.writes)
+  }
+  @Test fun uncertainDeletionKeepsEntryInstantAndRejectsLateOldZoneCheck()=withDeviceZone {
+    val old=CompletableDeferred<Unit>()
+    var holdOldCheck=false
+    val base=Repo().apply { deleteResult=ApiResult.Failure(ApiError(ApiError.Kind.TIMEOUT)) }
+    val repo=object : DiaryRepository by base {
+      override suspend fun day(date:String,zone:String):ApiResult<DiaryDay> {
+        if(holdOldCheck && zone=="Europe/Moscow") withContext(NonCancellable) { old.await() }
+        return base.day(date,zone)
+      }
+    }
+    val vm=DiaryViewModel(repo,products,clock)
+    vm.resumeReads(); runCurrent(); holdOldCheck=true
+    vm.delete(entry()); runCurrent(); assertTrue(vm.state.value.uncertain)
+    vm.pauseReads()
+    TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Honolulu"))
+    vm.resumeReads(); vm.acknowledgeUncertain(); assertTrue(vm.state.value.uncertain)
+    runCurrent(); old.complete(Unit); runCurrent()
+    val day=(vm.state.value.day as ReadState.Empty<DiaryDay>).value
+    assertEquals("2026-11-02",day.date); assertEquals("Pacific/Honolulu",day.zone)
+    vm.delete(entry()); runCurrent(); assertEquals(1,base.deletes)
+    vm.acknowledgeUncertain(); assertFalse(vm.state.value.uncertain)
+  }
+  @Test fun uncertainWriteCanOnlyBeAcknowledgedAfterReadingItsCurrentDayAndZone()=onMain {
+    val repo=Repo().apply {
+      result=ApiResult.Failure(ApiError(ApiError.Kind.TIMEOUT))
+      readResult=ApiResult.Success(DiaryDay("2026-11-04",zone.id,emptyList(),zero))
+    }
+    val vm=DiaryViewModel(repo,products,clock,zone)
+    fill(vm); vm.save(); runCurrent(); vm.acknowledgeUncertain()
+    assertTrue(vm.state.value.uncertain)
+    repo.readResult=ApiResult.Success(DiaryDay("2026-11-03","Asia/Tokyo",emptyList(),zero))
+    vm.reload(); runCurrent(); vm.acknowledgeUncertain(); assertTrue(vm.state.value.uncertain)
+    repo.readResult=null
+    vm.reload(); runCurrent(); vm.acknowledgeUncertain(); assertFalse(vm.state.value.uncertain)
   }
   @Test fun lateOldZoneResponseCannotReplaceDayLoadedAfterResume()=withDeviceZone {
     val old=CompletableDeferred<Unit>()

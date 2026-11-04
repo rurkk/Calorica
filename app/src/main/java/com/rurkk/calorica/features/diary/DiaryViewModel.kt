@@ -47,14 +47,16 @@ class DiaryViewModel(private val repository: DiaryRepository, private val produc
   private var readRevision = 0
   private var pickerRevision = 0
   private var initialized = false
+  private var uncertainInstant: Instant? = null
 
   fun resumeReads() {
     val input = state.value
     val nextZone = currentZone()
     if (visible && nextZone == input.zone) return
     if (nextZone != input.zone) {
-      // A selected calendar date stays selected; draft instants are displayed in the new zone.
-      mutable.value = input.copy(zone = nextZone, form = input.form?.inZone(input.zone, nextZone))
+      // Keep a selected date, except while checking the local day of an uncertain write.
+      val date = uncertainInstant?.takeIf { input.uncertain }?.atZone(nextZone)?.toLocalDate() ?: input.date
+      mutable.value = input.copy(date = date, zone = nextZone, form = input.form?.inZone(input.zone, nextZone))
     }
     visible = true
     readsPaused = false
@@ -181,7 +183,7 @@ class DiaryViewModel(private val repository: DiaryRepository, private val produc
             occurredAt=PatchField.Set(write.occurredAt),mealLabelIds=PatchField.Set(write.mealLabelIds)))
         // A write can finish after a pause and a device-zone change. Follow its original UTC instant.
         mutable.value=state.value.copy(date=Instant.parse(write.occurredAt).atZone(state.value.zone).toLocalDate())
-        mutationResult(result)
+        mutationResult(result, Instant.parse(write.occurredAt))
       } finally { mutable.value=state.value.copy(busy=false) }
     }
   }
@@ -189,15 +191,19 @@ class DiaryViewModel(private val repository: DiaryRepository, private val produc
     if (state.value.busy || state.value.uncertain || state.value.resolvingProduct) return
     mutable.value=state.value.copy(busy=true,message=null,correlationId=null)
     viewModelScope.launch {
-      try { mutationResult(repository.delete(entry.id)) } finally { mutable.value=state.value.copy(busy=false) }
+      try { mutationResult(repository.delete(entry.id), Instant.parse(entry.occurredAt)) }
+      finally { mutable.value=state.value.copy(busy=false) }
     }
   }
-  private fun mutationResult(result: ApiResult<*>) {
+  private fun mutationResult(result: ApiResult<*>, occurredAt: Instant) {
+    val uncertain = result is ApiResult.Failure &&
+        (result.error.kind != ApiError.Kind.HTTP || (result.error.status ?: 500) >= 500)
+    uncertainInstant = occurredAt.takeIf { uncertain }
     mutable.value=when(result) {
       is ApiResult.Success -> state.value.copy(form=null,message="Данные сохранены.",uncertain=false)
       is ApiResult.Failure -> {
-        val uncertain=result.error.kind != ApiError.Kind.HTTP || (result.error.status ?: 500) >= 500
-        state.value.copy(form=if(uncertain) null else state.value.form,
+        state.value.copy(date=if(uncertain) occurredAt.atZone(state.value.zone).toLocalDate() else state.value.date,
+            form=if(uncertain) null else state.value.form,
             uncertain=uncertain,message=result.error.writeMessage(),correlationId=result.error.correlationId)
       }
     }
@@ -205,8 +211,16 @@ class DiaryViewModel(private val repository: DiaryRepository, private val produc
     reload()
   }
   fun acknowledgeUncertain() {
-    if (!state.value.busy && (state.value.day is ReadState.Data || state.value.day is ReadState.Empty))
-      mutable.value=state.value.copy(uncertain=false,message=null)
+    val input = state.value
+    val day = when(val read = input.day) {
+      is ReadState.Data -> read.value
+      is ReadState.Empty -> read.value
+      else -> null
+    }
+    if (!input.busy && input.uncertain && day?.date == input.date.toString() && day.zone == input.zone.id) {
+      uncertainInstant = null
+      mutable.value=input.copy(uncertain=false,message=null)
+    }
   }
 
   companion object {
