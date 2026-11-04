@@ -66,6 +66,8 @@ dependencies {
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
   debugImplementation(libs.androidx.ui.tooling)
+  testImplementation(libs.androidx.ui.test.junit4)
+  testImplementation(libs.robolectric)
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.mockwebserver)

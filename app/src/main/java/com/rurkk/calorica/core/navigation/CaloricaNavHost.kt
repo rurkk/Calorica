@@ -19,10 +19,6 @@ import com.rurkk.calorica.core.ui.ServerWarmupScreen
 import com.rurkk.calorica.core.session.SessionState
 import com.rurkk.calorica.features.auth.AuthScreen
 import com.rurkk.calorica.features.auth.AuthViewModel
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.HasDefaultViewModelProviderFactory
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 
 /** Feature owners implement slots; only agent 4 edits root routes/DI. */
 interface FeatureScreens {
@@ -80,40 +76,23 @@ fun CaloricaNavHost(connection: ConnectionViewModel, auth: AuthViewModel, screen
     if (owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) connection.startWarmup()
     onDispose { owner.lifecycle.removeObserver(observer) }
   }
-  val session by auth.sessionState.collectAsStateWithLifecycle()
   LaunchedEffect(startup) { if (startup == ServerWarmupState.Ready) auth.restore() }
   Surface(Modifier.fillMaxSize()) {
-    if (startup != ServerWarmupState.Ready) {
-      ServerWarmupScreen(startup, connection::retryWarmup)
-    } else when (val current = session) {
-      SessionState.Restoring -> Column(Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        CircularProgressIndicator(); Text("Восстанавливаем сессию…")
-      }
-      is SessionState.SignedOut -> Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Calorica", style = MaterialTheme.typography.headlineLarge)
-        AuthScreen(auth, current.message)
-      }
-      is SessionState.SignedIn -> key(current.generation) {
-        SessionUiScope { AuthenticatedNavigation(connection, screens, current.account.email, auth::logout) }
+    SessionUiScope(auth.sessionState) { session ->
+      if (startup != ServerWarmupState.Ready) {
+        ServerWarmupScreen(startup, connection::retryWarmup)
+      } else when (val current = session) {
+        SessionState.Restoring -> Column(Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+          CircularProgressIndicator(); Text("Восстанавливаем сессию…")
+        }
+        is SessionState.SignedOut -> Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+          Text("Calorica", style = MaterialTheme.typography.headlineLarge)
+          AuthScreen(auth, current.message)
+        }
+        is SessionState.SignedIn -> AuthenticatedNavigation(connection, screens, current.account.email, auth::logout)
       }
     }
   }
-}
-
-/** Discard every feature ViewModel and navigation result when an account/session changes. */
-@Composable
-private fun SessionUiScope(content: @Composable () -> Unit) {
-  val parent = requireNotNull(LocalViewModelStoreOwner.current)
-  val defaults = parent as HasDefaultViewModelProviderFactory
-  val owner = remember(parent) {
-    object : ViewModelStoreOwner, HasDefaultViewModelProviderFactory {
-      override val viewModelStore = ViewModelStore()
-      override val defaultViewModelProviderFactory get() = defaults.defaultViewModelProviderFactory
-      override val defaultViewModelCreationExtras get() = defaults.defaultViewModelCreationExtras
-    }
-  }
-  DisposableEffect(owner) { onDispose { owner.viewModelStore.clear() } }
-  CompositionLocalProvider(LocalViewModelStoreOwner provides owner, content = content)
 }
 
 @Composable
