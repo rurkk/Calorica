@@ -23,8 +23,7 @@ import java.util.concurrent.TimeUnit
 
 @Tag("integration")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = ["spring.liquibase.change-log=classpath:db/changelog/composition-test.yaml"])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CompositionIntegrationTest @Autowired constructor(
     private val catalog: CatalogService, private val transactions: CatalogTransactions,
     private val jdbc: JdbcClient, private val accounts: AccountsService,

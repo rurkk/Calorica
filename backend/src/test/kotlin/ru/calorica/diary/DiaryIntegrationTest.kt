@@ -34,8 +34,7 @@ import java.util.concurrent.TimeUnit
 
 @Tag("integration")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = ["spring.liquibase.change-log=classpath:db/changelog/diary-test.yaml"])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class DiaryIntegrationTest @Autowired constructor(private val http: TestRestTemplate, private val mapper: ObjectMapper,
     private val jdbc: JdbcClient, private val accounts: AccountsService, private val catalog: CatalogService,
     private val diary: DiaryService, private val transactions: CatalogTransactions, private val locks: CatalogMutationLock,
