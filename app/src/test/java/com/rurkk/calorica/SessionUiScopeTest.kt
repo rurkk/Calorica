@@ -37,7 +37,7 @@ import org.robolectric.annotation.LooperMode
 
 /** Exercises production SessionUiScope through a real Activity and Navigation Compose lifecycle. */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [35], application = Application::class)
+@Config(sdk = [26, 35], application = Application::class)
 @LooperMode(LooperMode.Mode.PAUSED)
 class SessionUiScopeTest {
   @get:Rule val compose = createEmptyComposeRule()

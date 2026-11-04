@@ -33,7 +33,7 @@ import org.robolectric.annotation.LooperMode
 
 /** Runs the actual root navigation, shared picker and product editor, including Activity recreation. */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk=[35],application=Application::class,qualifiers="w411dp-h891dp-xxhdpi")
+@Config(sdk=[26,35],application=Application::class,qualifiers="w411dp-h891dp-xxhdpi")
 @LooperMode(LooperMode.Mode.PAUSED)
 class CompositionUiTest {
   @get:Rule val compose=createEmptyComposeRule()
