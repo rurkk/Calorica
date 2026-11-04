@@ -9,6 +9,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerializationException
+import okhttp3.ConnectionPool
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -34,6 +35,10 @@ object ApiClient {
       .connectTimeout(REQUEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
       .readTimeout(REQUEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
       .writeTimeout(REQUEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+      // Never replay writes after an ambiguous transport failure. With retries disabled,
+      // a pooled TLS socket closed during server/proxy idle time can fail the next action
+      // before it reaches the server. Retire idle sockets instead of guessing that timeout.
+      .connectionPool(ConnectionPool(0, 1, TimeUnit.SECONDS))
       .retryOnConnectionFailure(false)
       .followRedirects(false).followSslRedirects(false)
       .addInterceptor { chain ->

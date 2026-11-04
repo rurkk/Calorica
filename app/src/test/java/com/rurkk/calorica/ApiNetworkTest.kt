@@ -45,6 +45,23 @@ class ApiNetworkTest {
     assertTrue(executor.call { api.readiness() } is ApiResult.Success)
     assertNull(server.takeRequest(2, TimeUnit.SECONDS)!!.getHeader("Authorization"))
   }
+  @Test fun sequentialActionsDoNotReuseIdleConnectionsWhenWriteRetriesAreDisabled() = runBlocking {
+    // The server may silently expire its TLS keep-alive between UI actions. We must
+    // start a fresh connection, not recover by replaying a possibly committed write.
+    repeat(2) {
+      server.enqueue(response("""{"status":"UP"}"""))
+      assertTrue(executor.call { api.readiness() } is ApiResult.Success)
+      assertEquals(0, server.takeRequest(2, TimeUnit.SECONDS)!!.sequenceNumber)
+    }
+    server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AFTER_REQUEST))
+    val result = executor.call {
+      api.createDiary(DiaryWrite("id", java.math.BigDecimal.ONE, "g", "2026-11-01T00:00:00Z", emptyList()))
+    }
+    assertTrue(result is ApiResult.Failure)
+    assertEquals(0, server.takeRequest(2, TimeUnit.SECONDS)!!.sequenceNumber)
+    assertNull(server.takeRequest(200, TimeUnit.MILLISECONDS))
+    assertEquals(3, server.requestCount)
+  }
   @Test fun accessTokenIsNotSentToAnonymousRoutesOrAnotherOrigin() = runBlocking {
     session.replaceAccessToken("FAKE-NOT-A-TOKEN")
     server.enqueue(response("""{"status":"UP"}"""))
