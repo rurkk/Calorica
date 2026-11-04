@@ -21,6 +21,7 @@ import com.rurkk.calorica.core.data.DiaryRepository
 import com.rurkk.calorica.core.data.ProductRepository
 import com.rurkk.calorica.core.navigation.ProductPickerHost
 import com.rurkk.calorica.core.ui.ReadState
+import com.rurkk.calorica.core.ui.DisplayNumbers
 import java.time.*
 
 @Composable
@@ -81,7 +82,7 @@ private fun DiaryScreen(state: DiaryState, vm: DiaryViewModel, picker: ProductPi
             Column(Modifier.padding(12.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
               Text(entry.productName,style=MaterialTheme.typography.titleMedium)
               if(entry.productDeleted) Text("Продукт удалён из каталога; запись сохранена.")
-              Text("${entry.consumedGrams.toPlainString()} г · ${Instant.parse(entry.occurredAt).atZone(state.zone).toLocalTime()}")
+              Text("${DisplayNumbers.mass(entry.consumedGrams)} г · ${Instant.parse(entry.occurredAt).atZone(state.zone).toLocalTime()}")
               NutritionText("Порция",entry.nutrition)
               val labels=when(val loaded=state.labels) {
                 is ReadState.Data -> loaded.value.filter { it.id in entry.mealLabelIds }
@@ -140,5 +141,5 @@ private fun DiaryScreen(state: DiaryState, vm: DiaryViewModel, picker: ProductPi
 
 @Composable
 private fun NutritionText(title: String, value: Nutrition) {
-  Text("$title: ${value.calories.toPlainString()} ккал · Б ${value.protein.toPlainString()} г · Ж ${value.fat.toPlainString()} г · У ${value.carbs.toPlainString()} г")
+  Text("$title: ${DisplayNumbers.totalCalories(value.calories)} ккал · Б ${DisplayNumbers.nutrition(value.protein)} г · Ж ${DisplayNumbers.nutrition(value.fat)} г · У ${DisplayNumbers.nutrition(value.carbs)} г")
 }

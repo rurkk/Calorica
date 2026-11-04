@@ -22,6 +22,7 @@ import com.rurkk.calorica.core.navigation.*
 import com.rurkk.calorica.core.session.SessionCoordinator
 import com.rurkk.calorica.core.session.SessionState
 import com.rurkk.calorica.core.ui.ReadState
+import com.rurkk.calorica.core.ui.DisplayNumbers
 
 /** Agent 4 approved this adapter; feature models are scoped to the current nav/session owner. */
 class ProductsFeatureScreens(private val repository: ProductRepository, private val diary: DiaryRepository, private val session: SessionCoordinator) : FeatureScreens by FoundationScreens {
@@ -116,7 +117,7 @@ fun ProductsScreen(model: ProductsViewModel, selectionPurpose: ProductSelectionP
                 Column(Modifier.padding(12.dp),verticalArrangement=Arrangement.spacedBy(4.dp)) {
                   TextButton(onClick={ model.open(product.id) }) { Text(product.name) }
                   Text(if(product.ownerId==null) "Базовый продукт" else "Личный продукт",style=MaterialTheme.typography.bodySmall)
-                  Text("${product.nutritionPer100g.calories.toPlainString()} ккал / 100 г")
+                  Text("${DisplayNumbers.nutrition(product.nutritionPer100g.calories)} ккал / 100 г")
                   if(onSelect!=null && !product.isDeleted) Button(onClick={ onSelect(product) },enabled=!busy) { Text("Выбрать") }
                 }
               }
@@ -165,10 +166,10 @@ private fun ColumnScope.ProductCard(product:Product,accountId:String,canWrite:Bo
     Text(if(product.kind=="COMPOSITE") "Составной продукт" else "Конечный продукт")
     if(product.isDeleted) Text("Продукт удалён из каталога. Он сохранён для истории.")
     Text("На 100 г",style=MaterialTheme.typography.titleMedium)
-    Text("Калории: ${product.nutritionPer100g.calories.toPlainString()} ккал")
-    Text("Белки: ${product.nutritionPer100g.protein.toPlainString()} г")
-    Text("Жиры: ${product.nutritionPer100g.fat.toPlainString()} г")
-    Text("Углеводы: ${product.nutritionPer100g.carbs.toPlainString()} г")
+    Text("Калории: ${DisplayNumbers.nutrition(product.nutritionPer100g.calories)} ккал")
+    Text("Белки: ${DisplayNumbers.nutrition(product.nutritionPer100g.protein)} г")
+    Text("Жиры: ${DisplayNumbers.nutrition(product.nutritionPer100g.fat)} г")
+    Text("Углеводы: ${DisplayNumbers.nutrition(product.nutritionPer100g.carbs)} г")
     if(onSelect!=null && !product.isDeleted) Button(onClick={ onSelect(product) }) { Text("Выбрать продукт") }
     if(product.canEditLeaf(accountId)) OutlinedButton(onClick=onEdit,enabled=canWrite) { Text("Изменить") }
     if(product.canDelete(accountId)) TextButton(onClick=onDelete,enabled=canWrite) { Text("Удалить из каталога") }
