@@ -33,12 +33,12 @@
 | [T10](tasks/T10.md) | 5 | NiKLaYDM / чат 01a1a741 / T10 | Ревью | Код и целевые проверки готовы; общая QA ожидается | `codex/t10-android-composition-01a1a741` / `c5a41be7dee4002279489af27a340486a4b29a4b` | Редактор состава и выхода Android; живая проверка с T11 |
 | [T11](tasks/T11.md) | 2 | NiKLaYDM / чат 01a1a741 / T11 | Ревью | Код и целевые проверки готовы; общая QA ожидается | `codex/t11-recipe-mass-yield-01a1a741` / `281a0ba8b6ccbb2e89514bfa68ca852cb848ebf3` | GRAMS/outputGrams, режимы выхода и проекция готовых долей |
 | [T12](tasks/T12.md) | 7 | TheDenFire / чат p2-d14678b2 / T12 | Ревью | Нет; локальная разработка | `codex/p2-implementation-20261104` / без общей брони по решению пользователя | Конвертация г/мл; координатор root; push разрешён 4 ноября; без merge и деплоя |
-| [T13](tasks/T13.md) | 7 | NiKLaYDM / чат 01a1a741 / T13 | В работе | Нет; реализация и PostgreSQL проверки | `codex/t13-product-labels-01a1a741` / `b11d5f51983c840a992b8be9a666c6299336d2ab` | t13_product_labels: сначала review T11, затем labels/API/distribution |
-| [T14](tasks/T14.md) | 2 | NiKLaYDM / чат 01a1a741 / T14 | В работе | Нет; реализация и PostgreSQL проверки | `codex/t14-cascade-delete-01a1a741` / `92b8730a064fd408ea947f6e13546aeac7c699ad` | t14_cascade_delete: preview, каскад родителей, права и гонки |
-| [T15](tasks/T15.md) | 3 | NiKLaYDM / чат 01a1a741 / T15 | В работе | Нет; реализация и проверки | `codex/t15-analytics-01a1a741` / `e365b64c1a829a4010b56ecaabb9ec6424f681dc` | Календарные сводки; полная приёмка после T13 |
+| [T13](tasks/T13.md) | 7 | NiKLaYDM / чат 01a1a741 / T13 | Ревью | Код, общий backend37unit+111PG и независимое ревью PASS | `codex/t13-product-labels-01a1a741` / `b11d5f51983c840a992b8be9a666c6299336d2ab` | Кандидат PR44; выпуск отложен, финальная QA T16 |
+| [T14](tasks/T14.md) | 2 | NiKLaYDM / чат 01a1a741 / T14 | Ревью | Код, общий backend37unit+111PG и независимое ревью PASS | `codex/t14-cascade-delete-01a1a741` / `92b8730a064fd408ea947f6e13546aeac7c699ad` | Кандидат PR44; выпуск отложен, финальная QA T16 |
+| [T15](tasks/T15.md) | 3 | NiKLaYDM / чат 01a1a741 / T15 | Ревью | Код, общий backend37unit+111PG и независимое ревью PASS | `codex/t15-analytics-01a1a741` / `e365b64c1a829a4010b56ecaabb9ec6424f681dc` | Кандидат PR44; выпуск отложен, финальная QA T16 |
 | [T16](tasks/T16.md) | 4 | NiKLaYDM / чат 01a1a741 / T16 | В работе | Нет; сквозная проверка на отдельном эмуляторе | `codex/t16-android-qa-01a1a741` / `b0969f55ef0ce8a0c0ef3877fae3347516a4fa88` | t16_android_qa: реальный сценарий, сеть/таймаут/сессия; физическое устройство недоступно |
 | [T17](tasks/T17.md) | 8 | NiKLaYDM / чат 01a1a741 / T17 | В работе | Нет; отдельная PostgreSQL, финальный прогон после T11–T15 | `codex/t17-persistence-01a1a741` / `5b76c98ff62d4dc494e27e9727c05c58f749f44b` | Upgrade/restart/readiness/совместимый rollback; новый владелец t17_persistence |
-| [T18](tasks/T18.md) | 1 | — | Ожидает зависимости | Нет | — | Начало ждёт технической готовности T04, T06–T17; приёмка — все задачи приняты и SA-01–SA-17 подтверждены |
+| [T18](tasks/T18.md) | 1 | NiKLaYDM / чат 01a1a741 / T18 | В работе | Локальный кандидат проверен; итоговая приёмка ограничена | `codex/t18-mvp-acceptance-01a1a741` / `8fbe0af2a75d0a1bf3c1b590b281eb265bb2ee11` | Независимая матрица SA-01–SA-17 и демонстрация; без merge/deploy/физического устройства |
 
 На 2 ноября 2026 года условия начала выполнены для T04, T06, T07, T08, T09
 и T12: эти задачи можно назначать. «К назначению» не означает техническую
@@ -696,3 +696,13 @@ T16 сетевой defect исправлен `3b57df5` → `76c8970`: idle conne
 повтор мутаций по-прежнему запрещён; meaningful regression падает до fix.
 108 Android tests, APK/lint PASS у автора; реальный idle12s×2 и сохранение скрытых
 коэффициентов T10/T11 PASS. Fault-proxy сценарии и независимое ревью продолжаются.
+
+Общий кандидат `0219a3567d64202791523408b8230ee9567932dd` опубликован в
+[draft PR44](https://github.com/rurkk/Calorica/pull/44), база — ветка PR43.
+Root независимо проверил108Android tests+APK/lint и37backendunit+111PG+check/bootJar,
+все PASS; PostgreSQL для общего набора новая, не QA/общая БД. Независимый T15 review
+PASS (ещё4unit+12PG на новой БД). Root полный lifecycle drill final domains PASS;
+exact-live rollback FAIL500, возврат кандидата и все данные/сессия сохранены.
+T18 получает технические локальные входы для отдельной матрицы доказательств и demo.
+Полная приёмка и закрытие по workflow заблокированы отложенным выпуском и отсутствием
+физического Android; неопубликованная перспективная rollback-база проверяется T17.
