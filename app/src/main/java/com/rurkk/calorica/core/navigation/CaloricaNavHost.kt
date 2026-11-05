@@ -13,7 +13,6 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.rurkk.calorica.core.ui.ConnectionViewModel
-import com.rurkk.calorica.core.ui.ReadState
 import com.rurkk.calorica.core.ui.ServerWarmupState
 import com.rurkk.calorica.core.ui.ServerWarmupScreen
 import com.rurkk.calorica.core.session.SessionState
@@ -89,17 +88,16 @@ fun CaloricaNavHost(connection: ConnectionViewModel, auth: AuthViewModel, screen
           Text("Calorica", style = MaterialTheme.typography.headlineLarge)
           AuthScreen(auth, current.message)
         }
-        is SessionState.SignedIn -> AuthenticatedNavigation(connection, screens, current.account.email, auth::logout)
+        is SessionState.SignedIn -> AuthenticatedNavigation(screens, current.account.email, auth::logout)
       }
     }
   }
 }
 
 @Composable
-private fun AuthenticatedNavigation(connection: ConnectionViewModel, screens: FeatureScreens, email: String, onLogout: () -> Unit) {
+private fun AuthenticatedNavigation(screens: FeatureScreens, email: String, onLogout: () -> Unit) {
   val nav = rememberNavController()
   val backStack by nav.currentBackStackEntryAsState()
-  val current = backStack?.destination?.route
   Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
     Text("Calorica", style = MaterialTheme.typography.headlineLarge)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -110,10 +108,7 @@ private fun AuthenticatedNavigation(connection: ConnectionViewModel, screens: Fe
       OutlinedButton(onClick = { nav.navigate(Routes.DIARY) { launchSingleTop = true } }) { Text("Дневник") }
       OutlinedButton(onClick = { nav.navigate(Routes.PRODUCTS) { launchSingleTop = true } }) { Text("Продукты") }
     }
-    if (current != Routes.CONNECTION) {
-      TextButton(onClick = { nav.navigate(Routes.CONNECTION) { launchSingleTop = true } }) { Text("Связь с сервером") }
-    }
-    if (nav.previousBackStackEntry != null) {
+    if (backStack != null && nav.previousBackStackEntry != null) {
       TextButton(onClick = { nav.popBackStack() }) { Text("Назад") }
     }
     NavHost(navController = nav, startDestination = Routes.DIARY, modifier = Modifier.weight(1f)) {
@@ -129,29 +124,6 @@ private fun AuthenticatedNavigation(connection: ConnectionViewModel, screens: Fe
           nav.popBackStack()
         }, onCancel = { nav.popBackStack() })
       }
-      composable(Routes.CONNECTION) { ConnectionScreen(connection) }
-    }
-  }
-}
-
-@Composable
-private fun ConnectionScreen(viewModel: ConnectionViewModel) {
-  val state by viewModel.state.collectAsStateWithLifecycle()
-  DisposableEffect(viewModel) { onDispose { viewModel.close() } }
-  Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-    Text("Связь с сервером", style = MaterialTheme.typography.headlineSmall)
-    when (val value = state) {
-      ReadState.Idle -> Text("Проверьте доступность сервера.")
-      ReadState.Loading -> { CircularProgressIndicator(); Text("Проверяем соединение…") }
-      is ReadState.Data -> Text(if (value.value.status == "UP") "Сервер доступен" else "Сервер временно недоступен")
-      is ReadState.Empty -> Text("Ответ сервера пуст.")
-      is ReadState.Error -> {
-        Text(value.error.message())
-        value.error.correlationId?.let { Text("Код обращения: $it") }
-      }
-    }
-    Button(onClick = viewModel::load, enabled = state != ReadState.Loading) {
-      Text(if (state == ReadState.Idle) "Проверить соединение" else "Повторить загрузку")
     }
   }
 }

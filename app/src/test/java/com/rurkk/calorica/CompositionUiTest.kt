@@ -57,7 +57,12 @@ class CompositionUiTest {
   @After fun finish() { activity.pause().stop().destroy() }
 
   @Test fun nestedPickerReturnsOnlyToItsCallerAndCancellationAndRotationKeepBothForms() {
+    compose.onNodeWithText("Связь с сервером").assertDoesNotExist()
+    compose.onNodeWithText("Проверить соединение").assertDoesNotExist()
+    compose.onNodeWithText("Назад").assertDoesNotExist()
     click("Продукты")
+    compose.onNodeWithText("Связь с сервером").assertDoesNotExist()
+    compose.onNodeWithText("Назад").assertExists()
     click("Создать состав")
     compose.onNodeWithText("Название состава").performTextInput("Наружный")
     click("Добавить ингредиент")

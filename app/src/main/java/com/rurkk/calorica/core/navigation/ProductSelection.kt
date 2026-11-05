@@ -18,7 +18,6 @@ object Routes {
   const val AUTH = "auth"
   const val PRODUCTS = "products"
   const val DIARY = "diary"
-  const val CONNECTION = "connection"
   const val PRODUCT_PICKER = "product-picker/{requestId}/{purpose}"
 }
 
