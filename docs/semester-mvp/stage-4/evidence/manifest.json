@@ -206,7 +206,7 @@
   "artifacts": [
     {
       "file": "Calorica-stage-4.pptx",
-      "sha256": "cf2f5e69de009f11a0aa8bb873a8c3eb41daa6d95b39cd2614402cc543fe325e",
+      "sha256": "631dad5462bf02b254f4ac371e46350d187ad63abf8f0ce76777983ca59331da",
       "pages_or_slides": 13
     },
     {
@@ -258,7 +258,7 @@
     },
     {
       "file": "Calorica-stage-4.pptx",
-      "sha256": "cf2f5e69de009f11a0aa8bb873a8c3eb41daa6d95b39cd2614402cc543fe325e"
+      "sha256": "631dad5462bf02b254f4ac371e46350d187ad63abf8f0ce76777983ca59331da"
     },
     {
       "file": "README.md",
@@ -274,7 +274,7 @@
     },
     {
       "file": "defense-notes.md",
-      "sha256": "04b67faba58f2280f4a89f2fefc944a0da994dbf677d524188a20e1a9d6032f9"
+      "sha256": "a7fc08ebba2348e63419ca777abc3274d5b9e87704cc87de5dd3970f571a314f"
     },
     {
       "file": "demo-scenarios.md",
@@ -462,6 +462,8 @@
     "updated_at": "2026-11-05T21:10:38.420223+03:00",
     "slide_count": 13,
     "change": "Infrastructure slide and stage conclusions; presentation and speaker notes focus on completed work.",
-    "historical_validation": "evidence/materials-validation.json and evidence/review.md document the original 12-slide edition dated 2026-11-04."
+    "historical_validation": "evidence/materials-validation.json and evidence/review.md document the original 12-slide edition dated 2026-11-04.",
+    "speaker_notes_updated_at": "2026-11-05T21:58:42.297920+03:00",
+    "speaker_notes_source": "defense-notes.md"
   }
 }
