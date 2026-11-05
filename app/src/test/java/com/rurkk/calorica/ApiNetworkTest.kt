@@ -2,6 +2,7 @@ package com.rurkk.calorica
 
 import com.rurkk.calorica.core.api.*
 import com.rurkk.calorica.core.data.*
+import com.rurkk.calorica.core.session.*
 import com.rurkk.calorica.core.ui.ServerWarmupController
 import com.rurkk.calorica.core.ui.ServerWarmupState
 import java.io.IOException
@@ -33,7 +34,7 @@ class ApiNetworkTest {
   @Test fun realHttpReadUsesSharedSessionAndContractQuery() = runBlocking {
     session.replaceAccessToken("FAKE-NOT-A-TOKEN")
     server.enqueue(response("""{"items":[],"nextCursor":null}"""))
-    val result = HttpProductRepository(api, executor).search("суп", 20, null)
+    val result = HttpProductRepository(api, executor, session).search("суп", 20, null)
     assertTrue(result is ApiResult.Success && result.value.items.isEmpty())
     val request = server.takeRequest(2, TimeUnit.SECONDS)!!
     assertEquals("/api/v1/products", request.requestUrl!!.encodedPath)
@@ -43,6 +44,23 @@ class ApiNetworkTest {
     server.enqueue(response("""{"status":"UP"}"""))
     assertTrue(executor.call { api.readiness() } is ApiResult.Success)
     assertNull(server.takeRequest(2, TimeUnit.SECONDS)!!.getHeader("Authorization"))
+  }
+  @Test fun sequentialActionsDoNotReuseIdleConnectionsWhenWriteRetriesAreDisabled() = runBlocking {
+    // The server may silently expire its TLS keep-alive between UI actions. We must
+    // start a fresh connection, not recover by replaying a possibly committed write.
+    repeat(2) {
+      server.enqueue(response("""{"status":"UP"}"""))
+      assertTrue(executor.call { api.readiness() } is ApiResult.Success)
+      assertEquals(0, server.takeRequest(2, TimeUnit.SECONDS)!!.sequenceNumber)
+    }
+    server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AFTER_REQUEST))
+    val result = executor.call {
+      api.createDiary(DiaryWrite("id", java.math.BigDecimal.ONE, "g", "2026-11-01T00:00:00Z", emptyList()))
+    }
+    assertTrue(result is ApiResult.Failure)
+    assertEquals(0, server.takeRequest(2, TimeUnit.SECONDS)!!.sequenceNumber)
+    assertNull(server.takeRequest(200, TimeUnit.MILLISECONDS))
+    assertEquals(3, server.requestCount)
   }
   @Test fun accessTokenIsNotSentToAnonymousRoutesOrAnotherOrigin() = runBlocking {
     session.replaceAccessToken("FAKE-NOT-A-TOKEN")
@@ -57,9 +75,49 @@ class ApiNetworkTest {
     try {
       other.enqueue(response("""{"items":[],"nextCursor":null}"""))
       val foreign = ApiClient.create(other.url("/").toString(), ApiClient.http(session, server.url("/").toString()), true)
-      executor.call { foreign.search(null, 20, null) }
+      executor.call { foreign.search(null, 20, null, "Bearer FAKE-NOT-A-TOKEN") }
       assertNull(other.takeRequest(2, TimeUnit.SECONDS)!!.getHeader("Authorization"))
     } finally { other.shutdown() }
+  }
+  @Test fun oldAccountWriteKeepsCapturedAuthorizationAcrossLogoutLoginAndLateDispatch() = runBlocking {
+    val account = Account("00000000-0000-4000-8000-000000000001","fake@example.test","USER",Profile(null,null,null,null))
+    var next = Tokens("FAKE-ACCESS-A","FAKE-REFRESH-A","Bearer","2099-01-01T00:00:00Z","2099-02-01T00:00:00Z",account)
+    val auth = object : AuthRepository {
+      override suspend fun register(request: Credentials) = ApiResult.Success(next)
+      override suspend fun login(request: Credentials) = ApiResult.Success(next)
+      override suspend fun refresh(request: Refresh) = ApiResult.Success(next)
+      override suspend fun logout() = ApiResult.Success(Unit)
+      override suspend fun me() = ApiResult.Success(next.account)
+    }
+    val storage = object : RefreshTokenStore {
+      var token:String? = null
+      override suspend fun read() = token
+      override suspend fun write(token:String) { this.token = token }
+      override suspend fun clear() { token = null }
+    }
+    val coordinator = SessionCoordinator(auth,storage,session)
+    coordinator.authenticate(Credentials("fake@example.test","FAKE-password"),false)
+    val captured = CompletableDeferred<Unit>()
+    val dispatch = CompletableDeferred<Unit>()
+    server.enqueue(response("{}",401))
+    val oldWrite = async {
+      coordinator.authorized {
+        captured.complete(Unit)
+        dispatch.await()
+        HttpProductRepository(api,executor,session).create(ProductCreate.Leaf("Old account write",
+            NutritionInputSet(java.math.BigDecimal.ONE,java.math.BigDecimal.ZERO,java.math.BigDecimal.ZERO,java.math.BigDecimal.ZERO)))
+      }
+    }
+    captured.await()
+    coordinator.logout()
+    next = next.copy(accessToken="FAKE-ACCESS-B",refreshToken="FAKE-REFRESH-B")
+    coordinator.authenticate(Credentials("other@example.test","FAKE-password"),false)
+    dispatch.complete(Unit)
+    assertTrue(oldWrite.await() is ApiResult.Failure)
+    val request = server.takeRequest(2,TimeUnit.SECONDS)!!
+    assertEquals("Bearer FAKE-ACCESS-A",request.getHeader("Authorization"))
+    assertEquals("FAKE-ACCESS-B",session.accessToken())
+    assertTrue(coordinator.state.value is SessionState.SignedIn)
   }
   @Test fun problemCodesAreTranslatedAndUntrustedDetailIsNeverDisplayed() = runBlocking {
     server.enqueue(response("""{"type":"about:blank","title":"Invalid","status":422,"detail":"DO-NOT-DISPLAY","code":"INVALID_COMPOSITION","correlationId":"00000000-0000-4000-8000-000000000007","errors":[{"field":"components","code":"PERCENT_SUM"}]}""", 422))

@@ -20,6 +20,7 @@ import ru.calorica.catalog.domain.Nutrition
 import ru.calorica.catalog.domain.NutritionValues
 import ru.calorica.catalog.domain.Product
 import ru.calorica.catalog.domain.ProductNames
+import ru.calorica.catalog.domain.CompositionWrite
 import ru.calorica.platform.api.ApiProblems
 import ru.calorica.platform.security.Actor
 import java.sql.SQLException
@@ -54,6 +55,12 @@ object CatalogInput {
         fields(node, setOf("name", "manualNutrition"))
         return node["name"]?.let { ProductNames.name(text(it, "name")) } to node["manualNutrition"]?.let(::nutrition)
     }
+    fun createComposite(node: JsonNode): Pair<String, CompositionWrite> {
+        fields(node, setOf("name", "composition"))
+        val name = node["name"] ?: CatalogFailure.invalid("name")
+        val composition = node["composition"] ?: CatalogFailure.invalid("composition", "INVALID_COMPOSITION")
+        return ProductNames.name(text(name, "name")) to CompositionInput.parse(composition)
+    }
 }
 
 @RestController
@@ -68,10 +75,19 @@ class CatalogController(private val catalog: CatalogService) {
     fun get(@AuthenticationPrincipal current: Actor?, @PathVariable productId: String) = catalog.get(actor(current), CatalogIds.parse(productId))
     @PostMapping("/products", "/admin/products")
     fun create(@AuthenticationPrincipal current: Actor?, @RequestBody body: JsonNode, request: HttpServletRequest): ResponseEntity<Product> {
+        if (body.has("composition")) {
+            val input = CatalogInput.createComposite(body)
+            return ResponseEntity.status(HttpStatus.CREATED).body(catalog.createComposition(actor(current), input.first, input.second,
+                request.servletPath.startsWith("/api/v1/admin/")))
+        }
         val input = CatalogInput.create(body)
         return ResponseEntity.status(HttpStatus.CREATED).body(catalog.create(actor(current), input.first, input.second,
             request.servletPath.startsWith("/api/v1/admin/")))
     }
+    @PutMapping("/products/{productId}/composition", "/admin/products/{productId}/composition")
+    fun composition(@AuthenticationPrincipal current: Actor?, @PathVariable productId: String, @RequestBody body: JsonNode,
+        request: HttpServletRequest): Product = catalog.writeComposition(actor(current), CatalogIds.parse(productId),
+            CompositionInput.parse(body), request.servletPath.startsWith("/api/v1/admin/"))
     @PatchMapping("/products/{productId}", "/admin/products/{productId}")
     fun patch(@AuthenticationPrincipal current: Actor?, @PathVariable productId: String, @RequestBody body: JsonNode,
         request: HttpServletRequest): Product {
@@ -85,6 +101,10 @@ class CatalogController(private val catalog: CatalogService) {
         catalog.delete(actor(current), CatalogIds.parse(productId), mode, request.servletPath.startsWith("/api/v1/admin/"))
         return ResponseEntity.noContent().build()
     }
+    @GetMapping("/products/{productId}/deletion-preview", "/admin/products/{productId}/deletion-preview")
+    fun deletionPreview(@AuthenticationPrincipal current: Actor?, @PathVariable productId: String,
+        request: HttpServletRequest) = catalog.deletionPreview(actor(current), CatalogIds.parse(productId),
+        request.servletPath.startsWith("/api/v1/admin/"))
 }
 
 @Order(Ordered.HIGHEST_PRECEDENCE)

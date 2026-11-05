@@ -151,7 +151,9 @@ Git-сборки Render. Существующие проверки GitHub сох
 - Workflow **Render deploy existing image** запускается вручную из `main`:
   в поле `image` передайте полный существующий `ghcr.io/rurkk/calorica-backend@sha256:…`.
   Это повтор доставки либо откат на образ, совместимый с текущей схемой БД;
-  схема и данные автоматически не откатываются. SHA workflow — версия скрипта,
+  схема и данные автоматически не откатываются. До запуска нужна функциональная
+  [проверка совместимости T17](../backend/PERSISTENCE.md) на текущих предметных
+  данных: один readiness не подтверждает безопасный возврат. SHA workflow — версия скрипта,
   источник кода самого образа смотрите в OCI label `org.opencontainers.image.revision`.
 
 SSH-job удалён из `.github/workflows/backend-release.yml`; старые переменные

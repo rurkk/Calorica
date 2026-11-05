@@ -2,10 +2,10 @@ package ru.calorica.catalog.persistence
 
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Repository
-import ru.calorica.catalog.domain.CatalogPortion
-import ru.calorica.catalog.domain.LeafAllocation
 import ru.calorica.catalog.domain.Nutrition
 import ru.calorica.catalog.domain.Product
+import ru.calorica.catalog.domain.DeletionCandidate
+import ru.calorica.catalog.domain.CatalogFailure
 import java.math.BigDecimal
 import java.sql.ResultSet
 import java.util.UUID
@@ -16,10 +16,12 @@ data class SearchHit(val product: Product, val key: SearchKey)
 @Repository
 class CatalogRepository(private val jdbc: JdbcClient) {
     private fun product(rs: ResultSet): Product {
-        val nutrition = Nutrition(rs.getBigDecimal("manual_calories"), rs.getBigDecimal("manual_protein"),
-            rs.getBigDecimal("manual_fat"), rs.getBigDecimal("manual_carbs"))
+        val nutrition = rs.getBigDecimal("manual_calories")?.let { calories -> Nutrition(calories, rs.getBigDecimal("manual_protein"),
+            rs.getBigDecimal("manual_fat"), rs.getBigDecimal("manual_carbs")) }
         return Product(rs.getObject("id", UUID::class.java), rs.getObject("owner_id", UUID::class.java),
-            rs.getString("name"), rs.getBoolean("is_deleted"), nutrition, nutrition)
+            rs.getString("name"), rs.getBoolean("is_deleted"), nutrition,
+            nutrition ?: Nutrition(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO),
+            manualYieldFactor = rs.getBigDecimal("manual_yield_factor")?.toPlainString())
     }
     fun normalize(value: String): String = jdbc.sql("SELECT calorica.normalize_product_name(:value)")
         .param("value", value).query(String::class.java).single()
@@ -55,42 +57,44 @@ class CatalogRepository(private val jdbc: JdbcClient) {
             .param("ids", ids).param("owner", owner).param("history", includeDeleted)
             .query { rs, _ -> product(rs) }.list()
     }
-    fun insert(id: UUID, owner: UUID?, name: String, nutrition: Nutrition) {
+    fun insert(id: UUID, owner: UUID?, name: String, nutrition: Nutrition?) {
         jdbc.sql("""INSERT INTO calorica.products
             (id, owner_id, name, manual_calories, manual_protein, manual_fat, manual_carbs)
             VALUES (:id, :owner, :name, :calories, :protein, :fat, :carbs)""")
             .param("id", id).param("owner", owner, java.sql.Types.OTHER).param("name", name)
-            .param("calories", nutrition.calories).param("protein", nutrition.protein)
-            .param("fat", nutrition.fat).param("carbs", nutrition.carbs).update()
+            .param("calories", nutrition?.calories, java.sql.Types.NUMERIC).param("protein", nutrition?.protein, java.sql.Types.NUMERIC)
+            .param("fat", nutrition?.fat, java.sql.Types.NUMERIC).param("carbs", nutrition?.carbs, java.sql.Types.NUMERIC).update()
     }
-    fun update(id: UUID, owner: UUID?, name: String, nutrition: Nutrition): Int =
+    fun update(id: UUID, owner: UUID?, name: String, nutrition: Nutrition?): Int =
         jdbc.sql("""UPDATE calorica.products SET name = :name, manual_calories = :calories,
             manual_protein = :protein, manual_fat = :fat, manual_carbs = :carbs
             WHERE id = :id AND owner_id IS NOT DISTINCT FROM CAST(:owner AS uuid) AND NOT is_deleted""")
             .param("id", id).param("owner", owner, java.sql.Types.OTHER).param("name", name)
-            .param("calories", nutrition.calories).param("protein", nutrition.protein)
-            .param("fat", nutrition.fat).param("carbs", nutrition.carbs).update()
-    fun softDelete(id: UUID, owner: UUID?): Int =
-        jdbc.sql("""UPDATE calorica.products SET is_deleted = true
-            WHERE id = :id AND owner_id IS NOT DISTINCT FROM CAST(:owner AS uuid) AND NOT is_deleted""")
-            .param("id", id).param("owner", owner, java.sql.Types.OTHER).update()
-
-    /** The leaf projection is extended by T09; all arithmetic remains in the authoritative SQL. */
-    fun allocate(owner: UUID, portions: List<CatalogPortion>): List<LeafAllocation> {
-        if (portions.isEmpty()) return emptyList()
-        val values = portions.indices.joinToString(",") { "(:ordinal$it, CAST(:id$it AS uuid), CAST(:grams$it AS numeric))" }
-        var statement = jdbc.sql("""
-            WITH portions(root_ordinal, product_id, grams) AS (VALUES $values)
-            SELECT root_ordinal, p.id AS leaf_id, sum(portions.grams) AS allocated_grams
-            FROM portions JOIN calorica.products p ON p.id = portions.product_id
-            WHERE p.owner_id IS NULL OR p.owner_id = :owner
-            GROUP BY root_ordinal, p.id ORDER BY root_ordinal, p.id
-        """).param("owner", owner)
-        portions.forEachIndexed { i, portion ->
-            statement = statement.param("ordinal$i", portion.rootOrdinal).param("id$i", portion.productId)
-                .param("grams$i", portion.consumedGrams)
-        }
-        return statement.query { rs, _ -> LeafAllocation(rs.getInt("root_ordinal"),
-            rs.getObject("leaf_id", UUID::class.java), rs.getBigDecimal("allocated_grams")) }.list()
+            .param("calories", nutrition?.calories, java.sql.Types.NUMERIC).param("protein", nutrition?.protein, java.sql.Types.NUMERIC)
+            .param("fat", nutrition?.fat, java.sql.Types.NUMERIC).param("carbs", nutrition?.carbs, java.sql.Types.NUMERIC).update()
+    /** Traverse toward parents, including deleted intermediate nodes. UNION visits a shared
+     * ancestor once and terminates even if an out-of-band write corrupted the graph. This is
+     * reachability, not the UNION ALL path projection used for nutrition and allocation. */
+    fun deletionCandidates(id: UUID): List<DeletionCandidate> {
+        val rows = jdbc.sql("""
+            WITH RECURSIVE ancestors(id) AS (
+                SELECT id FROM calorica.products WHERE id = :id
+                UNION
+                SELECT c.parent_id FROM calorica.product_components c JOIN ancestors a ON c.child_id = a.id
+            )
+            SELECT p.id, p.owner_id, p.is_deleted FROM ancestors a JOIN calorica.products p ON p.id = a.id
+            LIMIT 10001
+        """).param("id", id).query { rs, _ -> DeletionCandidate(rs.getObject("id", UUID::class.java),
+            rs.getObject("owner_id", UUID::class.java), rs.getBoolean("is_deleted")) }.list()
+        if (rows.size > 10000) CatalogFailure.invalid("productIds", "CALCULATION_LIMIT")
+        return rows
     }
+
+    fun softDelete(id: UUID, owner: UUID?): Int = softDelete(listOf(id), owner)
+
+    fun softDelete(ids: List<UUID>, owner: UUID?): Int =
+        jdbc.sql("""UPDATE calorica.products SET is_deleted = true
+            WHERE id IN (:ids) AND owner_id IS NOT DISTINCT FROM CAST(:owner AS uuid) AND NOT is_deleted""")
+            .param("ids", ids).param("owner", owner, java.sql.Types.OTHER).update()
+
 }

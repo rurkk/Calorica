@@ -1,0 +1,477 @@
+{
+  "schema_version": 1,
+  "prepared_at": "2026-11-04T22:54:51.583411+03:00",
+  "project": "rurkk/Calorica",
+  "stage": 4,
+  "source_sha": "9130aaa517e020e1cd43e0790de645343a57e01e",
+  "versions": "evidence/versions.json",
+  "fresh_ui_scenarios": 19,
+  "fresh_ui_results": "evidence/checks.json",
+  "historical_tests": "evidence/baseline-tests.json",
+  "capture_method": "ADB exec-out screencap -p on the live Android emulator. Original PNG bytes retained. Cropping only in PowerPoint.",
+  "capture_note": "Selected actions replayed for ready-state capture; timestamps are capture times, not original check times. See test-protocol.md.",
+  "screenshots": [
+    {
+      "file": "screenshots/01-login.png",
+      "captured_at": "2026-11-04T22:11:49+0300",
+      "sha256": "bea236b1432e846903d7887e8fda3153cadc3519b272adcab5a7bbee8e856310",
+      "scenario_ids": []
+    },
+    {
+      "file": "screenshots/02-registration.png",
+      "captured_at": "2026-11-04T22:12:02+0300",
+      "sha256": "e145801b2f9decf0968d05dcae2bd12ec1328f76f16d94822b9e9c16a166de31",
+      "scenario_ids": [
+        "UI-01"
+      ]
+    },
+    {
+      "file": "screenshots/03-empty-diary.png",
+      "captured_at": "2026-11-04T22:12:37+0300",
+      "sha256": "033770d5c982fcdbe569bf5f62fa8df2cfe6e95d526be1177bfcd8ddb88cc33f",
+      "scenario_ids": [
+        "UI-01"
+      ]
+    },
+    {
+      "file": "screenshots/04-catalog.png",
+      "captured_at": "2026-11-04T22:12:51+0300",
+      "sha256": "3bc4499c3b90672a0eab6de99f4dab3b6c1234ac17a0983e8428588a2bef335f",
+      "scenario_ids": [
+        "UI-02"
+      ]
+    },
+    {
+      "file": "screenshots/07-invalid-composition-90.png",
+      "captured_at": "2026-11-04T22:17:52+0300",
+      "sha256": "93df58983b3ca82c3f7808385d611cbe0f489cd217d874d5251f4b139b34e28e",
+      "scenario_ids": [
+        "UI-05"
+      ]
+    },
+    {
+      "file": "screenshots/23-leaf-to-composite.png",
+      "captured_at": "2026-11-04T22:36:09+0300",
+      "sha256": "08acfcbc0731754270c64b2eea9bbdcad0bfcbc01322de1fb8a06c787c4c1d67",
+      "scenario_ids": [
+        "UI-19"
+      ]
+    },
+    {
+      "file": "screenshots/24-composite-to-leaf.png",
+      "captured_at": "2026-11-04T22:36:24+0300",
+      "sha256": "e2b379241ecdd34869055e5c6ab1889d07c24c1bbce04fa788dfa91fa7eeb238",
+      "scenario_ids": [
+        "UI-19"
+      ]
+    },
+    {
+      "file": "screenshots/06-personal-product.png",
+      "captured_at": "2026-11-04T22:36:37+0300",
+      "sha256": "b3ecb8d5e64f4f73105391e8b58ab1976945cda32a48f1996aca1739881f067b",
+      "scenario_ids": [
+        "UI-03"
+      ]
+    },
+    {
+      "file": "screenshots/08-inner-product.png",
+      "captured_at": "2026-11-04T22:36:48+0300",
+      "sha256": "f9946d6482a28ac96afe4015458d8e43ba9a4d51b2499ccd6fecb514abee0e8f",
+      "scenario_ids": [
+        "UI-06"
+      ]
+    },
+    {
+      "file": "screenshots/05-base-product.png",
+      "captured_at": "2026-11-04T22:37:30+0300",
+      "sha256": "0b99885dd091c03fb724eea83ceb88489b88056e582e18722c47c0148e5ae1a2",
+      "scenario_ids": [
+        "UI-02"
+      ]
+    },
+    {
+      "file": "screenshots/09-outer-editor.png",
+      "captured_at": "2026-11-04T22:37:53+0300",
+      "sha256": "a4c9c8b540351b283f879ecce819a2b4a8f533490c584dfe49b890099fc87129",
+      "scenario_ids": [
+        "UI-07"
+      ]
+    },
+    {
+      "file": "screenshots/10-outer-product.png",
+      "captured_at": "2026-11-04T22:38:01+0300",
+      "sha256": "aa677036f0e29f7172724165024be2e1694034e07a17b2b5cefe57852f46ea11",
+      "scenario_ids": [
+        "UI-07"
+      ]
+    },
+    {
+      "file": "screenshots/11-diary-editor.png",
+      "captured_at": "2026-11-04T22:38:27+0300",
+      "sha256": "b0220bf9ab8abb179a044929b4962ad158692178bf03635b3fcd8c3e8b89ec4b",
+      "scenario_ids": [
+        "UI-08",
+        "UI-09"
+      ]
+    },
+    {
+      "file": "screenshots/12-diary-600.png",
+      "captured_at": "2026-11-04T22:38:34+0300",
+      "sha256": "f48094a6a0953391d8e2a5d7abe5cbbbb5e60906f91d33ffe0453edf89b0f7b1",
+      "scenario_ids": [
+        "UI-08"
+      ]
+    },
+    {
+      "file": "screenshots/13-diary-100g.png",
+      "captured_at": "2026-11-04T22:39:18+0300",
+      "sha256": "2f33577bceefaa9fc94fe8047e4cdb1c33bba4c9131fc8ba3b966fd01763e649",
+      "scenario_ids": [
+        "UI-10"
+      ]
+    },
+    {
+      "file": "screenshots/14-past-day.png",
+      "captured_at": "2026-11-04T22:39:46+0300",
+      "sha256": "e33a410505a6826aa3cfffdff9cd7f0ed1e7c65492deef359ed2fc98a78496ee",
+      "scenario_ids": [
+        "UI-11"
+      ]
+    },
+    {
+      "file": "screenshots/15-diary-725.png",
+      "captured_at": "2026-11-04T22:40:29+0300",
+      "sha256": "09d109697931f7b1af65b4bc76212573416f2b47fbe62c6cb241fb95bd9b5359",
+      "scenario_ids": [
+        "UI-12"
+      ]
+    },
+    {
+      "file": "screenshots/16-deleted-product-search.png",
+      "captured_at": "2026-11-04T22:44:37+0300",
+      "sha256": "bf61a51352ba96eff8dcf22ea1cd1749223d3ee34e4826881b876af78b3959b2",
+      "scenario_ids": [
+        "UI-13"
+      ]
+    },
+    {
+      "file": "screenshots/17-history-after-product-delete.png",
+      "captured_at": "2026-11-04T22:44:46+0300",
+      "sha256": "aad96a98bcca1a9414ace66906635f64edb20af5f6ec01b64fd69cd2fe94fbe8",
+      "scenario_ids": [
+        "UI-13"
+      ]
+    },
+    {
+      "file": "screenshots/18-network-error.png",
+      "captured_at": "2026-11-04T22:44:53+0300",
+      "sha256": "29105cf1f0af8226a3e7bb84aabf8258a72dbb5ac2619370a09a15c755ab8268",
+      "scenario_ids": [
+        "UI-14"
+      ]
+    },
+    {
+      "file": "screenshots/19-network-restored.png",
+      "captured_at": "2026-11-04T22:45:00+0300",
+      "sha256": "6ded225d05c5e664255a72e75ec4442fed19ef053ec3b0e9091a137c050b224b",
+      "scenario_ids": [
+        "UI-14"
+      ]
+    },
+    {
+      "file": "screenshots/20-session-restored.png",
+      "captured_at": "2026-11-04T22:45:05+0300",
+      "sha256": "55bd71ce2e114832a617e7662b8872c23db377db7ca85236a18b444ae74aa5e7",
+      "scenario_ids": [
+        "UI-15"
+      ]
+    },
+    {
+      "file": "screenshots/22-entry-deleted.png",
+      "captured_at": "2026-11-04T22:45:12+0300",
+      "sha256": "750d1d83e75b001ff30d4583b08e5cd657e745f10549f9d8f82d0eee7e7d2f06",
+      "scenario_ids": [
+        "UI-16"
+      ]
+    },
+    {
+      "file": "screenshots/21-logout.png",
+      "captured_at": "2026-11-04T22:45:18+0300",
+      "sha256": "84005a2f7b33a6dc94cab020f0fac1eb2f386faf92ffca103b276f6a80d77f7f",
+      "scenario_ids": [
+        "UI-17"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "Calorica-stage-4.pptx",
+      "sha256": "631dad5462bf02b254f4ac371e46350d187ad63abf8f0ce76777983ca59331da",
+      "pages_or_slides": 13
+    },
+    {
+      "file": "Calorica-stage-4.pdf",
+      "sha256": "cb160559de5709d785aa2d6baf9a18e4bc4fe06c7898591f6ce02011b6811637",
+      "pages_or_slides": 13
+    },
+    {
+      "file": "Calorica-stage-4-report.docx",
+      "sha256": "c39427daf8186499b240f972379bc56e11bdc8a75f45901fcf44e8c01fc81d8f",
+      "pages_or_slides": 10
+    },
+    {
+      "file": "Calorica-stage-4-report.pdf",
+      "sha256": "1837c0fc6ea5985c058e77edb8cd1abbe6077f8455937d1817dca147947520dd",
+      "pages_or_slides": 10
+    }
+  ],
+  "references": [
+    {
+      "file": "../stage-2/Calorica-stage-2.pptx",
+      "sha256": "ad2e10ebafadd5c4710e321f562df6feb19ac6b0e07250a9a23b4d618a1b16d3"
+    },
+    {
+      "file": "../stage-3/Calorica-stage-3.pptx",
+      "sha256": "e4ac64ba98a293a98688d4b8c79e933248f824b6ed3ccfd7e4be0c4eed5686d1"
+    },
+    {
+      "file": "../stage-2/Calorica-semester-MVP-TZ.docx",
+      "sha256": "d7ade17b96562c0e3c3f32556346228019f9ccdb70dabaf0a725cbff4fca0ceb"
+    }
+  ],
+  "files": [
+    {
+      "file": "BUILD.md",
+      "sha256": "17857196a77a9d08f3706b5ffc2754a9f1c8ae9a09d7c0c9e72b8d16424df20c"
+    },
+    {
+      "file": "Calorica-stage-4-report.docx",
+      "sha256": "c39427daf8186499b240f972379bc56e11bdc8a75f45901fcf44e8c01fc81d8f"
+    },
+    {
+      "file": "Calorica-stage-4-report.pdf",
+      "sha256": "1837c0fc6ea5985c058e77edb8cd1abbe6077f8455937d1817dca147947520dd"
+    },
+    {
+      "file": "Calorica-stage-4.pdf",
+      "sha256": "cb160559de5709d785aa2d6baf9a18e4bc4fe06c7898591f6ce02011b6811637"
+    },
+    {
+      "file": "Calorica-stage-4.pptx",
+      "sha256": "631dad5462bf02b254f4ac371e46350d187ad63abf8f0ce76777983ca59331da"
+    },
+    {
+      "file": "README.md",
+      "sha256": "6c51c20dcfcc27ec578481887c0e13c0d718a653d452c196a2f7dc8238441ade"
+    },
+    {
+      "file": "build_documents.py",
+      "sha256": "81a03f69fbdd7ea6c4c4ddac4577d725dff354feb7daafb209ffdbab3cedfb31"
+    },
+    {
+      "file": "build_presentation.mjs",
+      "sha256": "36be7ac955e5c0d0fee9a937a44e1e2b8bde128a1a6cf12b1ebac60f9e9eaf4f"
+    },
+    {
+      "file": "defense-notes.md",
+      "sha256": "a7fc08ebba2348e63419ca777abc3274d5b9e87704cc87de5dd3970f571a314f"
+    },
+    {
+      "file": "demo-scenarios.md",
+      "sha256": "f6142bc95f9a1f527c711883629dc9cf2b62c3dbc2d56b5380bdfc9661f3406a"
+    },
+    {
+      "file": "evidence/api-diary-100g.json",
+      "sha256": "a640b050bb255c5910f272ed57aa4229d2e25b9aae03460303fc5f8b5d6a7981"
+    },
+    {
+      "file": "evidence/api-diary-600.json",
+      "sha256": "2f47e99bc87c15e4cf74f619b5659fbcd00abc17fc7d85cf39b3d0399d449309"
+    },
+    {
+      "file": "evidence/api-diary-725.json",
+      "sha256": "7a5ff578dc4dafd3caf245dc849184ef9225333460db91024abea68d005d7b4e"
+    },
+    {
+      "file": "evidence/api-entry-deleted.json",
+      "sha256": "96fbbdb1c6a07ef4af4c9427fe40203ba811e269f561241275148dd8568295ff"
+    },
+    {
+      "file": "evidence/api-initial.json",
+      "sha256": "d7170b1e88a26f7888b07428e17ba9ca95005d7886551ad4a5900ca341a249ca"
+    },
+    {
+      "file": "evidence/api-inner.json",
+      "sha256": "e1b26c3d5ec8debe11d63ec9e8c5ec1543d486ca3ae6f82dc9ada6106839bf1e"
+    },
+    {
+      "file": "evidence/api-outer.json",
+      "sha256": "c009cf3dc5ab6640739ef639de79df5013919b7e23efbb172f212f985da8c56a"
+    },
+    {
+      "file": "evidence/api-past-day.json",
+      "sha256": "6f1ce06bb3c2c2724228df4b7b1fa5a88cdfa8e96bc3cdaed7dce59015db982c"
+    },
+    {
+      "file": "evidence/api-soft-delete.json",
+      "sha256": "c34f416302ca5581fcc9ca5a07cf94cbe8a9f1f2e40e04df24b5ca5c4443d6a8"
+    },
+    {
+      "file": "evidence/baseline-tests.json",
+      "sha256": "0063485a7013c192791789715be4f0347655f9c411fce6444cf89924be9345bb"
+    },
+    {
+      "file": "evidence/checks.json",
+      "sha256": "72480e54a5407d353d7d15531ec0b53c9f214bb1860996a674d597309915a79e"
+    },
+    {
+      "file": "evidence/materials-validation.json",
+      "sha256": "d7603a0ec54b6c08e95ac07266223fa62f5f9c0295de4ef9694aad4fbe2b758d"
+    },
+    {
+      "file": "evidence/review.md",
+      "sha256": "82835c8049f75c687a83788f2a1974f210085a56061906d95ccacbe6e9edec20"
+    },
+    {
+      "file": "evidence/screenshots.json",
+      "sha256": "1e40134a85f36bd6ca04b3f3fdc165be8f5da18a39566ac613a5fe5cd1528348"
+    },
+    {
+      "file": "evidence/versions.json",
+      "sha256": "843ddf6c49d4ba641b3afbd0e88e4c7b006b1d35d74d1e82a8a5352bc1198c28"
+    },
+    {
+      "file": "implementation-report.md",
+      "sha256": "5fc51384e0fd108f2c16363a51d28ee9cf99dc4ae07b2e2071cf4783e349cc1b"
+    },
+    {
+      "file": "screenshots/01-login.png",
+      "sha256": "bea236b1432e846903d7887e8fda3153cadc3519b272adcab5a7bbee8e856310"
+    },
+    {
+      "file": "screenshots/02-registration.png",
+      "sha256": "e145801b2f9decf0968d05dcae2bd12ec1328f76f16d94822b9e9c16a166de31"
+    },
+    {
+      "file": "screenshots/03-empty-diary.png",
+      "sha256": "033770d5c982fcdbe569bf5f62fa8df2cfe6e95d526be1177bfcd8ddb88cc33f"
+    },
+    {
+      "file": "screenshots/04-catalog.png",
+      "sha256": "3bc4499c3b90672a0eab6de99f4dab3b6c1234ac17a0983e8428588a2bef335f"
+    },
+    {
+      "file": "screenshots/05-base-product.png",
+      "sha256": "0b99885dd091c03fb724eea83ceb88489b88056e582e18722c47c0148e5ae1a2"
+    },
+    {
+      "file": "screenshots/06-personal-product.png",
+      "sha256": "b3ecb8d5e64f4f73105391e8b58ab1976945cda32a48f1996aca1739881f067b"
+    },
+    {
+      "file": "screenshots/07-invalid-composition-90.png",
+      "sha256": "93df58983b3ca82c3f7808385d611cbe0f489cd217d874d5251f4b139b34e28e"
+    },
+    {
+      "file": "screenshots/08-inner-product.png",
+      "sha256": "f9946d6482a28ac96afe4015458d8e43ba9a4d51b2499ccd6fecb514abee0e8f"
+    },
+    {
+      "file": "screenshots/09-outer-editor.png",
+      "sha256": "a4c9c8b540351b283f879ecce819a2b4a8f533490c584dfe49b890099fc87129"
+    },
+    {
+      "file": "screenshots/10-outer-product.png",
+      "sha256": "aa677036f0e29f7172724165024be2e1694034e07a17b2b5cefe57852f46ea11"
+    },
+    {
+      "file": "screenshots/11-diary-editor.png",
+      "sha256": "b0220bf9ab8abb179a044929b4962ad158692178bf03635b3fcd8c3e8b89ec4b"
+    },
+    {
+      "file": "screenshots/12-diary-600.png",
+      "sha256": "f48094a6a0953391d8e2a5d7abe5cbbbb5e60906f91d33ffe0453edf89b0f7b1"
+    },
+    {
+      "file": "screenshots/13-diary-100g.png",
+      "sha256": "2f33577bceefaa9fc94fe8047e4cdb1c33bba4c9131fc8ba3b966fd01763e649"
+    },
+    {
+      "file": "screenshots/14-past-day.png",
+      "sha256": "e33a410505a6826aa3cfffdff9cd7f0ed1e7c65492deef359ed2fc98a78496ee"
+    },
+    {
+      "file": "screenshots/15-diary-725.png",
+      "sha256": "09d109697931f7b1af65b4bc76212573416f2b47fbe62c6cb241fb95bd9b5359"
+    },
+    {
+      "file": "screenshots/16-deleted-product-search.png",
+      "sha256": "bf61a51352ba96eff8dcf22ea1cd1749223d3ee34e4826881b876af78b3959b2"
+    },
+    {
+      "file": "screenshots/17-history-after-product-delete.png",
+      "sha256": "aad96a98bcca1a9414ace66906635f64edb20af5f6ec01b64fd69cd2fe94fbe8"
+    },
+    {
+      "file": "screenshots/18-network-error.png",
+      "sha256": "29105cf1f0af8226a3e7bb84aabf8258a72dbb5ac2619370a09a15c755ab8268"
+    },
+    {
+      "file": "screenshots/19-network-restored.png",
+      "sha256": "6ded225d05c5e664255a72e75ec4442fed19ef053ec3b0e9091a137c050b224b"
+    },
+    {
+      "file": "screenshots/20-session-restored.png",
+      "sha256": "55bd71ce2e114832a617e7662b8872c23db377db7ca85236a18b444ae74aa5e7"
+    },
+    {
+      "file": "screenshots/21-logout.png",
+      "sha256": "84005a2f7b33a6dc94cab020f0fac1eb2f386faf92ffca103b276f6a80d77f7f"
+    },
+    {
+      "file": "screenshots/22-entry-deleted.png",
+      "sha256": "750d1d83e75b001ff30d4583b08e5cd657e745f10549f9d8f82d0eee7e7d2f06"
+    },
+    {
+      "file": "screenshots/23-leaf-to-composite.png",
+      "sha256": "08acfcbc0731754270c64b2eea9bbdcad0bfcbc01322de1fb8a06c787c4c1d67"
+    },
+    {
+      "file": "screenshots/24-composite-to-leaf.png",
+      "sha256": "e2b379241ecdd34869055e5c6ab1889d07c24c1bbce04fa788dfa91fa7eeb238"
+    },
+    {
+      "file": "submission-email.md",
+      "sha256": "91d35b92982965afe4eda7778c279cd05b37315455836b528b0235adc59071e2"
+    },
+    {
+      "file": "technical-specification.md",
+      "sha256": "7d4d3616c3f319af9bea8f66c295844f212eded6f74965d80cd69ed5454697bb"
+    },
+    {
+      "file": "test-protocol.md",
+      "sha256": "f994250731a75f1251f0fc5e9db382e01c65a6aba649ff671f89bbc45d477e8f"
+    },
+    {
+      "file": "presentation-text.md",
+      "sha256": "0bf0ce28bbd8c6966b45dcb6a6f291da0e0066fdcddf1cc92bd708cf6c61d818"
+    },
+    {
+      "file": "defense-speech.md",
+      "sha256": "a8c3051ff182f2ecc56dc557d8d50cf1b5fd87916d9156526dabb31164504ee6"
+    }
+  ],
+  "limitations": [
+    "Physical Android unavailable",
+    "PR44 merge and release deferred",
+    "Published OLD rollback incompatible with new composites; prospective PR43 tested locally only"
+  ],
+  "presentation_revision": {
+    "updated_at": "2026-11-05T21:10:38.420223+03:00",
+    "slide_count": 13,
+    "change": "Infrastructure slide and stage conclusions; presentation and speaker notes focus on completed work.",
+    "historical_validation": "evidence/materials-validation.json and evidence/review.md document the original 12-slide edition dated 2026-11-04.",
+    "speaker_notes_updated_at": "2026-11-05T21:58:42.297920+03:00",
+    "speaker_notes_source": "defense-notes.md"
+  }
+}

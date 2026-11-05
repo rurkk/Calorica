@@ -13,16 +13,18 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.rurkk.calorica.core.ui.ConnectionViewModel
-import com.rurkk.calorica.core.ui.ReadState
 import com.rurkk.calorica.core.ui.ServerWarmupState
 import com.rurkk.calorica.core.ui.ServerWarmupScreen
+import com.rurkk.calorica.core.session.SessionState
+import com.rurkk.calorica.features.auth.AuthScreen
+import com.rurkk.calorica.features.auth.AuthViewModel
 
 /** Feature owners implement slots; only agent 4 edits root routes/DI. */
 interface FeatureScreens {
   @Composable fun Auth(onAuthenticated: () -> Unit)
   @Composable fun Products(picker: ProductPickerHost)
   @Composable fun Diary(picker: ProductPickerHost)
-  @Composable fun ProductPicker(request: ProductSelectionRequest, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit)
+  @Composable fun ProductPicker(request: ProductSelectionRequest, picker: ProductPickerHost, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit)
 }
 
 object FoundationScreens : FeatureScreens {
@@ -39,7 +41,7 @@ object FoundationScreens : FeatureScreens {
       }
     }
   }
-  @Composable override fun ProductPicker(request: ProductSelectionRequest, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit) {
+  @Composable override fun ProductPicker(request: ProductSelectionRequest, picker: ProductPickerHost, onSelected: (ProductSelection) -> Unit, onCancel: () -> Unit) {
     FoundationSection("Выбор продукта", "Выбор продуктов готовится.") {
       OutlinedButton(onClick = onCancel) { Text("Отмена") }
     }
@@ -58,7 +60,7 @@ private fun FoundationSection(title: String, description: String, content: @Comp
 fun NavHostController.openProductPicker(request: ProductSelectionRequest) { navigate(request.route) }
 
 @Composable
-fun CaloricaNavHost(connection: ConnectionViewModel, screens: FeatureScreens = FoundationScreens) {
+fun CaloricaNavHost(connection: ConnectionViewModel, auth: AuthViewModel, screens: FeatureScreens = FoundationScreens) {
   val startup by connection.startupState.collectAsStateWithLifecycle()
   val owner = LocalLifecycleOwner.current
   DisposableEffect(connection, owner) {
@@ -73,64 +75,55 @@ fun CaloricaNavHost(connection: ConnectionViewModel, screens: FeatureScreens = F
     if (owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) connection.startWarmup()
     onDispose { owner.lifecycle.removeObserver(observer) }
   }
-  val nav = rememberNavController()
-  val backStack by nav.currentBackStackEntryAsState()
-  val current = backStack?.destination?.route
+  LaunchedEffect(startup) { if (startup == ServerWarmupState.Ready) auth.restore() }
   Surface(Modifier.fillMaxSize()) {
-    if (startup != ServerWarmupState.Ready) {
-      ServerWarmupScreen(startup, connection::retryWarmup)
-    } else {
-      Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Calorica", style = MaterialTheme.typography.headlineLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          OutlinedButton(onClick = { nav.navigate(Routes.DIARY) { launchSingleTop = true } }) { Text("Дневник") }
-          OutlinedButton(onClick = { nav.navigate(Routes.PRODUCTS) { launchSingleTop = true } }) { Text("Продукты") }
+    SessionUiScope(auth.sessionState) { session ->
+      if (startup != ServerWarmupState.Ready) {
+        ServerWarmupScreen(startup, connection::retryWarmup)
+      } else when (val current = session) {
+        SessionState.Restoring -> Column(Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+          CircularProgressIndicator(); Text("Восстанавливаем сессию…")
         }
-        if (current != Routes.CONNECTION) {
-          TextButton(onClick = { nav.navigate(Routes.CONNECTION) { launchSingleTop = true } }) { Text("Связь с сервером") }
+        is SessionState.SignedOut -> Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+          Text("Calorica", style = MaterialTheme.typography.headlineLarge)
+          AuthScreen(auth, current.message)
         }
-        if (current != Routes.AUTH) {
-          TextButton(onClick = { nav.popBackStack() }) { Text("Назад") }
-        }
-        NavHost(navController = nav, startDestination = Routes.AUTH, modifier = Modifier.weight(1f)) {
-          composable(Routes.AUTH) { screens.Auth { nav.navigate(Routes.DIARY) { popUpTo(Routes.AUTH) { inclusive = true } } } }
-          composable(Routes.PRODUCTS) { entry -> screens.Products(rememberProductPickerHost(nav, entry)) }
-          composable(Routes.DIARY) { entry -> screens.Diary(rememberProductPickerHost(nav, entry)) }
-          composable(Routes.PRODUCT_PICKER) { entry ->
-            val request = ProductSelectionRequest(
-                requireNotNull(entry.arguments?.getString("requestId")),
-                ProductSelectionPurpose.valueOf(requireNotNull(entry.arguments?.getString("purpose"))),
-            )
-            screens.ProductPicker(request, onSelected = { result ->
-              nav.previousBackStackEntry?.savedStateHandle?.set(ProductSelectionResult.STATE_KEY, ProductSelectionResult(request, result).encode())
-              nav.popBackStack()
-            }, onCancel = { nav.popBackStack() })
-          }
-          composable(Routes.CONNECTION) { ConnectionScreen(connection) }
-        }
+        is SessionState.SignedIn -> AuthenticatedNavigation(screens, current.account.email, auth::logout)
       }
     }
   }
 }
 
 @Composable
-private fun ConnectionScreen(viewModel: ConnectionViewModel) {
-  val state by viewModel.state.collectAsStateWithLifecycle()
-  DisposableEffect(viewModel) { onDispose { viewModel.close() } }
-  Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-    Text("Связь с сервером", style = MaterialTheme.typography.headlineSmall)
-    when (val value = state) {
-      ReadState.Idle -> Text("Проверьте доступность сервера.")
-      ReadState.Loading -> { CircularProgressIndicator(); Text("Проверяем соединение…") }
-      is ReadState.Data -> Text(if (value.value.status == "UP") "Сервер доступен" else "Сервер временно недоступен")
-      is ReadState.Empty -> Text("Ответ сервера пуст.")
-      is ReadState.Error -> {
-        Text(value.error.message())
-        value.error.correlationId?.let { Text("Код обращения: $it") }
-      }
+private fun AuthenticatedNavigation(screens: FeatureScreens, email: String, onLogout: () -> Unit) {
+  val nav = rememberNavController()
+  val backStack by nav.currentBackStackEntryAsState()
+  Column(Modifier.fillMaxSize().safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Text("Calorica", style = MaterialTheme.typography.headlineLarge)
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+      Text(email, modifier = Modifier.weight(1f))
+      TextButton(onClick = onLogout) { Text("Выйти") }
     }
-    Button(onClick = viewModel::load, enabled = state != ReadState.Loading) {
-      Text(if (state == ReadState.Idle) "Проверить соединение" else "Повторить загрузку")
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+      OutlinedButton(onClick = { nav.navigate(Routes.DIARY) { launchSingleTop = true } }) { Text("Дневник") }
+      OutlinedButton(onClick = { nav.navigate(Routes.PRODUCTS) { launchSingleTop = true } }) { Text("Продукты") }
+    }
+    if (backStack != null && nav.previousBackStackEntry != null) {
+      TextButton(onClick = { nav.popBackStack() }) { Text("Назад") }
+    }
+    NavHost(navController = nav, startDestination = Routes.DIARY, modifier = Modifier.weight(1f)) {
+      composable(Routes.PRODUCTS) { entry -> screens.Products(rememberProductPickerHost(nav, entry)) }
+      composable(Routes.DIARY) { entry -> screens.Diary(rememberProductPickerHost(nav, entry)) }
+      composable(Routes.PRODUCT_PICKER) { entry ->
+        val request = ProductSelectionRequest(
+            requireNotNull(entry.arguments?.getString("requestId")),
+            ProductSelectionPurpose.valueOf(requireNotNull(entry.arguments?.getString("purpose"))),
+        )
+        screens.ProductPicker(request, rememberProductPickerHost(nav, entry), onSelected = { result ->
+          nav.previousBackStackEntry?.savedStateHandle?.set(ProductSelectionResult.STATE_KEY, ProductSelectionResult(request, result).encode())
+          nav.popBackStack()
+        }, onCancel = { nav.popBackStack() })
+      }
     }
   }
 }

@@ -177,3 +177,49 @@ class PublicReadinessTest(unittest.TestCase):
             return True
         with self.assertRaises(DeployError):
             wait_for_readiness(check, lambda delay: None, lambda: seconds[0])
+
+
+class RenderFailureBoundaryTest(unittest.TestCase):
+    def test_unknown_deploy_id_is_not_polled_or_retried(self):
+        calls = []
+        def call(token, path, method='GET', payload=None):
+            calls.append(method)
+            if method == 'POST':
+                return {'id': '../other-service'}
+            return {'serviceDetails': {'runtime': 'image'}, 'imagePath': IMAGE}
+        with self.assertRaisesRegex(DeployError, 'deploy ID'):
+            deploy('test-key', IMAGE, SERVICE, call=call)
+        self.assertEqual(calls, ['GET', 'POST'])
+
+    def test_failed_digest_persistence_is_a_failed_release(self):
+        methods = []
+        def call(token, path, method='GET', payload=None):
+            methods.append(method)
+            if method == 'POST':
+                return {'id': 'dep-example'}
+            if '/deploys/' in path:
+                return {'status': 'live', 'image': {'ref': IMAGE}}
+            return {'serviceDetails': {'runtime': 'image'}, 'ownerId': 'owner',
+                    'imagePath': IMAGE if method == 'GET' else IMAGE_PREFIX + 'b' * 64}
+        with self.assertRaisesRegex(DeployError, 'persist the live image'):
+            deploy('test-key', IMAGE, SERVICE, call=call, wait_ready=lambda: None)
+        self.assertEqual(methods, ['GET', 'POST', 'GET', 'PATCH'])
+
+    def test_provider_error_after_start_never_updates_saved_digest(self):
+        methods = []
+        def call(token, path, method='GET', payload=None):
+            methods.append(method)
+            if method == 'POST':
+                return {'id': 'dep-example'}
+            if '/deploys/' in path:
+                raise DeployError('Render API unavailable; inspect Events before retrying')
+            return {'serviceDetails': {'runtime': 'image'}, 'imagePath': IMAGE}
+        with self.assertRaises(DeployError):
+            deploy('test-key', IMAGE, SERVICE, call=call)
+        self.assertEqual(methods, ['GET', 'POST', 'GET'])
+
+    def test_readiness_redirect_is_not_successful(self):
+        def opener(request, timeout):
+            raise urllib.error.HTTPError('https://example.test', 302, 'redirect',
+                                         {'Location': 'https://other.test'}, None)
+        self.assertFalse(probe_readiness('https://example.test', 10, opener))

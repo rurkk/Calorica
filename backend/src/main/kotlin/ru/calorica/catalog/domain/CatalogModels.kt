@@ -22,10 +22,10 @@ data class Nutrition(
 
 data class Product(
     val id: UUID, val ownerId: UUID?, val name: String, val isDeleted: Boolean,
-    val manualNutrition: Nutrition,
+    val manualNutrition: Nutrition?,
     val nutritionPer100g: Nutrition,
     val kind: String = "LEAF",
-    val components: List<Any> = emptyList(),
+    val components: List<ProductComponent> = emptyList(),
     val manualYieldFactor: String? = null,
     val effectiveYieldFactor: String = "1",
     val yieldSource: String = "DEFAULT",
@@ -68,6 +68,16 @@ object NutritionValues {
 
 data class LeafAllocation(val rootOrdinal: Int, val leafId: UUID, val allocatedGrams: BigDecimal)
 data class CatalogPortion(val rootOrdinal: Int, val productId: UUID, val consumedGrams: BigDecimal)
+
+data class ProductComponent(val productId: UUID,
+    @get:JsonSerialize(using = PlainDecimalSerializer::class) val fraction: BigDecimal,
+    @get:JsonSerialize(using = PlainDecimalSerializer::class) val yieldFactor: BigDecimal?)
+
+/** Presence is independent of null: editing percentages must preserve hidden yield settings. */
+data class OptionalFactor(val present: Boolean = false, val value: BigDecimal? = null)
+data class ComponentWrite(val productId: UUID, val fraction: BigDecimal, val yieldFactor: OptionalFactor)
+data class CompositionWrite(val components: List<ComponentWrite>, val manualYieldFactor: OptionalFactor,
+    val manualNutrition: Nutrition? = null)
 
 
 object CatalogIds {

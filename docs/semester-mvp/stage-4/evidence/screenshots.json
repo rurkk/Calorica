@@ -1,0 +1,122 @@
+[
+  {
+    "file": "01-login.png",
+    "captured_at": "2026-11-04T22:11:49+0300",
+    "sha256": "bea236b1432e846903d7887e8fda3153cadc3519b272adcab5a7bbee8e856310"
+  },
+  {
+    "file": "02-registration.png",
+    "captured_at": "2026-11-04T22:12:02+0300",
+    "sha256": "e145801b2f9decf0968d05dcae2bd12ec1328f76f16d94822b9e9c16a166de31"
+  },
+  {
+    "file": "03-empty-diary.png",
+    "captured_at": "2026-11-04T22:12:37+0300",
+    "sha256": "033770d5c982fcdbe569bf5f62fa8df2cfe6e95d526be1177bfcd8ddb88cc33f"
+  },
+  {
+    "file": "04-catalog.png",
+    "captured_at": "2026-11-04T22:12:51+0300",
+    "sha256": "3bc4499c3b90672a0eab6de99f4dab3b6c1234ac17a0983e8428588a2bef335f"
+  },
+  {
+    "file": "07-invalid-composition-90.png",
+    "captured_at": "2026-11-04T22:17:52+0300",
+    "sha256": "93df58983b3ca82c3f7808385d611cbe0f489cd217d874d5251f4b139b34e28e"
+  },
+  {
+    "file": "23-leaf-to-composite.png",
+    "captured_at": "2026-11-04T22:36:09+0300",
+    "sha256": "08acfcbc0731754270c64b2eea9bbdcad0bfcbc01322de1fb8a06c787c4c1d67"
+  },
+  {
+    "file": "24-composite-to-leaf.png",
+    "captured_at": "2026-11-04T22:36:24+0300",
+    "sha256": "e2b379241ecdd34869055e5c6ab1889d07c24c1bbce04fa788dfa91fa7eeb238"
+  },
+  {
+    "file": "06-personal-product.png",
+    "captured_at": "2026-11-04T22:36:37+0300",
+    "sha256": "b3ecb8d5e64f4f73105391e8b58ab1976945cda32a48f1996aca1739881f067b"
+  },
+  {
+    "file": "08-inner-product.png",
+    "captured_at": "2026-11-04T22:36:48+0300",
+    "sha256": "f9946d6482a28ac96afe4015458d8e43ba9a4d51b2499ccd6fecb514abee0e8f"
+  },
+  {
+    "file": "05-base-product.png",
+    "captured_at": "2026-11-04T22:37:30+0300",
+    "sha256": "0b99885dd091c03fb724eea83ceb88489b88056e582e18722c47c0148e5ae1a2"
+  },
+  {
+    "file": "09-outer-editor.png",
+    "captured_at": "2026-11-04T22:37:53+0300",
+    "sha256": "a4c9c8b540351b283f879ecce819a2b4a8f533490c584dfe49b890099fc87129"
+  },
+  {
+    "file": "10-outer-product.png",
+    "captured_at": "2026-11-04T22:38:01+0300",
+    "sha256": "aa677036f0e29f7172724165024be2e1694034e07a17b2b5cefe57852f46ea11"
+  },
+  {
+    "file": "11-diary-editor.png",
+    "captured_at": "2026-11-04T22:38:27+0300",
+    "sha256": "b0220bf9ab8abb179a044929b4962ad158692178bf03635b3fcd8c3e8b89ec4b"
+  },
+  {
+    "file": "12-diary-600.png",
+    "captured_at": "2026-11-04T22:38:34+0300",
+    "sha256": "f48094a6a0953391d8e2a5d7abe5cbbbb5e60906f91d33ffe0453edf89b0f7b1"
+  },
+  {
+    "file": "13-diary-100g.png",
+    "captured_at": "2026-11-04T22:39:18+0300",
+    "sha256": "2f33577bceefaa9fc94fe8047e4cdb1c33bba4c9131fc8ba3b966fd01763e649"
+  },
+  {
+    "file": "14-past-day.png",
+    "captured_at": "2026-11-04T22:39:46+0300",
+    "sha256": "e33a410505a6826aa3cfffdff9cd7f0ed1e7c65492deef359ed2fc98a78496ee"
+  },
+  {
+    "file": "15-diary-725.png",
+    "captured_at": "2026-11-04T22:40:29+0300",
+    "sha256": "09d109697931f7b1af65b4bc76212573416f2b47fbe62c6cb241fb95bd9b5359"
+  },
+  {
+    "file": "16-deleted-product-search.png",
+    "captured_at": "2026-11-04T22:44:37+0300",
+    "sha256": "bf61a51352ba96eff8dcf22ea1cd1749223d3ee34e4826881b876af78b3959b2"
+  },
+  {
+    "file": "17-history-after-product-delete.png",
+    "captured_at": "2026-11-04T22:44:46+0300",
+    "sha256": "aad96a98bcca1a9414ace66906635f64edb20af5f6ec01b64fd69cd2fe94fbe8"
+  },
+  {
+    "file": "18-network-error.png",
+    "captured_at": "2026-11-04T22:44:53+0300",
+    "sha256": "29105cf1f0af8226a3e7bb84aabf8258a72dbb5ac2619370a09a15c755ab8268"
+  },
+  {
+    "file": "19-network-restored.png",
+    "captured_at": "2026-11-04T22:45:00+0300",
+    "sha256": "6ded225d05c5e664255a72e75ec4442fed19ef053ec3b0e9091a137c050b224b"
+  },
+  {
+    "file": "20-session-restored.png",
+    "captured_at": "2026-11-04T22:45:05+0300",
+    "sha256": "55bd71ce2e114832a617e7662b8872c23db377db7ca85236a18b444ae74aa5e7"
+  },
+  {
+    "file": "22-entry-deleted.png",
+    "captured_at": "2026-11-04T22:45:12+0300",
+    "sha256": "750d1d83e75b001ff30d4583b08e5cd657e745f10549f9d8f82d0eee7e7d2f06"
+  },
+  {
+    "file": "21-logout.png",
+    "captured_at": "2026-11-04T22:45:18+0300",
+    "sha256": "84005a2f7b33a6dc94cab020f0fac1eb2f386faf92ffca103b276f6a80d77f7f"
+  }
+]

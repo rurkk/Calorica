@@ -1,0 +1,66 @@
+{
+  "products": {
+    "items": [
+      {
+        "id": "a540a690-3d2d-4a11-92f4-564c5f2b1684",
+        "ownerId": "57097049-e7d4-4009-9cff-5277e0a27648",
+        "name": "DEMO A",
+        "isDeleted": false,
+        "manualNutrition": {
+          "calories": "400.00",
+          "protein": "10.00",
+          "fat": "2.00",
+          "carbs": "3.00"
+        },
+        "nutritionPer100g": {
+          "calories": "400.00",
+          "protein": "10.00",
+          "fat": "2.00",
+          "carbs": "3.00"
+        },
+        "kind": "LEAF",
+        "components": [],
+        "manualYieldFactor": null,
+        "effectiveYieldFactor": "1",
+        "yieldSource": "DEFAULT",
+        "productLabelIds": []
+      },
+      {
+        "id": "842dd302-6db1-4848-b70d-29720c4c7c81",
+        "ownerId": "57097049-e7d4-4009-9cff-5277e0a27648",
+        "name": "DEMO B",
+        "isDeleted": false,
+        "manualNutrition": {
+          "calories": "80.00",
+          "protein": "10.00",
+          "fat": "2.00",
+          "carbs": "3.00"
+        },
+        "nutritionPer100g": {
+          "calories": "80.00",
+          "protein": "10.00",
+          "fat": "2.00",
+          "carbs": "3.00"
+        },
+        "kind": "LEAF",
+        "components": [],
+        "manualYieldFactor": null,
+        "effectiveYieldFactor": "1",
+        "yieldSource": "DEFAULT",
+        "productLabelIds": []
+      }
+    ],
+    "nextCursor": null
+  },
+  "diary": {
+    "date": "2026-11-04",
+    "zone": "Europe/Moscow",
+    "entries": [],
+    "total": {
+      "calories": "0",
+      "protein": "0",
+      "fat": "0",
+      "carbs": "0"
+    }
+  }
+}

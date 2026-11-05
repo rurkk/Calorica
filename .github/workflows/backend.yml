@@ -35,6 +35,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: python3 -m unittest discover -s scripts/ci -p 'test_*.py'
+      - name: Verify persistence drill safety
+        run: python3 -m unittest discover -s deploy/backend -p 'test_persistence_drill.py'
       - name: Validate workflows and shell
         run: |
           shopt -s nullglob

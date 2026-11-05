@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/product-labels-previous.yaml
+  - include:
+      file: db/changelog/changes/060-product-labels.sql

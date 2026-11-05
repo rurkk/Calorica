@@ -9,6 +9,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerializationException
+import okhttp3.ConnectionPool
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -26,7 +27,7 @@ const val REQUEST_TIMEOUT_MILLIS = 10_000L
 }
 
 object ApiClient {
-  fun http(session: InMemorySession, baseUrl: String): OkHttpClient {
+  fun http(@Suppress("UNUSED_PARAMETER") session: InMemorySession, baseUrl: String): OkHttpClient {
     val origin = baseUrl.toHttpUrl()
     val anonymous = setOf("/api/v1/accounts/register", "/api/v1/accounts/login", "/api/v1/accounts/refresh")
     return OkHttpClient.Builder()
@@ -34,14 +35,20 @@ object ApiClient {
       .connectTimeout(REQUEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
       .readTimeout(REQUEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
       .writeTimeout(REQUEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+      // Never replay writes after an ambiguous transport failure. With retries disabled,
+      // a pooled TLS socket closed during server/proxy idle time can fail the next action
+      // before it reaches the server. Retire idle sockets instead of guessing that timeout.
+      .connectionPool(ConnectionPool(0, 1, TimeUnit.SECONDS))
       .retryOnConnectionFailure(false)
       .followRedirects(false).followSslRedirects(false)
       .addInterceptor { chain ->
         val request = chain.request().newBuilder().header("Accept", "application/json, application/problem+json")
         val url = chain.request().url
-        if (url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port &&
-            url.encodedPath.startsWith("/api/v1/") && url.encodedPath !in anonymous) {
-          session.accessToken()?.let { request.header("Authorization", "Bearer $it") }
+        // Authentication was bound to the operation before enqueueing. Never replace it
+        // with a mutable token here: an old request could otherwise execute as a new account.
+        if (!(url.scheme == origin.scheme && url.host == origin.host && url.port == origin.port &&
+            url.encodedPath.startsWith("/api/v1/") && url.encodedPath !in anonymous)) {
+          request.removeHeader("Authorization")
         }
         chain.proceed(request.build())
       }.build()
