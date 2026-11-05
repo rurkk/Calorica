@@ -206,13 +206,13 @@
   "artifacts": [
     {
       "file": "Calorica-stage-4.pptx",
-      "sha256": "ae26a7f09cebd4ed8281f3a087a760662d076691cab4156cc39fb140cef4b086",
-      "pages_or_slides": 12
+      "sha256": "cf2f5e69de009f11a0aa8bb873a8c3eb41daa6d95b39cd2614402cc543fe325e",
+      "pages_or_slides": 13
     },
     {
       "file": "Calorica-stage-4.pdf",
-      "sha256": "e2f56ba9ff4999ec5aecf3680325db9ea39ea5204aece76b4065b80534b0d335",
-      "pages_or_slides": 12
+      "sha256": "cb160559de5709d785aa2d6baf9a18e4bc4fe06c7898591f6ce02011b6811637",
+      "pages_or_slides": 13
     },
     {
       "file": "Calorica-stage-4-report.docx",
@@ -242,7 +242,7 @@
   "files": [
     {
       "file": "BUILD.md",
-      "sha256": "0024d580af364a363e63dbcea2b44f739ef38cb0640c4180e2d3db1192718c0e"
+      "sha256": "17857196a77a9d08f3706b5ffc2754a9f1c8ae9a09d7c0c9e72b8d16424df20c"
     },
     {
       "file": "Calorica-stage-4-report.docx",
@@ -254,15 +254,15 @@
     },
     {
       "file": "Calorica-stage-4.pdf",
-      "sha256": "e2f56ba9ff4999ec5aecf3680325db9ea39ea5204aece76b4065b80534b0d335"
+      "sha256": "cb160559de5709d785aa2d6baf9a18e4bc4fe06c7898591f6ce02011b6811637"
     },
     {
       "file": "Calorica-stage-4.pptx",
-      "sha256": "ae26a7f09cebd4ed8281f3a087a760662d076691cab4156cc39fb140cef4b086"
+      "sha256": "cf2f5e69de009f11a0aa8bb873a8c3eb41daa6d95b39cd2614402cc543fe325e"
     },
     {
       "file": "README.md",
-      "sha256": "77bfbd528983dd9de7cc2e6192caf6f5ae0631ee82424c34ba30db72225e3faf"
+      "sha256": "cf18cce2f070a33e4cb7dfd0e8fe4cd86279c144662b2a6356cc53c3d79c2bfb"
     },
     {
       "file": "build_documents.py",
@@ -270,11 +270,11 @@
     },
     {
       "file": "build_presentation.mjs",
-      "sha256": "16236b94869c4985262aeb5502c31ebe23463d006180d3f98f7accd2eed94552"
+      "sha256": "36be7ac955e5c0d0fee9a937a44e1e2b8bde128a1a6cf12b1ebac60f9e9eaf4f"
     },
     {
       "file": "defense-notes.md",
-      "sha256": "5be68b0946756f02199460e98495e0e014c8dade0b1313e48c10fcfd5d93bc41"
+      "sha256": "04b67faba58f2280f4a89f2fefc944a0da994dbf677d524188a20e1a9d6032f9"
     },
     {
       "file": "demo-scenarios.md",
@@ -457,5 +457,11 @@
     "Physical Android unavailable",
     "PR44 merge and release deferred",
     "Published OLD rollback incompatible with new composites; prospective PR43 tested locally only"
-  ]
+  ],
+  "presentation_revision": {
+    "updated_at": "2026-11-05T21:10:38.420223+03:00",
+    "slide_count": 13,
+    "change": "Infrastructure slide and stage conclusions; presentation and speaker notes focus on completed work.",
+    "historical_validation": "evidence/materials-validation.json and evidence/review.md document the original 12-slide edition dated 2026-11-04."
+  }
 }
