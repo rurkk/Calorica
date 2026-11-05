@@ -262,7 +262,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "cf18cce2f070a33e4cb7dfd0e8fe4cd86279c144662b2a6356cc53c3d79c2bfb"
+      "sha256": "8174c69260e44663980058bc568e7b4fbef986f34048192ea8a81125baebdf6b"
     },
     {
       "file": "build_documents.py",
@@ -451,6 +451,10 @@
     {
       "file": "test-protocol.md",
       "sha256": "f994250731a75f1251f0fc5e9db382e01c65a6aba649ff671f89bbc45d477e8f"
+    },
+    {
+      "file": "presentation-text.md",
+      "sha256": "0bf0ce28bbd8c6966b45dcb6a6f291da0e0066fdcddf1cc92bd708cf6c61d818"
     }
   ],
   "limitations": [

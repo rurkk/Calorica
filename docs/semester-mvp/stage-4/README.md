@@ -16,6 +16,7 @@ Render / Neon / Better Stack и выводы по этапу. Текст выс�
 | Материал | Файлы |
 | --- | --- |
 | Презентация | [PPTX](Calorica-stage-4.pptx), [PDF](Calorica-stage-4.pdf) |
+| Текст слайдов | [Markdown](presentation-text.md) |
 | Отчёт о реализации и проверке | [DOCX](Calorica-stage-4-report.docx), [PDF](Calorica-stage-4-report.pdf), [Markdown](implementation-report.md) |
 | Требования проекта | [Актуальный снимок ТЗ](technical-specification.md) |
 | Выступление и демонстрация | [Доклад](defense-notes.md), [сценарии](demo-scenarios.md) |
