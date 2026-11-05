@@ -262,7 +262,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "8174c69260e44663980058bc568e7b4fbef986f34048192ea8a81125baebdf6b"
+      "sha256": "6c51c20dcfcc27ec578481887c0e13c0d718a653d452c196a2f7dc8238441ade"
     },
     {
       "file": "build_documents.py",
@@ -455,6 +455,10 @@
     {
       "file": "presentation-text.md",
       "sha256": "0bf0ce28bbd8c6966b45dcb6a6f291da0e0066fdcddf1cc92bd708cf6c61d818"
+    },
+    {
+      "file": "defense-speech.md",
+      "sha256": "a8c3051ff182f2ecc56dc557d8d50cf1b5fd87916d9156526dabb31164504ee6"
     }
   ],
   "limitations": [

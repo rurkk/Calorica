@@ -19,7 +19,7 @@ Render / Neon / Better Stack и выводы по этапу. Текст выс�
 | Текст слайдов | [Markdown](presentation-text.md) |
 | Отчёт о реализации и проверке | [DOCX](Calorica-stage-4-report.docx), [PDF](Calorica-stage-4-report.pdf), [Markdown](implementation-report.md) |
 | Требования проекта | [Актуальный снимок ТЗ](technical-specification.md) |
-| Выступление и демонстрация | [Доклад](defense-notes.md), [сценарии](demo-scenarios.md) |
+| Выступление и демонстрация | [Связная речь для защиты этапа](defense-speech.md), [заметки к слайдам](defense-notes.md), [сценарии](demo-scenarios.md) |
 | Свежая проверка приложения | [Протокол](test-protocol.md), [результаты по сценариям](evidence/checks.json) |
 | Версии и изображения | [APK/backend/устройство](evidence/versions.json), [скриншоты](screenshots/), [ведомость снимков](evidence/screenshots.json) |
 | Прежние тесты и CI | [Счётчики, SHA и ссылки](evidence/baseline-tests.json) |
