@@ -18,8 +18,10 @@ T00 фиксирует базовый путь GitHub Actions → GHCR → Rende
 [PR43](https://github.com/rurkk/Calorica/pull/43) слит в `main` (`ef348ac`).
 Опубликован [подписанный Android 0.1.5/code6](https://github.com/rurkk/Calorica/releases/tag/android-v0.1.5),
 backend того же коммита развёрнут в Render Free (последний deploy — `live`).
-Readiness 7 ноября вернул HTTP503 `OUT_OF_SERVICE`; детали текущей проверки —
-[в трекере](tracker.md). Проверки выпуска и ограничения —
+После холодного запуска 7 ноября liveness/readiness отвечают HTTP200 `UP`,
+вход и чтение API проверены. Ранний HTTP503 был временным во время инициализации;
+[диагностика и ограничение времени запуска](reports/readiness-cold-start-20261107.md).
+Текущие статусы — [в трекере](tracker.md). Проверки выпуска и ограничения —
 [в отчёте](reports/pr43-release-20261105.md).
 
 - **Готово:** T00, T01, T02, T03, T05.

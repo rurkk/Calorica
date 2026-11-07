@@ -1,7 +1,8 @@
 # Учебный стенд: Render и Neon
 
-Настройка от 1 ноября 2026 года. Приложение остаётся инфраструктурным каркасом:
-бизнес-API и пользовательские сессии ещё не реализованы.
+Исходная настройка от 1 ноября 2026 года; состояние уточнено 7 ноября.
+Семестровый MVP выпущен: backend `ef348ac`, Android 0.1.5.
+Текущая доставка и проверки — [в отчёте выпуска](../../docs/semester-mvp/roadmap/reports/pr43-release-20261105.md).
 
 Для команды и агентов используйте [единую инструкцию доступа](../access/README.md):
 общий административный набор, SQL/API/MCP и локальная отладка на dev-team.
@@ -42,12 +43,12 @@
 | --- | --- |
 | Name | `calorica-backend` |
 | Service ID | `srv-dbjk97vlk1mc739gja40` |
-| Source | Existing Image: `ghcr.io/rurkk/calorica-backend@sha256:…` |
+| Source | Временно Git: `rurkk/Calorica`, main, точный commit `ef348ac`; rootDir `backend` |
 | Region | Frankfurt |
-| Runtime | Image; образ linux/amd64 собирается в GitHub Actions |
+| Runtime | Docker, `Dockerfile`, context `.`; сборка в Render при блокировке Actions |
 | Compute | Free: 0.1 CPU, 512 MB RAM |
 | Health Check Path | `/actuator/health/liveness` |
-| Auto-Deploy | Off: доставкой конкретного digest управляет GitHub Actions |
+| Auto-Deploy | Off; последний выпуск API с точным commitId, возврат к GHCR после восстановления Actions |
 
 HTTPS предоставляет Render; отдельный Nginx и сертификат на VPS не нужны.
 Приложение слушает порт 8080, совпадающий с Docker healthcheck. Liveness в Render
@@ -76,9 +77,16 @@ Environment Variables:
 jdbc:postgresql://<HOST>:5432/<DATABASE>?sslmode=require&channelBinding=require
 ```
 
-Ожидаемый readiness: HTTP 200 и `{"status":"UP"}`. Корневой URL и закрытые
-бизнес-маршруты возвращают 401, пока функции не реализованы. Бесплатный Render
-засыпает после 15 минут простоя; первый запрос после сна может ждать около минуты.
+Ожидаемый readiness после завершения запуска: HTTP 200 и `{"status":"UP"}`.
+Закрытые бизнес-маршруты требуют авторизации. Бесплатный Render засыпает после
+простоя; 7 ноября JVM и Spring запускались около двух минут, затем завершалась
+инициализация auth. Ранний readiness503 `OUT_OF_SERVICE` в этот интервал
+не означает постоянный сбой. Сопоставьте ответ с логами текущего запуска и
+проверьте readiness после завершения инициализации. Android ждёт до 90 секунд,
+поэтому при длинном пробуждении может потребоваться повторная попытка.
+[Проверка 7 ноября](../../docs/semester-mvp/roadmap/reports/readiness-cold-start-20261107.md):
+liveness/readiness200, login и чтение каталога/дневника PASS. Постоянные внешние
+пинги для предотвращения сна не настраиваются.
 
 ## Проверка 1 ноября 2026 года
 
