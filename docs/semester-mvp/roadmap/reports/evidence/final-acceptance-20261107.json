@@ -1,0 +1,41 @@
+{
+  "base_main": "aa07f37b8e3787bc2b848c1f32fb718c2fa1e51a",
+  "runtime_source": "ef348ac827182ba213fc545443529145ae6868b4",
+  "code_changes_since_runtime": "none; only deploy/render/README.md differs in app/backend/scripts/ci/deploy",
+  "suites": {
+    "backend_unit": {
+      "tests": 37,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "backend_postgresql": {
+      "tests": 111,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "android": {
+      "tests": 113,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "ci_scripts": {
+    "tests": 41,
+    "failures": 0
+  },
+  "persistence_safety": {
+    "tests": 5,
+    "failures": 0
+  },
+  "android_build_lint": "PASS",
+  "backend_build": "PASS",
+  "cloud_ci": {
+    "run": 42395359064,
+    "job": 128471450396,
+    "status": "failure",
+    "annotation": "The job was not started because your account is locked due to a billing issue."
+  }
+}

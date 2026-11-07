@@ -1,0 +1,156 @@
+{
+  "status": "PASS",
+  "phase": "full",
+  "previous_source": "2df83f4-local-not-published",
+  "current_source": "aa07f37-code-equals-ef348ac",
+  "checks": [
+    {
+      "name": "fresh_schema",
+      "status": "PASS"
+    },
+    {
+      "name": "upgrade_preserves_released_data_and_checksums",
+      "status": "PASS"
+    },
+    {
+      "name": "final_domains_grams_output_labels_cascade_analytics",
+      "status": "PASS"
+    },
+    {
+      "name": "actual_jvm_restart_preserves_accounts_products_composition_diary_units",
+      "status": "PASS"
+    },
+    {
+      "name": "database_failure_readiness_503_liveness_200",
+      "status": "PASS"
+    },
+    {
+      "name": "actual_postgres_restart_preserves_all_rows_links_and_calculations",
+      "status": "PASS"
+    },
+    {
+      "name": "failed_release_never_ready_transactional_migration_preserves_data",
+      "status": "PASS"
+    },
+    {
+      "name": "previous_backend_functional_rollback",
+      "status": "PASS"
+    },
+    {
+      "name": "return_to_candidate_preserves_data_after_rollback_attempt",
+      "status": "PASS"
+    },
+    {
+      "name": "released_refresh_session_survives_upgrade_and_restarts",
+      "status": "PASS"
+    }
+  ],
+  "limitations": [
+    "Local JAR lifecycle drill; not a deployment or APK acceptance.",
+    "External backups and restore drills are not performed."
+  ],
+  "migration_files": [
+    "changes/001-foundation.sql",
+    "changes/010-accounts-profile.sql",
+    "changes/020-products.sql",
+    "changes/025-products-owner-fk.sql",
+    "changes/030-diary.sql",
+    "changes/040-composition.sql",
+    "changes/050-units.sql",
+    "changes/060-product-labels.sql"
+  ],
+  "previous_migration_files": [
+    "changes/001-foundation.sql",
+    "changes/010-accounts-profile.sql",
+    "changes/020-products.sql",
+    "changes/025-products-owner-fk.sql",
+    "changes/030-diary.sql",
+    "changes/040-composition.sql",
+    "changes/050-units.sql"
+  ],
+  "jars": {
+    "previous": {
+      "sha256": "66329d7642946f8ee4c3053fa65acb8d6610ee2c58e7fdf46f5c2bd87c485bdc"
+    },
+    "current": {
+      "sha256": "9472986d7696d1d51031de06ffb8a7543a4d1938214bfa6b772547da96f5e73b"
+    }
+  },
+  "java": "openjdk version \"21.0.12.1\" 2026-08-18",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-1.pgdg12+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+  "postgres_image": "postgres:17.11-bookworm",
+  "postgres_image_id": "sha256:639ab7ceb90e13123085b741fb31ef493fba25463002f6da665352e7b534b652",
+  "schema": [
+    {
+      "id": "001-foundation",
+      "author": "calorica",
+      "filename": "db/changelog/changes/001-foundation.sql",
+      "md5sum": "9:7cb393e0a28e33bbd3738cf61a7c8497",
+      "orderexecuted": 1
+    },
+    {
+      "id": "010-accounts-profile",
+      "author": "calorica",
+      "filename": "db/changelog/changes/010-accounts-profile.sql",
+      "md5sum": "9:06564dc6913f179390c626941d3949af",
+      "orderexecuted": 2
+    },
+    {
+      "id": "020-products",
+      "author": "calorica",
+      "filename": "db/changelog/changes/020-products.sql",
+      "md5sum": "9:b248415e5b2c233c0d5300c711cfe315",
+      "orderexecuted": 3
+    },
+    {
+      "id": "025-products-owner-fk",
+      "author": "calorica",
+      "filename": "db/changelog/changes/025-products-owner-fk.sql",
+      "md5sum": "9:6d722b19019a61391f60779bcdfcbddd",
+      "orderexecuted": 4
+    },
+    {
+      "id": "030-diary",
+      "author": "calorica",
+      "filename": "db/changelog/changes/030-diary.sql",
+      "md5sum": "9:9a21a5a12f8fd23e9adbd855f08d08fe",
+      "orderexecuted": 5
+    },
+    {
+      "id": "040-composition",
+      "author": "calorica",
+      "filename": "db/changelog/changes/040-composition.sql",
+      "md5sum": "9:653b202efb06db06c679ef4e6922f5dd",
+      "orderexecuted": 6
+    },
+    {
+      "id": "050-units",
+      "author": "calorica",
+      "filename": "db/changelog/changes/050-units.sql",
+      "md5sum": "9:307f8650562bb1b1a169903750906b84",
+      "orderexecuted": 7
+    },
+    {
+      "id": "060-product-labels",
+      "author": "calorica",
+      "filename": "db/changelog/changes/060-product-labels.sql",
+      "md5sum": "9:007b9b2bd55e4f7ed01d654adefba817",
+      "orderexecuted": 8
+    }
+  ],
+  "domain_tables": {
+    "accounts": "1",
+    "diary_entries": "3",
+    "diary_entry_labels": "4",
+    "meal_labels": "4",
+    "product_components": "5",
+    "product_label_links": "3",
+    "product_labels": "11",
+    "product_units": "1",
+    "products": "57",
+    "profiles": "1",
+    "refresh_tokens": "1",
+    "sessions": "1",
+    "units": "2"
+  }
+}

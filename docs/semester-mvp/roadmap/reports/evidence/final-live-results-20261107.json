@@ -1,0 +1,81 @@
+{
+  "source": "ef348ac",
+  "checks": [
+    {
+      "check": "published login USER and me",
+      "result": "PASS"
+    },
+    {
+      "check": "0.5+1.5 yield and 200g portion 480",
+      "result": "PASS"
+    },
+    {
+      "check": "absent edge preserved and explicit NULL clears yield",
+      "result": "PASS"
+    },
+    {
+      "check": "switch ingredient to manual yield",
+      "result": "PASS"
+    },
+    {
+      "check": "explicit manual 1 retained",
+      "result": "PASS"
+    },
+    {
+      "check": "GRAMS exact thirds sum 1",
+      "result": "PASS"
+    },
+    {
+      "check": "GRAMS 60+40 output80 yield0.8",
+      "result": "PASS"
+    },
+    {
+      "check": "invalid 90percent and output without grams rejected",
+      "result": "PASS"
+    },
+    {
+      "check": "nested shared leaf and direct indirect cycles atomic",
+      "result": "PASS"
+    },
+    {
+      "check": "LEAF COMPOSITE LEAF manual nutrition survives",
+      "result": "PASS"
+    },
+    {
+      "check": "diary all fields two zones historical recalculation",
+      "result": "PASS"
+    },
+    {
+      "check": "diary deletion preserves product",
+      "result": "PASS"
+    },
+    {
+      "check": "DAY WEEK MONTH 2 zones 700/7 overlapping meal labels",
+      "result": "PASS"
+    },
+    {
+      "check": "empty periods and current analytics after edit",
+      "result": "PASS"
+    },
+    {
+      "check": "ml without conversion rejected for new personal product",
+      "result": "PASS"
+    },
+    {
+      "check": "USER cannot obtain Admin write",
+      "result": "PASS"
+    },
+    {
+      "check": "CASCADE upward chain preserves diary and rejects new references",
+      "result": "PASS"
+    },
+    {
+      "check": "KEEP preserves parent calculation",
+      "result": "PASS"
+    },
+    {
+      "check": "live API functional suite completed",
+      "result": "PASS"
+    }
+  ]
+}
