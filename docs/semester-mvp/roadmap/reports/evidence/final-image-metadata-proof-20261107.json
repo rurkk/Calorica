@@ -1,0 +1,13 @@
+{
+  "source": "ef348ac827182ba213fc545443529145ae6868b4",
+  "same_runtime_layers": true,
+  "same_runtime_config_except_labels": true,
+  "labels": {
+    "org.opencontainers.image.revision": "ef348ac827182ba213fc545443529145ae6868b4",
+    "org.opencontainers.image.source": "https://github.com/rurkk/Calorica",
+    "org.opencontainers.image.title": "Calorica backend",
+    "org.opencontainers.image.version": "22.04"
+  },
+  "final_local_digest": "sha256:b9da9a34903b703fea96f751a03c8b83a8f41ea05240182f4c0bd7c1aba23102",
+  "published": false
+}

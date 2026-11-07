@@ -1,0 +1,28 @@
+{
+  "source": "ef348ac827182ba213fc545443529145ae6868b4",
+  "status": "PASS",
+  "checks": [
+    "amd64_image_readiness",
+    "real_image_http_accounts_graph_diary_units_206_labels_50_150_grams_cascade_analytics",
+    "actual_image_container_restart_preserves_full_fixture",
+    "artifact_extracted_and_migration_provenance_checked"
+  ],
+  "image_id": "sha256:587ac4d20fc547a388f2ba8558dd69b9cf3272382384f6507d8708e6fd2033ba",
+  "platform": "linux/amd64",
+  "jar_sha256": "cea7d87150aedb5977ca1430f0fbcbbed8f6014b3b4cfc70f0deb70f9811178d",
+  "migrations": [
+    "changes/001-foundation.sql",
+    "changes/010-accounts-profile.sql",
+    "changes/020-products.sql",
+    "changes/025-products-owner-fk.sql",
+    "changes/030-diary.sql",
+    "changes/040-composition.sql",
+    "changes/050-units.sql",
+    "changes/060-product-labels.sql"
+  ],
+  "host_class_bytecode_equal": true,
+  "published": false,
+  "runtime_manifest": "sha256:d885ce8a5c2cd4c20340f234c258ffad167b06d781b650ec11c5953b3d60517e",
+  "pinned_source_index": "sha256:3dc65fe8271c997c7939986ac3ebf9e977ee477817e6b2bcf7b305a3c209b3d4",
+  "index_change": "same runtime manifest/config/JAR; attestation now refers to clean ef348ac worktree"
+}

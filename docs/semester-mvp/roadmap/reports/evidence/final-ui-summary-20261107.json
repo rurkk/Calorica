@@ -51,5 +51,15 @@
   "density_dpi": 180,
   "minimum_sample_dp": 48,
   "app_crashes": 0,
-  "harness_UiAutomationService_conflicts": 2
+  "harness_UiAutomationService_conflicts": 2,
+  "leaf_delete_retains_parent_diary30": "PASS",
+  "all_fixture_counts": {
+    "products": 29,
+    "diary_entries": 10
+  },
+  "startup_offline_90s_retry": {
+    "status": "PASS",
+    "timeout_seconds": 91.47,
+    "retry_recovery_seconds": 4.57
+  }
 }

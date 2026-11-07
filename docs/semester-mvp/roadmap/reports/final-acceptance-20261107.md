@@ -311,3 +311,79 @@ CI-1, ADMIN-1 и exact published rollback. Дополнительный физи
 разрешённого Admin и пути к его приватным данным ADMIN-1 не объявляется снятым.
 Параллельно подготавливается amd64 image для доступного бесплатного пути
 публикации; его digest/совместимость будут добавлены только после исполнения.
+
+## Совместимый amd64 image — подготовлен до согласования публикации
+
+Официальный backend/Dockerfile собран для linux/amd64. В отдельном реальном
+контейнере исполнены accounts/graph/diary/206g/GRAMS/labels/cascade/analytics и
+фактический container restart с полным сравнением данных/ответов: **4/4 PASS**.
+Все собственные class-файлы извлечённого JAR побайтно совпали с JAR,
+проверенным backend unit/PG integration. JAR SHA-256:
+`cea7d87150aedb5977ca1430f0fbcbbed8f6014b3b4cfc70f0deb70f9811178d`.
+
+Для правильного provenance повторная сборка из чистого detached ef348ac
+использовала тот же cache/runtime. Runtime manifest остался
+`sha256:d885ce8a5c2cd4c20340f234c258ffad167b06d781b650ec11c5953b3d60517e`,
+config и JAR неизменны. Поменялся только attestation/index: первоначальный
+локальный `587ac4d2…` → source-pinned
+`3dc65fe8271c997c7939986ac3ebf9e977ee477817e6b2bcf7b305a3c209b3d4`.
+Публикация пока не заявляется.
+
+Извлечённый image JAR дополнительно прошёл **10/10 полного lifecycle** как
+совместимый fallback к host candidate: все 13 таблиц, реальные JVM/PG restart,
+failed migration, rollback/recovery и persisted refresh. Это отдельный прогон
+нового артефакта, а не повтор чтения старого XML.
+[Real image smoke](evidence/final-image-local-smoke-20261107.json),
+[artifact lifecycle](evidence/final-image-artifact-local-persistence-20261107.json).
+До публикации и проверки скачанного digest ROLLBACK-1 не снимается.
+
+Проверка действующего CLI подтвердила scopes `gist, read:org, repo` без
+write:packages. Запрошено новое узкое разрешение на package-публикацию Calorica;
+без ответа расширение доступа и registry push не выполняются. GHCR container
+storage/bandwidth остаются бесплатными по [текущей документации GitHub](https://docs.github.com/en/billing/concepts/product-billing/github-packages); платные
+планы/лимиты не менялись.
+
+Новый [Backend CI PR50, run 42400844790](https://github.com/rurkk/Calorica/actions/runs/42400844790),
+job changes128488034891 также не стартовал из-за той же billing-аннотации.
+Успех локальных проверок не меняет этот статус.
+
+## Дополнительная проверка старта signed0.1.5
+
+На том же собственном AVD после reboot обнаружились сохранённые canonical
+proxy-ключи Android от fault relay. Первоначальный сброс только `http_proxy`
+не очистил proxy-кэш ConnectivityService; два диагностических retry-прогона
+**не прошли и не засчитываются**. Полный reset canonical keys, обработка
+legacy `:0` и reboot восстановили прямую сеть; контрольный запуск signed APK
+дошёл до входа. Это дефект настройки проверочного стенда, не исправление APK.
+
+На чистой настройке повторён весь сценарий: offline startup → ограниченная
+ошибка через **91.47 с** → включение сети → **один** ручной retry → экран входа
+через **4.57 с**. Результат PASS; приложение не менялось. AVD после этого
+остановлен, proxy host пустой/port0; тестовый relay не работает.
+[Точный результат](evidence/final-startup-result-20261107.json).
+APK manifest отдельно проверен: allowBackup=false, usesCleartextTraffic=false.
+
+## Опубликованный API: вложенные метки с общим листом
+
+Доступный без Admin пункт дополнительно исполнен на live ef348ac: лист A400
+достигается через child и напрямую (25%+25%, коэффициенты0.5); B80 — 50% с1.5.
+Порция200г даёт480ккал, по листьям **50/150г**, пересекающаяся группа200г;
+метка родителя игнорируется. При 30%+30%/40% и общем Y0.8 — **120/80г** и
+680ккал перечитанной истории. Изменение собственных связей лейблов обновило
+группы без изменения итога. Все4карточки/1запись этого дополнения очищены.
+[Live nested/shared-leaf proof](evidence/final-nested-labels-result-20261107.json).
+Всего создано/очищено в основных и дополнительных UI/API-сценариях **29 своих
+карточек и10записей**, включая удаления в ходе самой демонстрации.
+
+Публичная GHCR inventory повторно прочитана anonymous pull/list: доступны
+только5исторических тегов, последний sha-fb97cef. sha-ef348ac отсутствует;
+новый compatible digest не выдаётся за уже опубликованный.
+[Inventory](evidence/final-ghcr-tags-20261107.json).
+
+Финальные OCI source/title/revision labels приведены к существующему
+backend-release.yml. Config **кроме labels** и RootFS-слои побайтно совпали с
+проверенным образом. Финальный source-pinned локальный index:
+`sha256:b9da9a34903b703fea96f751a03c8b83a8f41ea05240182f4c0bd7c1aba23102`.
+Это metadata-уточнение прежних локальных индексов, не изменение runtime/JAR.
+[Проверка равенства слоёв/config](evidence/final-image-metadata-proof-20261107.json).
+Registry push до разрешения write:packages не выполнен.

@@ -1,8 +1,0 @@
-{
-  "status": "PASS",
-  "rotationDelta": 1,
-  "restartDelta": 0,
-  "signedUiState": "SignedOut",
-  "automaticReplay": false,
-  "proof": "READ ONLY count of refresh rows for own technical account; no hashes exported"
-}
