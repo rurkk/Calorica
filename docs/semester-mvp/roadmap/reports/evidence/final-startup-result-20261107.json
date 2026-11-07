@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "apk": "signed0.1.5 code6",
+  "api": 36,
+  "offline_startup_timeout_seconds": 91.47,
+  "retry_count_after_network_restore": 1,
+  "recovery_seconds": 4.57,
+  "ui_state": "SignedOut ready for login",
+  "screenshots": false
+}

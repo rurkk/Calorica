@@ -1,0 +1,26 @@
+[
+  {
+    "check": "two accounts cannot read edit products diary or search private entities",
+    "result": "PASS"
+  },
+  {
+    "check": "published label allocation 50/150 with overlap200 and ignored parent",
+    "result": "PASS"
+  },
+  {
+    "check": "manual yield0.8 allocation 120/80 without raw grams inflation",
+    "result": "PASS"
+  },
+  {
+    "check": "published assignment edits reflow historical label groups",
+    "result": "PASS"
+  },
+  {
+    "check": "signed UI double tap creates exactly one product",
+    "result": "PASS"
+  },
+  {
+    "check": "UI fixtures exact thirds hidden coefficients labels and explicit1 prepared",
+    "result": "PASS"
+  }
+]

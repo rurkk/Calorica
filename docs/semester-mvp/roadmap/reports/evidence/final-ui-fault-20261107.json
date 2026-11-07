@@ -1,0 +1,11 @@
+{
+  "server_committed_count": 1,
+  "grams": "111",
+  "double_tap": true,
+  "automatic_replay_count": 0,
+  "status": "PASS",
+  "ui": "Unknown save result; no automatic replay; reload confirmed committed row; user acknowledgement required",
+  "late_read_entry_count": 2,
+  "offline_read": "network error, no empty diary",
+  "network_retry": "PASS"
+}

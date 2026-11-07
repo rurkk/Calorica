@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "device_api": 36,
+  "android_release": "16",
+  "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+  "apk": "0.1.5 code6",
+  "update": "0.1.4 to 0.1.5 without uninstall",
+  "registration_restore_logout_accounts": "PASS",
+  "product_crud_picker_doubletap": "PASS",
+  "composition_create_nested_percent_Y_transitions": "PASS",
+  "thirds_hidden_fields_explicit1": "PASS",
+  "diary_all_fields_2labels_past_date_2zones": "PASS",
+  "diary_recalculation_soft_delete_history_delete": "PASS",
+  "offline_read_search_product_save_diary_save_retry": "PASS",
+  "committed_save_response_loss": "PASS",
+  "committed_refresh_response_loss": "PASS",
+  "fully_visible_clickable_pixels": [
+    [
+      76,
+      54
+    ],
+    [
+      119,
+      54
+    ],
+    [
+      127,
+      54
+    ],
+    [
+      74,
+      54
+    ],
+    [
+      93,
+      54
+    ],
+    [
+      127,
+      54
+    ],
+    [
+      171,
+      54
+    ],
+    [
+      178,
+      54
+    ]
+  ],
+  "density_dpi": 180,
+  "minimum_sample_dp": 48,
+  "app_crashes": 0,
+  "harness_UiAutomationService_conflicts": 2,
+  "leaf_delete_retains_parent_diary30": "PASS",
+  "all_fixture_counts": {
+    "products": 29,
+    "diary_entries": 10
+  },
+  "startup_offline_90s_retry": {
+    "status": "PASS",
+    "timeout_seconds": 91.47,
+    "retry_recovery_seconds": 4.57
+  }
+}

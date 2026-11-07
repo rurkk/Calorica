@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "source": "published ef348ac",
+  "checks": [
+    "live nested shared-leaf paths allocate50/150 overlap200 parent ignored",
+    "live nested shared-leaf manual0.8 gives120/80 and history680",
+    "live assignment edit reflows nested historical groups without changing total"
+  ],
+  "cleanup": {
+    "products_soft_deleted": 4,
+    "entry_deleted": true
+  }
+}
+

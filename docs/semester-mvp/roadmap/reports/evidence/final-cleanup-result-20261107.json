@@ -1,0 +1,21 @@
+{
+  "primary": {
+    "new_entries_deleted": 3,
+    "new_products_soft_deleted": 12,
+    "all_owned_fixture_products_deleted": true,
+    "known_api_session_logged_out": true
+  },
+  "ui_": {
+    "new_entries_deleted": 2,
+    "new_products_soft_deleted": 6,
+    "all_owned_fixture_products_deleted": true,
+    "known_api_session_logged_out": true
+  },
+  "leaf_delete_followup": {
+    "entry_deleted": 1,
+    "parent_soft_deleted": 1,
+    "leaf_deleted_in_signed_UI": true,
+    "parent_and_history_retained_after_leaf_delete": true,
+    "api_session_logged_out": true
+  }
+}
