@@ -17,6 +17,11 @@ Robolectric не выдан за эту проверку. 5 историческ
 совместимый rollback; T18 объединяет эти конкретные ограничения.
 Ни один неуспешный Actions не объявлен зелёным, весь MVP пока не объявлен закрытым.
 
+**Решение пользователя:** PR50 разрешено влить в main с честным остатком;
+существующую Git-доставку Render сохранить. Расширение write:packages и GHCR
+публикация не разрешены выбранным вариантом и не выполняются. Это не отменяет
+неподтверждённые критерии CI/Admin/published rollback.
+
 Помощь координатора явно поручена исполнителю чата
 `01a1b70d-770f-7153-b1c8-0eaa1ca574be`, ветка
 `codex/mvp-final-acceptance-20261107`. Исходные владельцы, авторство и 12 claims
@@ -26,7 +31,7 @@ NiKLaYDM сохранены, T09/T12 остаются за TheDenFire без о�
 | Остаток | Первичное подтверждение / следующий конкретный шаг |
 | --- | --- |
 | CI-1 | Backend CI main aa07f37, run 42395359064/job 128471450396: `The job was not started because your account is locked due to a billing issue.` Нужен результат обращения владельца в GitHub Support и настоящий повтор CI; дубликат обращения не отправлен |
-| DELIVERY-1 / ROLLBACK-1 | Render live ef348ac подтверждён API, image=null. Нужен новый совместимый опубликованный digest и drill именно загруженного артефакта. Локальный 2df83f4 повторно прошёл 10/10, но не выдан за опубликованный fallback; OLD fb97cef не применять |
+| DELIVERY-1 / ROLLBACK-1 | Пользователь выбрал сохранить существующую Git-Docker доставку Render ef348ac; GHCR push и расширение scopes не выполняются. Render image=null; exact published compatible rollback остаётся неподтверждённым. Два локальных drill по10/10 не выданы за опубликованный fallback; OLD fb97cef не применять |
 | ADMIN-1 | В предоставленных технических аккаунтах только USER; у доступных базовых продуктов нет ml-конвертации. 206 г/Admin CRUD/owner guard PASS на изолированной PG; на production нужны существующий разрешённый Admin и только выделенные тестовые сущности. Роли и чужие продукты не менялись |
 | PHYSICAL-1 | **Снят:** пользователь явно разрешил настоящий эмулятор; signed APK/API 36 UI/fault-цикл выполнен |
 
@@ -52,8 +57,9 @@ Backend того же commit развёрнут непосредственно D
 Последние доступные GitHub Actions остановлены биллингом; восстановление CI
 не подтверждено. Выпуск выполнен альтернативным путём по поручению пользователя.
 Render временно использует Git-backed Docker,
-автодеплой отключён. Для возврата обычного CI/CD нужен новый совместимый GHCR
-образ и возврат источника Render на `image`; прежний `fb97cef` не использовать.
+автодеплой отключён. Новым решением 7 ноября пользователь сохранил эту Git-доставку;
+возврат Render на `image` и новая GHCR-публикация сейчас не выполняются.
+Прежний несовместимый `fb97cef` не использовать.
 Полное закрытие T17/T18 не заявляется: exact published rollback и обязательный CI
 не подтверждены. Физический телефон заменён эмулятором решением 7 ноября;
 актуальный signed UI-прогон приведён выше. Владельцы и брони сохранены.
@@ -76,7 +82,7 @@ Render временно использует Git-backed Docker,
 | Задача | Агент | Разработчик | Статус | Технически готово | Рабочая ветка / бронь | Блокер / следующий шаг |
 | --- | --- | --- | --- | --- | --- | --- |
 | [T00](tasks/T00.md) | 1 | Рауль / чат t00-contracts-01a19823 | Готово | Контракт 1.0.0, OpenAPI/fixtures, реестр миграций и владельцы приняты в PR #5/#6. | `codex/t00-contracts-01a19823` / архив claim `ad229bf4e3588b9534b732a753da443ac7c30a8f` | Исходная документационная поставка принята Раулем 1 ноября. Незакрытых пунктов T00 не найдено. [Полный аудит](reports/tracker-full-audit-20261107.md#t00). |
-| [T01](tasks/T01.md) | 8 | Рауль / координатор `01a1981e-f16f-7391-ad45-fab304e4a3f5`, исправление доставки | Готово | Историческая автоматическая доставка принята 1 ноября. Текущие APK 0.1.5 и backend ef348ac выпущены согласованным временным путём. | `codex/fix-render-workflow-secret` / архив claim `6a4d5686023f9042b4b21e466c9b0d041669967d` | Исходная T01 закрыта принятой поставкой. Для текущего канала устранить CI-1 и DELIVERY-1: успешный Actions, новый совместимый GHCR digest и возврат Render на image. [Полный аудит](reports/tracker-full-audit-20261107.md#t01). |
+| [T01](tasks/T01.md) | 8 | Рауль / координатор `01a1981e-f16f-7391-ad45-fab304e4a3f5`, исправление доставки | Готово | Историческая автоматическая доставка принята 1 ноября. Текущие APK 0.1.5 и backend ef348ac выпущены согласованным временным путём. | `codex/fix-render-workflow-secret` / архив claim `6a4d5686023f9042b4b21e466c9b0d041669967d` | Исходная T01 закрыта принятой поставкой. Для текущего канала сохранить выбранную пользователем Git-доставку Render; CI-1 и непроверенный опубликованный rollback остаются отдельно. GHCR push не выполнять. [Полный аудит](reports/tracker-full-audit-20261107.md#t01). |
 | [T02](tasks/T02.md) | 4 | Рауль / чат `01a19823-d56c-7291-a4d0-c3a21ad15809` | Готово | Foundation 1.0.0 принята; живой API 26/offline проверены. Для 0.1.5 подтверждены установка и запуск API 36; общие регрессии входят в 113 PASS. | `codex/t02-android-foundation-01a19823` / архив claim `d9a3b2787e2486633d2b361727e3cf4c18fe48ef` | Исходная T02 принята 1 ноября. Новый signed UI/fault-цикл API36 выполнен в T16; физический Android заменён эмулятором решением пользователя. [Полный аудит](reports/tracker-full-audit-20261107.md#t02). |
 | [T03](tasks/T03.md) | 1 | Рауль / чат `01a19823-e310-7a82-9fc6-a52f8143062d` | Готово | Принят fb97cef, D-T03-01 закрыт. На текущем коде AccountsIntegrationTest: 13 PASS; 7 ноября login/me/logout прошли на ef348ac. | `codex/t03-auth-cold-start-01a19823` / архив claim `31560b1d1d90f797446a4c98d408454380dc4d36` | Сохранить принятую T03. Новый auth-дефект не установлен; поздний сетевой таймаут дополнительного входа отдельно отмечен в аудите без автоматического повтора. [Полный аудит](reports/tracker-full-audit-20261107.md#t03). |
 | [T04](tasks/T04.md) | 4 | NiKLaYDM / чат 01a1a741 / исправление PR43 | Ожидает внешнего CI | Signed 0.1.5: регистрация, process restart/refresh restore, два аккаунта, logout PASS. Потерянный committed refresh: ровно одна серверная ротация, возврат к входу, повторный restart без replay. API revoke access/refresh 401. | `codex/p2-implementation-20261104` / `8c8d92412ba8ecfef3377bcf37ac4d7cec9d5700` | CI-1; функциональные K1–K3/M1–M2 проверены сочетанием signed UI и live auth API. Серверные токены/пароли не опубликованы. [Новая приёмка](reports/final-acceptance-20261107.md#t04). |
@@ -93,7 +99,7 @@ Render временно использует Git-backed Docker,
 | [T15](tasks/T15.md) | 3 | NiKLaYDM / чат 01a1a741 / T15 | Ожидает внешнего CI | Live DAY/WEEK/MONTH в двух поясах, 700/7=100, пустые дни/периоды, пересечения meal labels без удвоения и пересчёт после правки продукта/меток PASS; snapshot/races PG PASS. | `codex/p2-implementation-20261104` / `e365b64c1a829a4010b56ecaabb9ec6424f681dc` | CI-1. Аналитика выполнена на опубликованном ef348ac; прежний timeout не переносится как текущий непроверенный сценарий. [Новая приёмка](reports/final-acceptance-20261107.md#t15). |
 | [T16](tasks/T16.md) | 4 | NiKLaYDM / чат 01a1a741 / T16 | Ожидает внешнего CI | Real own API36 AVD + signed0.1.5/APIef348ac: update, full demo, process/zone/accounts, offline reads/search/saves, lost committed save/refresh, double taps и клавиатура PASS; 48dp sample и startup91.47с→retry4.57с PASS. | `codex/p2-implementation-20261104` / `b0969f55ef0ce8a0c0ef3877fae3347516a4fa88` | CI-1. PHYSICAL-1 снят явным решением пользователя и реальным прогоном; crash-buffer содержит 2 конфликта UIAutomator, падений APK не установлено. [Новая приёмка](reports/final-acceptance-20261107.md#t16). |
 | [T17](tasks/T17.md) | 8 | NiKLaYDM / чат 01a1a741 / T17 | Заблокировано | 2новых full lifecycle по10/10 на JDK21/PG17.11, 13 таблиц, фактические JVM/PG restart, failed migration/readiness, compatible LOCAL2df83f4 и извлечённого amd64 image JAR rollback/recovery PASS. Production 8 migration checksums сверены READ ONLY. | `codex/p2-implementation-20261104` / `5b76c98ff62d4dc494e27e9727c05c58f749f44b` | DELIVERY-1/ROLLBACK-1: опубликованный совместимый digest и drill именно артефакта; CI-1. Локальный JAR не объявлен published; prod DB не откатывалась. [Новая приёмка](reports/final-acceptance-20261107.md#t17). |
-| [T18](tasks/T18.md) | 1 | NiKLaYDM / чат 01a1a741 / T18 | Заблокировано | Фактически исполнены 307 тестов +10 lifecycle, signed UI/fault-цикл и live предметные сценарии; SA01–17 матрица и точные версии/границы опубликованы в новом отчёте. | `codex/p2-implementation-20261104` / `8fbe0af2a75d0a1bf3c1b590b281eb265bb2ee11` | CI-1, ADMIN-1 и exact published rollback. Дополнительный физический телефон и внешние backups не являются блокерами. Не закрывать MVP до этих подтверждений. [Новая приёмка](reports/final-acceptance-20261107.md#t18). |
+| [T18](tasks/T18.md) | 1 | NiKLaYDM / чат 01a1a741 / T18 | Заблокировано | Фактически исполнены 307 тестов, 2×10 lifecycle и4image-проверки, signed UI/fault-цикл и live предметные сценарии; SA01–17 матрица и точные версии/границы опубликованы в новом отчёте. | `codex/p2-implementation-20261104` / `8fbe0af2a75d0a1bf3c1b590b281eb265bb2ee11` | CI-1, ADMIN-1 и exact published rollback. Дополнительный физический телефон и внешние backups не являются блокерами. Не закрывать MVP до этих подтверждений. [Новая приёмка](reports/final-acceptance-20261107.md#t18). |
 
 ## История решений и ограничений до выпуска
 

@@ -338,8 +338,8 @@ failed migration, rollback/recovery и persisted refresh. Это отдельн�
 До публикации и проверки скачанного digest ROLLBACK-1 не снимается.
 
 Проверка действующего CLI подтвердила scopes `gist, read:org, repo` без
-write:packages. Запрошено новое узкое разрешение на package-публикацию Calorica;
-без ответа расширение доступа и registry push не выполняются. GHCR container
+write:packages. Пользователь выбрал сохранить существующую Git-доставку Render;
+расширение доступа и registry push не выполняются. GHCR container
 storage/bandwidth остаются бесплатными по [текущей документации GitHub](https://docs.github.com/en/billing/concepts/product-billing/github-packages); платные
 планы/лимиты не менялись.
 
@@ -386,4 +386,18 @@ backend-release.yml. Config **кроме labels** и RootFS-слои побай�
 `sha256:b9da9a34903b703fea96f751a03c8b83a8f41ea05240182f4c0bd7c1aba23102`.
 Это metadata-уточнение прежних локальных индексов, не изменение runtime/JAR.
 [Проверка равенства слоёв/config](evidence/final-image-metadata-proof-20261107.json).
-Registry push до разрешения write:packages не выполнен.
+Registry push не выполнен: пользователь выбрал сохранить Git-доставку Render.
+
+## Решение пользователя о публикации результатов — 7 ноября 2026
+
+На вопрос о расширении GitHub CLI для GHCR пользователь выбрал
+**«Оставить существующую Git-доставку Render»**. Это решение принято:
+OAuth/scopes не менялись, registry push и переключение Render на image
+не выполняются. Локальный образ остаётся проверенным локальным артефактом,
+не опубликованным fallback. Критерий exact published rollback не объявлен PASS.
+
+На вопрос о PR50 пользователь ответил **«Да, влить PR50 с честным остатком»**.
+Согласование относится к документам и доказательствам этой приёмки, включая
+зафиксированный выбор доставки. Main обновляется обычным merge без обхода
+защит; красный billing CI не подменяется. Роли, чужие claims и сервисы
+не меняются. Полное закрытие MVP этим решением не заявляется.
